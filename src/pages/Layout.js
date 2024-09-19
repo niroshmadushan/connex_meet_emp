@@ -55,16 +55,16 @@ const Layout = ({ children }) => {
   React.useEffect(() => {
     // Determine the selected view based on the current path
     switch (location.pathname) {
-      case '/eventspage':
+      case '/connex_meet_emp/eventspage':
         setSelectedView('events');
         break;
-      case '/meeting-rooms':
+      case '/connex_meet_emp/meeting-rooms':
         setSelectedView('map');
         break;
-      case '/addmeeting':
+      case '/connex_meet_emp/addmeeting':
         setSelectedView('addmeeting');
         break;
-      case '/profile':
+      case '/connex_meet_emp/profile':
         setSelectedView('profile');
         break;
       default:
@@ -77,22 +77,22 @@ const Layout = ({ children }) => {
 
     switch (view) {
       case 'home':
-        navigate('/');
+        navigate('/connex_meet_emp/');
         break;
       case 'events':
-        navigate('/eventspage');
+        navigate('/connex_meet_emp/eventspage');
         break;
       case 'map':
-        navigate('/meeting-rooms');
+        navigate('/connex_meet_emp/meeting-rooms');
         break;
       case 'addmeeting':
-        navigate('/addmeeting');
+        navigate('/connex_meet_emp/addmeeting');
         break;
       case 'profile':
-        navigate('/profile');
+        navigate('/connex_meet_emp/profile');
         break;
       default:
-        navigate('/');
+        navigate('/connex_meet_emp/');
     }
   };
 

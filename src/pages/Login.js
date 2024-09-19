@@ -89,7 +89,7 @@ const Login = () => {
     console.log('Login Successful:', { email, password });
 
     // Redirect to dashboard on successful login
-    navigate('/dash');
+    navigate('/connex_meet_emp/dash');
   };
 
   return (
