@@ -23,7 +23,7 @@ const App = () => {
   useEffect(() => {
     // Check the screen width and update the state accordingly
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth <= 768); // Assuming 768px as the mobile threshold
+      setIsMobile(window.innerWidth <= 1800); // Assuming 768px as the mobile threshold
     };
 
     // Initial check
