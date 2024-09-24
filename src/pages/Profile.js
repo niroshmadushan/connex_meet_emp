@@ -72,7 +72,7 @@ const Profile = () => {
     email: 'johndoe@example.com',
     phone: '+1234567890',
     address: '123 Main Street, City, Country',
-    bio: 'A passionate developer.',
+    bio: 'Senior Developer',
     profilePic: profilePic, // Placeholder profile picture
   });
 
@@ -164,7 +164,7 @@ const Profile = () => {
                   <TableCell>{userData.address}</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell align="right"><strong>Bio:</strong></TableCell>
+                  <TableCell align="right"><strong>Designation:</strong></TableCell>
                   <TableCell>{userData.bio}</TableCell>
                 </TableRow>
               </TableBody>

@@ -77,7 +77,7 @@ const Layout = ({ children }) => {
 
     switch (view) {
       case 'home':
-        navigate('/connex_meet_emp/');
+        navigate('/connex_meet_emp/dash');
         break;
       case 'events':
         navigate('/connex_meet_emp/eventspage');

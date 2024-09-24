@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme/theme';
-import Home from './pages/Home';
+import Home from './pages/ScheduledMeetings';
 import HomeDashboard from './pages/Dashboard';
 import MeetingRooms from './pages/MeetingRooms';
 import AddMeetingSession from './pages/AddMeetingSession';
