@@ -151,7 +151,7 @@ const Login = () => {
           </LoginButton>
         </form>
         <Typography variant="body2" align="center">
-          Don't have an account? <a href="/register" style={{ color: themeColor.primary }}>Register</a>
+          Don't have an account? <a href="/connex_meet_emp/register" style={{ color: themeColor.primary }}>Register</a>
         </Typography>
       </StyledPaper>
     </Container>

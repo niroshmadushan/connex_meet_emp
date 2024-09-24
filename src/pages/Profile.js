@@ -72,7 +72,7 @@ const Profile = () => {
     email: 'johndoe@example.com',
     phone: '+1234567890',
     address: '123 Main Street, City, Country',
-    bio: 'A passionate developer.',
+    designation: 'A passionate developer.',
     profilePic: profilePic, // Placeholder profile picture
   });
 
@@ -164,8 +164,8 @@ const Profile = () => {
                   <TableCell>{userData.address}</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell align="right"><strong>Bio:</strong></TableCell>
-                  <TableCell>{userData.bio}</TableCell>
+                  <TableCell align="right"><strong>Designation:</strong></TableCell>
+                  <TableCell>{userData.designation}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -250,9 +250,9 @@ const Profile = () => {
           <TextField
             fullWidth
             margin="dense"
-            label="Bio"
-            name="bio"
-            value={editData.bio}
+            label="Designation"
+            name="designation"
+            value={editData.designation}
             onChange={handleChange}
             multiline
             rows={3}

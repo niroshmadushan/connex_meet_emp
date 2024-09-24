@@ -343,7 +343,7 @@ const Register = () => {
 
         {/* Login Link */}
         <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-          Already have an account? <a href="/login" style={{ color: themeColor.primary }}>Login</a>
+          Already have an account? <a href="/connex_meet_emp" style={{ color: themeColor.primary }}>Login</a>
         </Typography>
       </StyledPaper>
     </Container>
