@@ -47,8 +47,8 @@ const getMeetingStatus = (meetingDate, meetingTime) => {
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: '12px',
   boxShadow: '0 6px 15px rgba(0,0,0,0.15)',
-  padding: '15px', // Reduced padding to make the card compact
-  height: 'auto', // Auto height to adjust to content
+  padding: '15px',
+  height: 'auto',
   transition: 'transform 0.2s ease-in-out',
   position: 'relative',
   '&:hover': {
@@ -68,7 +68,6 @@ const BlinkingDot = styled(CircleIcon)(({ color }) => ({
 }));
 
 const ScheduledMeetings = () => {
-  // Sample data for scheduled meetings
   const [meetings, setMeetings] = useState([
     {
       id: 1,
@@ -112,7 +111,6 @@ const ScheduledMeetings = () => {
     },
   ]);
 
-  // Modal state for the meeting details popup
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [open, setOpen] = useState(false);
 
@@ -144,7 +142,6 @@ const ScheduledMeetings = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         const reason = result.value;
-        console.log(`Meeting canceled with reason: ${reason}`);
         setMeetings(meetings.filter((meeting) => meeting.id !== id));
         Swal.fire('Canceled!', 'The meeting has been canceled.', 'success');
       }
@@ -172,21 +169,23 @@ const ScheduledMeetings = () => {
             <Grid item xs={12} md={6} key={meeting.id}>
               <StyledCard onClick={() => handleOpen(meeting)}>
                 <CardContent>
-                  {/* Top-right label */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      backgroundColor: '#f5f5f5',
-                      padding: '5px 10px',
-                      borderRadius: '5px',
-                      fontWeight: 'bold',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    With Shamal Aberathne
-                  </Box>
+                  {/* Conditionally render top-right label for upcoming meetings */}
+                  {status === 'upcoming' && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        backgroundColor: '#f5f5f5',
+                        padding: '5px 10px',
+                        borderRadius: '5px',
+                        fontWeight: 'bold',
+                        fontSize: '0.9rem',
+                      }}
+                    >
+                      With Shamal Aberathne
+                    </Box>
+                  )}
                   {/* Status Dot */}
                   <Chip
                     icon={<BlinkingDot color={statusColors[status]} />}

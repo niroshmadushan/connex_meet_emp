@@ -1,5 +1,4 @@
-// src/pages/Login.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Box,
   TextField,
@@ -15,17 +14,19 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import EmailIcon from '@mui/icons-material/Email'; // Added Email Icon
-import LockIcon from '@mui/icons-material/Lock'; // Added Lock Icon
+import EmailIcon from '@mui/icons-material/Email';
+import LockIcon from '@mui/icons-material/Lock';
 import { styled } from '@mui/system';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { AuthContext } from './AuthContext'; // Import AuthContext
 
 // Theme colors
 const themeColor = {
   primary: '#007aff', // iOS-like blue color
   primaryHover: '#005bb5',
-  textPrimary: '#333333', // Primary text color for better contrast
-  cardBg: '#ffffff', // White background for cards
+  textPrimary: '#333333',
+  cardBg: '#ffffff',
 };
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -58,11 +59,12 @@ const LoginButton = styled(Button)(({ theme }) => ({
 }));
 
 const Login = () => {
+  const { login } = useContext(AuthContext); // Get login function from AuthContext
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -76,28 +78,33 @@ const Login = () => {
     setShowPassword((prev) => !prev);
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Implement your login logic here (e.g., API call)
+
     if (email === '' || password === '') {
       setError('Please enter both email and password.');
       return;
     }
 
-    // Reset error
-    setError('');
-    console.log('Login Successful:', { email, password });
-
-    // Redirect to dashboard on successful login
-    navigate('/connex_meet_emp/dash');
+    try {
+      const response = await axios.post('http://192.168.13.150:3001/login', { email, password });
+      if (response.status === 200) {
+        const token = response.data.token; // Get token from response
+        login(token); // Call login function to store token and authenticate user
+        navigate('/connex_meet_emp/dash'); // Redirect to dashboard
+      }
+    } catch (err) {
+      setError(
+        <>
+          Invalid email or password.
+          <br />
+          Please Contact Administration!
+        </>
+      );}
   };
 
-// navigate to register
   const regHandleLogin = (e) => {
     e.preventDefault();
-   
-
-    // Redirect to register on 
     navigate('/connex_meet_emp/reg');
   };
 
@@ -160,7 +167,7 @@ const Login = () => {
           </LoginButton>
         </form>
         <Typography variant="body2" align="center">
-          Don't have an account? <a onClick={regHandleLogin}  style={{ color: themeColor.primary, cursor: 'pointer' }}>Register</a>
+          Don't have an account? <a onClick={regHandleLogin} style={{ color: themeColor.primary, cursor: 'pointer' }}>Register</a>
         </Typography>
       </StyledPaper>
     </Container>

@@ -1,4 +1,3 @@
-// src/pages/Register.js
 import React, { useState } from 'react';
 import {
   Box,
@@ -23,13 +22,16 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import HomeIcon from '@mui/icons-material/Home';
 import WorkIcon from '@mui/icons-material/Work';
 import { styled, keyframes } from '@mui/system';
+import axios from 'axios';
+import Swal from 'sweetalert2';  // Import SweetAlert2
+import { useNavigate } from 'react-router-dom';  // Import useNavigate from react-router-dom
 
 // Theme colors
 const themeColor = {
-  primary: '#0d6efd', // Premium blue color
-  textPrimary: '#333333', // Primary text color for better contrast
-  cardBg: '#ffffff', // White background for cards
-  error: '#dc3545', // Error color for validation messages
+  primary: '#0d6efd',
+  textPrimary: '#333333',
+  cardBg: '#ffffff',
+  error: '#dc3545',
 };
 
 // Animation keyframes
@@ -52,7 +54,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   maxWidth: '600px',
   width: '100%',
   animation: `${fadeIn} 0.8s ease-out`,
-  position: 'relative', // Make room for top profile image
+  position: 'relative',
 }));
 
 const ProfileContainer = styled(Box)({
@@ -60,13 +62,13 @@ const ProfileContainer = styled(Box)({
   flexDirection: 'column',
   alignItems: 'center',
   position: 'absolute',
-  top: '-75px', // Raise the profile picture above the card
+  top: '-75px',
   left: '50%',
-  transform: 'translateX(-50%)', // Center horizontally
+  transform: 'translateX(-50%)',
 });
 
 const StyledAvatar = styled(Avatar)({
-  width: 120, // Larger profile image
+  width: 120,
   height: 120,
   marginBottom: '8px',
   boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
@@ -82,15 +84,17 @@ const Register = () => {
     email: '',
     phone: '',
     address: '',
-    designation: '', // Updated field
+    designation: '',
     password: '',
     confirmPassword: '',
-    profilePicture: '',
+    org_id: '',  // Add org_id to the state
+    profilePictureBase64: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [profilePreview, setProfilePreview] = useState(null);
+
+  const navigate = useNavigate();  // Initialize useNavigate for redirecting
 
   const handleChange = (e) => {
     setFormData({
@@ -106,58 +110,108 @@ const Register = () => {
   const handleProfilePictureChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData({
-        ...formData,
-        profilePicture: file,
-      });
-
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfilePreview(reader.result);
+        const base64String = reader.result.split(',')[1];  // Extract only the base64 part
+        setFormData({
+          ...formData,
+          profilePictureBase64: base64String,  // Set Base64 string in form data
+        });
+        setProfilePreview(reader.result);  // Set preview for the image
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file);  // Convert image to Base64
     }
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    const { name, email, phone, address, designation, password, confirmPassword } = formData;
+    const { name, email, phone, address, designation, password, confirmPassword, org_id, profilePictureBase64 } = formData;
 
-    // Simple validation
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "Passwords do not match.",
+        confirmButtonColor: themeColor.primary,
+      });
       return;
     }
 
-    if (name === '' || email === '' || phone === '' || address === '' || designation === '' || password === '' || confirmPassword === '') {
-      setError("Please fill in all fields.");
+    if (name === '' || email === '' || phone === '' || address === '' || designation === '' || password === '' || confirmPassword === '' || org_id === '') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "Please fill in all fields.",
+        confirmButtonColor: themeColor.primary,
+      });
       return;
     }
 
-    // Reset error
-    setError('');
-    
-    // Implement your registration logic here (e.g., API call)
-    console.log('Registration Successful:', { name, email, phone, address, designation, password, profilePicture: formData.profilePicture });
+    const data = {
+      name,
+      email,
+      phone,
+      address,
+      designation,
+      password,
+      status: '1',
+      org_id,  // Include org_id in the request
+      image: profilePictureBase64,
+    };
 
-    // Clear the form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      address: '',
-      designation: '',
-      password: '',
-      confirmPassword: '',
-      profilePicture: '',
-    });
-    setProfilePreview(null);
+    try {
+      const response = await axios.post('http://192.168.13.150:3001/add-user', data);
+      if (response.status === 200) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Registration Successful!',
+          text: 'Employee added successfully.',
+          confirmButtonColor: themeColor.primary,
+        }).then(() => {
+          // Redirect to login page after successful registration
+          navigate('/login');  // Redirect to the login page
+        });
+
+        // Clear the form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          address: '',
+          designation: '',
+          password: '',
+          confirmPassword: '',
+          org_id: '',  // Clear the org_id field as well
+          profilePictureBase64: '',
+        });
+        setProfilePreview(null);
+      }
+    } catch (error) {
+      const errorMessage = error.response ? error.response.data.message : 'Failed to register';
+
+      if (errorMessage === 'User with the same email already exists') {
+        // Show Swal alert only for this specific error
+        Swal.fire({
+          icon: 'error',
+          title: 'Registration Failed',
+          text: 'User with the same email already exists.',
+          confirmButtonColor: themeColor.primary,
+        });
+      } else {
+        // Show Swal alert for any other errors
+        Swal.fire({
+          icon: 'error',
+          title: 'Registration Failed',
+          text: errorMessage,
+          confirmButtonColor: themeColor.primary,
+        });
+      }
+    }
   };
 
   return (
     <Container sx={{ mt: 15, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <StyledPaper elevation={6}>
-        {/* Profile Picture and Upload Button */}
         <ProfileContainer>
           <StyledAvatar src={profilePreview} alt="Profile Picture" />
           <Button
@@ -176,7 +230,6 @@ const Register = () => {
           </Button>
         </ProfileContainer>
 
-        {/* Form Title */}
         <Typography
           variant="h5"
           sx={{
@@ -191,7 +244,6 @@ const Register = () => {
           Register
         </Typography>
 
-        {/* Registration Form */}
         <form onSubmit={handleRegister} style={{ marginTop: '60px' }}>
           <TextField
             fullWidth
@@ -278,6 +330,24 @@ const Register = () => {
               ),
             }}
           />
+          {/* Add org_id input */}
+          <TextField
+            fullWidth
+            label="Organization ID"
+            variant="outlined"
+            margin="normal"
+            name="org_id"
+            value={formData.org_id}
+            onChange={handleChange}
+            required
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <WorkIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
 
           <FormControl fullWidth variant="outlined" margin="normal">
             <InputLabel htmlFor="password">Password</InputLabel>
@@ -325,11 +395,6 @@ const Register = () => {
               required
             />
           </FormControl>
-          {error && (
-            <Typography variant="body2" color={themeColor.error} sx={{ mt: 1, mb: 1 }}>
-              {error}
-            </Typography>
-          )}
           <Button
             type="submit"
             fullWidth
@@ -340,11 +405,6 @@ const Register = () => {
             Register
           </Button>
         </form>
-
-        {/* Login Link */}
-        <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-          Already have an account? <a href="/connex_meet_emp" style={{ color: themeColor.primary }}>Login</a>
-        </Typography>
       </StyledPaper>
     </Container>
   );
