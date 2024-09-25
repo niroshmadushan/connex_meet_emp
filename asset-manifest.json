@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/connex_meet_emp/static/css/main.ab1bc322.css",
-    "main.js": "/connex_meet_emp/static/js/main.de20aa24.js",
+    "main.js": "/connex_meet_emp/static/js/main.4cf204e8.js",
     "static/js/453.69834fcc.chunk.js": "/connex_meet_emp/static/js/453.69834fcc.chunk.js",
     "static/media/prof.jpg": "/connex_meet_emp/static/media/prof.aecb59ab1c9a78cdae79.jpg",
     "static/media/about-us-page-examples-1-61fd8f9784626-sej.webp": "/connex_meet_emp/static/media/about-us-page-examples-1-61fd8f9784626-sej.5ea02c4e966b2c7f2a56.webp",
@@ -14,11 +14,11 @@
     "static/media/slick.woff": "/connex_meet_emp/static/media/slick.295183786cd8a1389865.woff",
     "index.html": "/connex_meet_emp/index.html",
     "main.ab1bc322.css.map": "/connex_meet_emp/static/css/main.ab1bc322.css.map",
-    "main.de20aa24.js.map": "/connex_meet_emp/static/js/main.de20aa24.js.map",
+    "main.4cf204e8.js.map": "/connex_meet_emp/static/js/main.4cf204e8.js.map",
     "453.69834fcc.chunk.js.map": "/connex_meet_emp/static/js/453.69834fcc.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ab1bc322.css",
-    "static/js/main.de20aa24.js"
+    "static/js/main.4cf204e8.js"
   ]
 }
