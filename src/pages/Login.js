@@ -98,7 +98,7 @@ const Login = () => {
    
 
     // Redirect to register on 
-    navigate('/connex_meet_emp/register');
+    navigate('/connex_meet_emp/reg');
   };
 
   return (

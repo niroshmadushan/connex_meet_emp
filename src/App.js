@@ -93,7 +93,7 @@ const App = () => {
           <Route path="/connex_meet_emp/addmeeting" element={<Layout><AddMeetingSession /></Layout>} />
           <Route path="/connex_meet_emp/addInternalMeeting" element={<Layout><AddMeetingInternal/></Layout>} />
           <Route path="/connex_meet_emp/profile" element={<Layout><Profile /></Layout>} />
-          <Route path="/connex_meet_emp/register" element={<Register />} />
+          <Route path="/connex_meet_emp/reg" element={<Register />} />
        
 
         </Routes>
