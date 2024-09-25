@@ -6,6 +6,7 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import MapIcon from '@mui/icons-material/Map';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import GroupAddIcon from '@mui/icons-material/GroupAdd'; // Import the new icon
 import { styled } from '@mui/system';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../img/logo.png';
@@ -67,6 +68,9 @@ const Layout = ({ children }) => {
       case '/connex_meet_emp/profile':
         setSelectedView('profile');
         break;
+      case '/connex_meet_emp/addInternalMeeting': // Update for internal staff meetings page
+        setSelectedView('staffmeeting');
+        break;
       default:
         setSelectedView('home');
     }
@@ -90,6 +94,9 @@ const Layout = ({ children }) => {
         break;
       case 'profile':
         navigate('/connex_meet_emp/profile');
+        break;
+      case 'staffmeeting': // Handle navigation for internal staff meeting
+        navigate('/connex_meet_emp/addInternalMeeting');
         break;
       default:
         navigate('/connex_meet_emp/');
@@ -120,6 +127,9 @@ const Layout = ({ children }) => {
         </FooterButton>
         <FooterButton onClick={() => handleNavigationChange('addmeeting')} className={selectedView === 'addmeeting' ? 'Mui-selected' : ''}>
           <DashboardCustomizeIcon />
+        </FooterButton>
+        <FooterButton onClick={() => handleNavigationChange('staffmeeting')} className={selectedView === 'staffmeeting' ? 'Mui-selected' : ''}>
+          <GroupAddIcon />
         </FooterButton>
         <FooterButton onClick={() => handleNavigationChange('map')} className={selectedView === 'map' ? 'Mui-selected' : ''}>
           <MapIcon />

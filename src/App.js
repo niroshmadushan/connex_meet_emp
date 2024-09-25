@@ -8,6 +8,7 @@ import Home from './pages/ScheduledMeetings';
 import HomeDashboard from './pages/Dashboard';
 import MeetingRooms from './pages/MeetingRooms';
 import AddMeetingSession from './pages/AddMeetingSession';
+import AddMeetingInternal from './pages/AddMeetingInternal';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/RegistrationPage';
@@ -90,8 +91,11 @@ const App = () => {
           <Route path="/connex_meet_emp/eventspage" element={<Layout><Home /></Layout>} />
           <Route path="/connex_meet_emp/meeting-rooms" element={<Layout><MeetingRooms /></Layout>} />
           <Route path="/connex_meet_emp/addmeeting" element={<Layout><AddMeetingSession /></Layout>} />
+          <Route path="/connex_meet_emp/addInternalMeeting" element={<Layout><AddMeetingInternal/></Layout>} />
           <Route path="/connex_meet_emp/profile" element={<Layout><Profile /></Layout>} />
           <Route path="/connex_meet_emp/register" element={<Register />} />
+       
+
         </Routes>
       </Router>
     </ThemeProvider>
