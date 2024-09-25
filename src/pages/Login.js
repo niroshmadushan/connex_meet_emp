@@ -92,6 +92,15 @@ const Login = () => {
     navigate('/connex_meet_emp/dash');
   };
 
+// navigate to register
+  const regHandleLogin = (e) => {
+    e.preventDefault();
+   
+
+    // Redirect to register on 
+    navigate('/connex_meet_emp/register');
+  };
+
   return (
     <Container sx={{ mt: 1 , display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <StyledPaper elevation={3}>
@@ -151,7 +160,7 @@ const Login = () => {
           </LoginButton>
         </form>
         <Typography variant="body2" align="center">
-          Don't have an account? <a href="/connex_meet_emp/register" style={{ color: themeColor.primary }}>Register</a>
+          Don't have an account? <a onClick={regHandleLogin}  style={{ color: themeColor.primary, cursor: 'pointer' }}>Register</a>
         </Typography>
       </StyledPaper>
     </Container>
