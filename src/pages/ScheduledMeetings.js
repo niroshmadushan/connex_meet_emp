@@ -11,7 +11,6 @@ import {
   Chip,
   IconButton,
   CardActions,
-  TextField,
   Button,
 } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
@@ -51,6 +50,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   padding: '15px', // Reduced padding to make the card compact
   height: 'auto', // Auto height to adjust to content
   transition: 'transform 0.2s ease-in-out',
+  position: 'relative',
   '&:hover': {
     transform: 'scale(1.03)',
   },
@@ -82,6 +82,7 @@ const ScheduledMeetings = () => {
       ],
       specialNote: 'Discuss the Q3 strategy',
       refreshment: 'Tea and Snacks',
+      approved: false, // Adding approved status
     },
     {
       id: 2,
@@ -94,6 +95,7 @@ const ScheduledMeetings = () => {
       ],
       specialNote: 'Present new product features',
       refreshment: 'Coffee',
+      approved: false,
     },
     {
       id: 3,
@@ -106,13 +108,13 @@ const ScheduledMeetings = () => {
       ],
       specialNote: 'Annual performance review',
       refreshment: 'Water',
+      approved: false,
     },
   ]);
 
   // Modal state for the meeting details popup
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [open, setOpen] = useState(false);
-  const [cancelReason, setCancelReason] = useState('');
 
   const handleOpen = (meeting) => {
     setSelectedMeeting(meeting);
@@ -125,7 +127,6 @@ const ScheduledMeetings = () => {
   };
 
   const handleDelete = (id) => {
-    // Show an input prompt asking for the reason for cancellation
     Swal.fire({
       title: 'Are you sure you want to cancel this meeting?',
       text: 'Please provide a reason for canceling this meeting:',
@@ -144,11 +145,18 @@ const ScheduledMeetings = () => {
       if (result.isConfirmed) {
         const reason = result.value;
         console.log(`Meeting canceled with reason: ${reason}`);
-        // Proceed to cancel the meeting and remove it from the list
         setMeetings(meetings.filter((meeting) => meeting.id !== id));
         Swal.fire('Canceled!', 'The meeting has been canceled.', 'success');
       }
     });
+  };
+
+  const handleApprove = (id) => {
+    setMeetings(
+      meetings.map((meeting) =>
+        meeting.id === id ? { ...meeting, approved: true } : meeting
+      )
+    );
   };
 
   return (
@@ -164,11 +172,24 @@ const ScheduledMeetings = () => {
             <Grid item xs={12} md={6} key={meeting.id}>
               <StyledCard onClick={() => handleOpen(meeting)}>
                 <CardContent>
+                  {/* Top-right label */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '10px',
+                      right: '10px',
+                      backgroundColor: '#f5f5f5',
+                      padding: '5px 10px',
+                      borderRadius: '5px',
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    With Shamal Aberathne
+                  </Box>
                   {/* Status Dot */}
                   <Chip
-                    icon={
-                      <BlinkingDot color={statusColors[status]} /> // Blinking dot based on status
-                    }
+                    icon={<BlinkingDot color={statusColors[status]} />}
                     label={status.charAt(0).toUpperCase() + status.slice(1)}
                     sx={{
                       backgroundColor: statusColors[status] + '22',
@@ -197,17 +218,37 @@ const ScheduledMeetings = () => {
                     {meeting.room}
                   </Typography>
                 </CardContent>
-                <CardActions sx={{ justifyContent: 'flex-end' }}>
-                  {/* Show Delete Icon only for Upcoming Meetings */}
+                <CardActions sx={{ justifyContent: 'space-between' }}>
                   {status === 'upcoming' && (
-                    <IconButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(meeting.id);
-                      }}
-                    >
-                      <DeleteIcon sx={{ color: 'red' }} />
-                    </IconButton>
+                    <>
+                      {/* Show Delete Icon for Upcoming Meetings */}
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(meeting.id);
+                        }}
+                      >
+                        <DeleteIcon sx={{ color: 'red' }} />
+                      </IconButton>
+
+                      {/* Approve Button */}
+                      {meeting.approved ? (
+                        <Typography variant="body1" sx={{ color: 'green', fontWeight: 'bold' }}>
+                          Approved
+                        </Typography>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleApprove(meeting.id);
+                          }}
+                        >
+                          Approve
+                        </Button>
+                      )}
+                    </>
                   )}
                 </CardActions>
               </StyledCard>
