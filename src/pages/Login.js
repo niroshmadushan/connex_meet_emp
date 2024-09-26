@@ -89,7 +89,9 @@ const Login = () => {
     try {
       const response = await axios.post('http://192.168.13.150:3001/login', { email, password });
       if (response.status === 200) {
-        const token = response.data.token; // Get token from response
+        const token = response.data.token;
+        const id= response.data.id;
+        localStorage.setItem('id',id); // Get token from response
         login(token); // Call login function to store token and authenticate user
         navigate('/connex_meet_emp/dash'); // Redirect to dashboard
       }

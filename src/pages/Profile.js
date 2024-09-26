@@ -1,6 +1,6 @@
-// src/pages/Profile.js
-import React, { useState } from 'react';
-import profilePic from '../img/prof.jpg';
+import React, { useState, useEffect } from 'react';
+import profilePic from '../img/prof.jpg'; // Fallback profile picture
+import axios from 'axios';
 import {
   Box,
   Avatar,
@@ -10,76 +10,42 @@ import {
   Grid,
   Container,
   Paper,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  InputAdornment,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Slide,
+  CircularProgress,
   Table,
   TableBody,
   TableCell,
-  TableRow
+  TableRow,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import LockIcon from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import LockIcon from '@mui/icons-material/Lock';
 import { styled } from '@mui/system';
-
-const themeColor = {
-  primary: '#007aff', // iOS-like blue color
-  primaryDark: '#005bb5',
-  background: '#f9f9f9', // Light background color
-  textPrimary: '#333333', // Primary text color for better contrast
-  cardBg: '#ffffff', // Light background for cards
-  buttonHover: '#005bb5', // Updated button hover color for better contrast
-};
+import { Buffer } from 'buffer'; // Import Buffer
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  backgroundColor: themeColor.cardBg,
-  color: themeColor.textPrimary,
   padding: '20px',
-  borderRadius: '10px',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   marginBottom: '20px',
 }));
 
-const StyledButton = styled(Button)(({ theme }) => ({
-  fontSize: '0.85rem',
-  padding: '8px 16px',
-  borderRadius: '25px',
-  textTransform: 'none',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: themeColor.buttonHover, // Updated hover color
-  },
-  '&:active': {
-    transform: 'scale(0.95)',
-  },
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-}));
-
 const Profile = () => {
-  const [userData, setUserData] = useState({
-    name: 'John Doe',
-    email: 'johndoe@example.com',
-    phone: '+1234567890',
-    address: '123 Main Street, City, Country',
-    bio: 'Developer',
-    profilePic: profilePic, // Placeholder profile picture
-  });
-
-  const [editMode, setEditMode] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [openEdit, setOpenEdit] = useState(false);
-  const [openPassword, setOpenPassword] = useState(false); // State to manage the password dialog
-  const [editData, setEditData] = useState({ ...userData });
+  const [openPassword, setOpenPassword] = useState(false); // State for the password dialog
+  const [editData, setEditData] = useState(null);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -87,37 +53,69 @@ const Profile = () => {
   });
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
+  // Fetch profile data when the component mounts
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const profileId = localStorage.getItem('id'); // Assuming profileId is stored in localStorage as 'id'
+      const apiLink = 'http://192.168.13.150:3001/profile'; // Replace with your API link
+
+      try {
+        const response = await axios.get(`${apiLink}/${profileId}`, {
+          withCredentials: true,
+        });
+
+        // Convert Buffer image to Base64
+        const imageBuffer = response.data.image.data;
+        const imageBase64 = Buffer.from(imageBuffer).toString('base64'); // Use Buffer from the 'buffer' package
+        response.data.image = `data:image/jpeg;base64,${imageBase64}`; // Set the Base64 image string
+
+        setUserData(response.data);
+        setEditData(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching profile data:', err.response || err); // Log the error response
+        setError('Failed to fetch profile data');
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
   const handleEdit = () => {
     setEditData({ ...userData });
     setOpenEdit(true);
   };
 
-  const handleSave = () => {
-    setUserData(editData);
-    setEditMode(false);
-    setOpenEdit(false);
+  const handleSave = async () => {
+    const profileId = localStorage.getItem('id');
+    const apiLink = 'http://192.168.13.150:3001/profile'; // Replace with your API link
+
+    try {
+      await axios.put(`${apiLink}/${profileId}`, editData, {
+        withCredentials: true,
+      });
+      setUserData(editData);
+      setOpenEdit(false);
+    } catch (error) {
+      console.error('Failed to update profile:', error); // Log the error
+      setError('Failed to update profile');
+    }
   };
 
   const handleCancel = () => {
     setEditData({ ...userData });
-    setEditMode(false);
     setOpenEdit(false);
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert("New passwords do not match!");
       return;
     }
+    // Add your API call for changing the password here
     alert("Password changed successfully!");
     setOpenPassword(false);
-  };
-
-  const handleChange = (e) => {
-    setEditData({
-      ...editData,
-      [e.target.name]: e.target.value,
-    });
   };
 
   const handlePasswordFieldChange = (e) => {
@@ -131,16 +129,23 @@ const Profile = () => {
     setShowPassword((prev) => !prev);
   };
 
+  if (loading) {
+    return <CircularProgress />;
+  }
+
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
+
   return (
     <Container sx={{ mt: 4 }}>
-      <StyledPaper elevation={3}>
+      <StyledPaper>
         <Grid container spacing={2} alignItems="center">
-          {/* Profile Picture and Name */}
           <Grid item xs={12} sm={4} sx={{ display: 'flex', alignItems: 'center' }}>
             <Avatar
               alt={userData.name}
-              src={userData.profilePic}
-              sx={{ width: 100, height: 100, marginRight: '10px', border: `2px solid ${themeColor.primary}` }}
+              src={userData.image || profilePic} // Use Base64 image or fallback
+              sx={{ width: 100, height: 100, marginRight: '10px' }}
             />
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -165,50 +170,35 @@ const Profile = () => {
                 </TableRow>
                 <TableRow>
                   <TableCell align="right"><strong>Designation:</strong></TableCell>
-                  <TableCell>{userData.bio}</TableCell>
+                  <TableCell>{userData.designation}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
           </Grid>
         </Grid>
-        
-        {/* Edit Profile and Change Password Buttons */}
+
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
-          <StyledButton
+          <Button
             variant="contained"
             color="primary"
-            size="small"
             onClick={handleEdit}
             startIcon={<EditIcon />}
           >
             Edit Profile
-          </StyledButton>
-          <StyledButton
+          </Button>
+          <Button
             variant="outlined"
             color="primary"
-            size="small"
-            onClick={() => setOpenPassword(true)}
+            onClick={() => setOpenPassword(true)} // Open the password dialog
             startIcon={<LockIcon />}
           >
             Change Password
-          </StyledButton>
+          </Button>
         </Box>
       </StyledPaper>
 
       {/* Edit Profile Dialog */}
-      <Dialog
-        open={openEdit}
-        onClose={handleCancel}
-        TransitionComponent={Slide}
-        TransitionProps={{ direction: 'up' }}
-        PaperProps={{
-          style: {
-            borderRadius: '16px',
-            padding: '20px',
-            boxShadow: '0px 4px 20px rgba(0,0,0,0.2)',
-          },
-        }}
-      >
+      <Dialog open={openEdit} onClose={handleCancel}>
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent>
           <TextField
@@ -217,7 +207,7 @@ const Profile = () => {
             label="Name"
             name="name"
             value={editData.name}
-            onChange={handleChange}
+            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
@@ -226,7 +216,7 @@ const Profile = () => {
             label="Email"
             name="email"
             value={editData.email}
-            onChange={handleChange}
+            onChange={(e) => setEditData({ ...editData, email: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
@@ -235,7 +225,7 @@ const Profile = () => {
             label="Phone"
             name="phone"
             value={editData.phone}
-            onChange={handleChange}
+            onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
@@ -244,7 +234,7 @@ const Profile = () => {
             label="Address"
             name="address"
             value={editData.address}
-            onChange={handleChange}
+            onChange={(e) => setEditData({ ...editData, address: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
@@ -253,39 +243,25 @@ const Profile = () => {
             label="Designation"
             name="designation"
             value={editData.designation}
-            onChange={handleChange}
-            multiline
-            rows={3}
+            onChange={(e) => setEditData({ ...editData, designation: e.target.value })}
             sx={{ mb: 2 }}
           />
         </DialogContent>
         <DialogActions>
-          <StyledButton onClick={handleSave} variant="contained" color="primary" startIcon={<SaveIcon />}>
+          <Button onClick={handleSave} variant="contained" color="primary" startIcon={<SaveIcon />}>
             Save
-          </StyledButton>
-          <StyledButton onClick={handleCancel} variant="outlined" color="secondary" startIcon={<CancelIcon />}>
+          </Button>
+          <Button onClick={handleCancel} variant="outlined" color="secondary" startIcon={<CancelIcon />}>
             Cancel
-          </StyledButton>
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Change Password Dialog */}
-      <Dialog
-        open={openPassword}
-        onClose={() => setOpenPassword(false)}
-        TransitionComponent={Slide}
-        TransitionProps={{ direction: 'up' }}
-        PaperProps={{
-          style: {
-            borderRadius: '16px',
-            padding: '20px',
-            boxShadow: '0px 4px 20px rgba(0,0,0,0.2)',
-          },
-        }}
-      >
+      <Dialog open={openPassword} onClose={() => setOpenPassword(false)}>
         <DialogTitle>Change Password</DialogTitle>
         <DialogContent>
-          <FormControl variant="outlined" fullWidth margin="dense" sx={{ mb: 2 }}>
+          <FormControl variant="outlined" fullWidth margin="dense">
             <InputLabel htmlFor="currentPassword">Current Password</InputLabel>
             <OutlinedInput
               id="currentPassword"
@@ -307,7 +283,7 @@ const Profile = () => {
               label="Current Password"
             />
           </FormControl>
-          <FormControl variant="outlined" fullWidth margin="dense" sx={{ mb: 2 }}>
+          <FormControl variant="outlined" fullWidth margin="dense">
             <InputLabel htmlFor="newPassword">New Password</InputLabel>
             <OutlinedInput
               id="newPassword"
@@ -353,12 +329,12 @@ const Profile = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <StyledButton onClick={handlePasswordChange} variant="contained" color="primary">
+          <Button onClick={handlePasswordChange} variant="contained" color="primary">
             Change Password
-          </StyledButton>
-          <StyledButton onClick={() => setOpenPassword(false)} variant="outlined" color="secondary">
+          </Button>
+          <Button onClick={() => setOpenPassword(false)} variant="outlined" color="secondary">
             Cancel
-          </StyledButton>
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

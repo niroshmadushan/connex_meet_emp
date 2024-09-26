@@ -1,8 +1,9 @@
 // src/App.js
-import React, { useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect, useState, useContext, createContext } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import axios from 'axios';
 import theme from './theme/theme';
 import Home from './pages/ScheduledMeetings';
 import HomeDashboard from './pages/Dashboard';
@@ -15,10 +16,18 @@ import Register from './pages/RegistrationPage';
 import Layout from './pages/Layout'; // Import Layout
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { AuthProvider } from './pages/AuthContext'; // Import AuthContext
-import PrivateRoute from './components/PrivateRoute'; // Import PrivateRoute from your separate file
+
+// Authentication context
+export const AuthContext = createContext();
+
+const PrivateRoute = ({ children }) => {
+  const { isAuthenticated } = useContext(AuthContext); // Get authentication state from context
+  return isAuthenticated ? children : <Navigate to="/connex_meet_emp/" />; // Redirect if not authenticated
+};
 
 const AppContent = () => {
+  const { isAuthenticated } = useContext(AuthContext); // Get authentication state from context
+
   return (
     <Routes>
       {/* Public routes */}
@@ -91,15 +100,39 @@ const AppContent = () => {
 };
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // JWT Token verification on app load
+    const checkAuthStatus = async () => {
+      try {
+        // Call the verification API to check the token validity
+        const response = await axios.post('http://192.168.13.150:3000/verifytoken', {}, { withCredentials: true });
+        if (response.status === 200) {
+          setIsAuthenticated(true); // Set the user as authenticated if token is valid
+        }
+      } catch (error) {
+        if (error.response?.status === 401) {
+          setIsAuthenticated(false); // Set as not authenticated if token is invalid
+          console.log('Unauthorized user');
+        } else {
+          console.error('Error verifying token:', error);
+        }
+      }
+    };
+
+    checkAuthStatus();
+  }, []); // Empty dependency array means this runs once when the component mounts
+
   return (
-    <AuthProvider>
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
           <AppContent />
         </Router>
       </ThemeProvider>
-    </AuthProvider>
+    </AuthContext.Provider>
   );
 };
 

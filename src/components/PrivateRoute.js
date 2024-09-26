@@ -1,11 +1,10 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
-import { jwtDecode } from 'jwt-decode'; // Correct named import for jwtDecode
+import { jwtDecode } from 'jwt-decode'; // Correct import for jwtDecode
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ children }) => {
-  const token = Cookies.get('token'); // Get the JWT token from cookies
+  const token = localStorage.getItem('token'); // Get the JWT token from local storage
 
   // If token is not available, redirect to login page
   if (!token) {
@@ -18,10 +17,13 @@ const PrivateRoute = ({ children }) => {
 
     // Check if the token is expired
     if (decodedToken.exp < currentTime) {
+      // Token has expired, clear it from localStorage and redirect to login
+      localStorage.removeItem('token');
       return <Navigate to="/connex_meet_emp/" />;
     }
   } catch (err) {
-    // If decoding fails (e.g., token is invalid), redirect to login
+    // If decoding fails (e.g., token is invalid), clear token and redirect to login
+    localStorage.removeItem('token');
     return <Navigate to="/connex_meet_emp/" />;
   }
 

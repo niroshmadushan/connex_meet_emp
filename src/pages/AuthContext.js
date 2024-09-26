@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode'; // Correct import for jwtDecode
 
 // Create Auth Context
 export const AuthContext = createContext();
@@ -10,8 +11,25 @@ export const AuthProvider = ({ children }) => {
   // Simulate a token verification and check for authentication
   useEffect(() => {
     const token = localStorage.getItem('token'); // Fetch token from local storage
+
     if (token) {
-      setIsAuthenticated(true); // If a token exists, consider user authenticated
+      try {
+        const decodedToken = jwtDecode(token); // Decode the token
+        const currentTime = Date.now() / 1000;
+
+        if (decodedToken.exp < currentTime) {
+          // Token is expired, remove it and set isAuthenticated to false
+          localStorage.removeItem('token');
+          setIsAuthenticated(false);
+        } else {
+          // Token is valid, set the user as authenticated
+          setIsAuthenticated(true);
+        }
+      } catch (err) {
+        // If the token is invalid, remove it and set isAuthenticated to false
+        localStorage.removeItem('token');
+        setIsAuthenticated(false);
+      }
     }
   }, []);
 
