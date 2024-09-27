@@ -76,6 +76,7 @@ const Profile = () => {
   };
 
   const handleEdit = () => setOpenEdit(true);
+
   const handleSave = async () => {
     try {
       const apiLink = 'http://192.168.13.150:3001/profile';
@@ -137,16 +138,11 @@ const Profile = () => {
       <Dialog open={openEdit} onClose={handleDialogClose}>
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent>
-          {['name', 'email', 'phone', 'address', 'designation'].map(field => (
-            <TextField
-              key={field}
-              fullWidth
-              margin="dense"
-              label={field.charAt(0).toUpperCase() + field.slice(1)}
-              value={editData[field]}
-              onChange={(e) => setEditData({ ...editData, [field]: e.target.value })}
-            />
-          ))}
+          <TextField fullWidth margin="dense" label="Name" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} />
+          <TextField fullWidth margin="dense" label="Email" value={editData.email} disabled />
+          <TextField fullWidth margin="dense" label="Phone" value={editData.phone} onChange={(e) => setEditData({ ...editData, phone: e.target.value })} />
+          <TextField fullWidth margin="dense" label="Address" value={editData.address} onChange={(e) => setEditData({ ...editData, address: e.target.value })} />
+          <TextField fullWidth margin="dense" label="Designation" value={editData.designation} onChange={(e) => setEditData({ ...editData, designation: e.target.value })} />
         </DialogContent>
         <DialogActions>
           <CustomButton onClick={handleSave} variant="contained" color="primary" startIcon={<SaveIcon />}>Save</CustomButton>
@@ -171,6 +167,7 @@ const Profile = () => {
                   </IconButton>
                 </InputAdornment>
               }
+              label="Current Password"
             />
           </FormControl>
           <FormControl fullWidth margin="dense">
@@ -187,6 +184,7 @@ const Profile = () => {
                   </IconButton>
                 </InputAdornment>
               }
+              label="New Password"
             />
           </FormControl>
           <FormControl fullWidth margin="dense">
@@ -203,6 +201,7 @@ const Profile = () => {
                   </IconButton>
                 </InputAdornment>
               }
+              label="Confirm New Password"
             />
           </FormControl>
         </DialogContent>
