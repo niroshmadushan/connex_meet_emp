@@ -19,11 +19,18 @@ import {
   TableBody,
   TableCell,
   TableRow,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import LockIcon from '@mui/icons-material/Lock';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { styled } from '@mui/system';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -36,7 +43,14 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openEdit, setOpenEdit] = useState(false);
+  const [openPassword, setOpenPassword] = useState(false); // State for the password dialog
   const [editData, setEditData] = useState(null);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   // Fetch profile data when the component mounts
   useEffect(() => {
@@ -89,6 +103,27 @@ const Profile = () => {
   const handleCancel = () => {
     setEditData({ ...userData });
     setOpenEdit(false);
+  };
+
+  const handlePasswordChange = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert("New passwords do not match!");
+      return;
+    }
+    // Add your API call for changing the password here
+    alert("Password changed successfully!");
+    setOpenPassword(false);
+  };
+
+  const handlePasswordFieldChange = (e) => {
+    setPasswordData({
+      ...passwordData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const toggleShowPassword = () => {
+    setShowPassword((prev) => !prev);
   };
 
   if (loading) {
@@ -151,7 +186,7 @@ const Profile = () => {
           <Button
             variant="outlined"
             color="primary"
-            onClick={() => setOpenPassword(true)}
+            onClick={() => setOpenPassword(true)} // Open the password dialog
             startIcon={<LockIcon />}
           >
             Change Password
@@ -214,6 +249,87 @@ const Profile = () => {
             Save
           </Button>
           <Button onClick={handleCancel} variant="outlined" color="secondary" startIcon={<CancelIcon />}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog open={openPassword} onClose={() => setOpenPassword(false)}>
+        <DialogTitle>Change Password</DialogTitle>
+        <DialogContent>
+          <FormControl variant="outlined" fullWidth margin="dense">
+            <InputLabel htmlFor="currentPassword">Current Password</InputLabel>
+            <OutlinedInput
+              id="currentPassword"
+              name="currentPassword"
+              type={showPassword ? 'text' : 'password'}
+              value={passwordData.currentPassword}
+              onChange={handlePasswordFieldChange}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={toggleShowPassword}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="Current Password"
+            />
+          </FormControl>
+          <FormControl variant="outlined" fullWidth margin="dense">
+            <InputLabel htmlFor="newPassword">New Password</InputLabel>
+            <OutlinedInput
+              id="newPassword"
+              name="newPassword"
+              type={showPassword ? 'text' : 'password'}
+              value={passwordData.newPassword}
+              onChange={handlePasswordFieldChange}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={toggleShowPassword}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="New Password"
+            />
+          </FormControl>
+          <FormControl variant="outlined" fullWidth margin="dense">
+            <InputLabel htmlFor="confirmPassword">Confirm New Password</InputLabel>
+            <OutlinedInput
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showPassword ? 'text' : 'password'}
+              value={passwordData.confirmPassword}
+              onChange={handlePasswordFieldChange}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={toggleShowPassword}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="Confirm New Password"
+            />
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handlePasswordChange} variant="contained" color="primary">
+            Change Password
+          </Button>
+          <Button onClick={() => setOpenPassword(false)} variant="outlined" color="secondary">
             Cancel
           </Button>
         </DialogActions>
