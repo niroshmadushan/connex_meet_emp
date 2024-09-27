@@ -19,20 +19,12 @@ import {
   TableBody,
   TableCell,
   TableRow,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  InputAdornment,
-  IconButton,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import LockIcon from '@mui/icons-material/Lock';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { styled } from '@mui/system';
-import { Buffer } from 'buffer'; // Import Buffer
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: '20px',
@@ -44,20 +36,13 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openEdit, setOpenEdit] = useState(false);
-  const [openPassword, setOpenPassword] = useState(false); // State for the password dialog
   const [editData, setEditData] = useState(null);
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   // Fetch profile data when the component mounts
   useEffect(() => {
     const fetchProfileData = async () => {
-      const profileId = localStorage.getItem('id'); // Assuming profileId is stored in localStorage as 'id'
-      const apiLink = 'http://192.168.13.150:3001/profile'; // Replace with your API link
+      const profileId = localStorage.getItem('id');
+      const apiLink = 'http://192.168.13.150:300/profile';
 
       try {
         const response = await axios.get(`${apiLink}/${profileId}`, {
@@ -66,14 +51,13 @@ const Profile = () => {
 
         // Convert Buffer image to Base64
         const imageBuffer = response.data.image.data;
-        const imageBase64 = Buffer.from(imageBuffer).toString('base64'); // Use Buffer from the 'buffer' package
+        const imageBase64 = Buffer.from(imageBuffer).toString('base64');
         response.data.image = `data:image/jpeg;base64,${imageBase64}`; // Set the Base64 image string
 
         setUserData(response.data);
         setEditData(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching profile data:', err.response || err); // Log the error response
         setError('Failed to fetch profile data');
         setLoading(false);
       }
@@ -89,7 +73,7 @@ const Profile = () => {
 
   const handleSave = async () => {
     const profileId = localStorage.getItem('id');
-    const apiLink = 'http://192.168.13.150:3001/profile'; // Replace with your API link
+    const apiLink = 'http://192.168.13.150:3001/profile';
 
     try {
       await axios.put(`${apiLink}/${profileId}`, editData, {
@@ -98,7 +82,6 @@ const Profile = () => {
       setUserData(editData);
       setOpenEdit(false);
     } catch (error) {
-      console.error('Failed to update profile:', error); // Log the error
       setError('Failed to update profile');
     }
   };
@@ -106,27 +89,6 @@ const Profile = () => {
   const handleCancel = () => {
     setEditData({ ...userData });
     setOpenEdit(false);
-  };
-
-  const handlePasswordChange = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("New passwords do not match!");
-      return;
-    }
-    // Add your API call for changing the password here
-    alert("Password changed successfully!");
-    setOpenPassword(false);
-  };
-
-  const handlePasswordFieldChange = (e) => {
-    setPasswordData({
-      ...passwordData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const toggleShowPassword = () => {
-    setShowPassword((prev) => !prev);
   };
 
   if (loading) {
@@ -189,7 +151,7 @@ const Profile = () => {
           <Button
             variant="outlined"
             color="primary"
-            onClick={() => setOpenPassword(true)} // Open the password dialog
+            onClick={() => setOpenPassword(true)}
             startIcon={<LockIcon />}
           >
             Change Password
@@ -252,87 +214,6 @@ const Profile = () => {
             Save
           </Button>
           <Button onClick={handleCancel} variant="outlined" color="secondary" startIcon={<CancelIcon />}>
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Change Password Dialog */}
-      <Dialog open={openPassword} onClose={() => setOpenPassword(false)}>
-        <DialogTitle>Change Password</DialogTitle>
-        <DialogContent>
-          <FormControl variant="outlined" fullWidth margin="dense">
-            <InputLabel htmlFor="currentPassword">Current Password</InputLabel>
-            <OutlinedInput
-              id="currentPassword"
-              name="currentPassword"
-              type={showPassword ? 'text' : 'password'}
-              value={passwordData.currentPassword}
-              onChange={handlePasswordFieldChange}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={toggleShowPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-              label="Current Password"
-            />
-          </FormControl>
-          <FormControl variant="outlined" fullWidth margin="dense">
-            <InputLabel htmlFor="newPassword">New Password</InputLabel>
-            <OutlinedInput
-              id="newPassword"
-              name="newPassword"
-              type={showPassword ? 'text' : 'password'}
-              value={passwordData.newPassword}
-              onChange={handlePasswordFieldChange}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={toggleShowPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-              label="New Password"
-            />
-          </FormControl>
-          <FormControl variant="outlined" fullWidth margin="dense">
-            <InputLabel htmlFor="confirmPassword">Confirm New Password</InputLabel>
-            <OutlinedInput
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showPassword ? 'text' : 'password'}
-              value={passwordData.confirmPassword}
-              onChange={handlePasswordFieldChange}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={toggleShowPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-              label="Confirm New Password"
-            />
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handlePasswordChange} variant="contained" color="primary">
-            Change Password
-          </Button>
-          <Button onClick={() => setOpenPassword(false)} variant="outlined" color="secondary">
             Cancel
           </Button>
         </DialogActions>
