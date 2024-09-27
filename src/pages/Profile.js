@@ -82,7 +82,7 @@ const Profile = () => {
       return;
     }
     try {
-      const response = await axios.post('http://192.168.13.150:3001/updatePassword', {
+      const response = await axios.post('http://192.168.13.150:3001/password', {
         id: userData.id,
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
