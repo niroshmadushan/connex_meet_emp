@@ -87,7 +87,7 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post('http://192.168.13.150:3001/login', { email, password });
+      const response = await axios.post('http://192.168.13.150:3001/login', { email, password }, {withCredentials: true});
       if (response.status === 200) {
         const token = response.data.token;
         const id= response.data.id;
