@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -14,17 +14,37 @@ import Register from './pages/RegistrationPage';
 import Layout from './pages/Layout';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { AuthProvider, AuthContext } from './pages/AuthContext'; // Make sure this import is correct
+import { AuthProvider, AuthContext } from './pages/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 
 const AppContent = () => {
-  const { isAuthenticated } = useContext(AuthContext); // Use the context
+  const { isAuthenticated } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate a loading delay
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000); // Delay of 5 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    // Display loading screen
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Routes>
-      {/* Redirect if authenticated */}
       {isAuthenticated && (
-        <Route path="connex_meet_emp/" element={<Navigate replace to="/connex_meet_emp/dash" />} />
+        <Route path="*" element={<Navigate replace to="/connex_meet_emp/dash" />} />
       )}
 
       {/* Public routes */}
