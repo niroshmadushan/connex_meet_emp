@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import profilePic from '../img/prof.jpg'; // Fallback profile picture
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import {
   Box, Avatar, Typography, TextField, Button, Grid, Container, Paper,
   Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress,
@@ -19,6 +20,15 @@ import { Buffer } from 'buffer';
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: '20px',
   marginBottom: '20px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+}));
+
+const CenteredAvatar = styled(Avatar)(({ theme }) => ({
+  width: 100,
+  height: 100,
+  marginBottom: '10px',
 }));
 
 const Profile = () => {
@@ -37,7 +47,7 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      const profileId = localStorage.getItem('id'); // Assuming profileId is stored in localStorage
+      const profileId = localStorage.getItem('id'); 
       const apiLink = 'http://192.168.13.150:3001/profile';
 
       try {
@@ -56,29 +66,27 @@ const Profile = () => {
     fetchProfileData();
   }, []);
 
-  const handleEdit = () => {
-    setOpenEdit(true);
-  };
-
+  const handleEdit = () => setOpenEdit(true);
   const handleSave = async () => {
     try {
-      const apiLink = 'http://192.168.13.150:3001/profile'; // Endpoint for updating profile
+      const apiLink = 'http://192.168.13.150:3001/profile';
       await axios.put(apiLink, editData, { withCredentials: true });
       setUserData(editData);
       setOpenEdit(false);
+      Swal.fire('Success!', 'Profile updated successfully!', 'success');
     } catch (error) {
-      setError('Failed to update profile');
+      Swal.fire('Error!', 'Failed to update profile.', 'error');
     }
   };
 
   const handleCancel = () => {
     setOpenEdit(false);
-    setEditData(userData); // Reset the editData to the original userData on cancel
+    setEditData(userData); 
   };
 
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("New passwords do not match!");
+      Swal.fire('Error!', 'New passwords do not match!', 'error');
       return;
     }
     try {
@@ -88,20 +96,14 @@ const Profile = () => {
         newPassword: passwordData.newPassword,
       }, { withCredentials: true });
 
-      alert(response.data.message);
+      Swal.fire('Success!', response.data.message, 'success');
       setOpenPassword(false);
     } catch (error) {
-      alert("Failed to update password: " + error.response.data.message);
+      Swal.fire('Error!', error.response.data.message, 'error');
     }
   };
 
-  const toggleShowPassword = () => {
-    setShowPassword(prev => !prev);
-  };
-
-  const handlePasswordDataChange = (prop) => (event) => {
-    setPasswordData({ ...passwordData, [prop]: event.target.value });
-  };
+  const toggleShowPassword = () => setShowPassword(prev => !prev);
 
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
@@ -109,22 +111,16 @@ const Profile = () => {
   return (
     <Container sx={{ mt: 4 }}>
       <StyledPaper>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={4}>
-            <Avatar alt={userData.name} src={userData.image || profilePic} sx={{ width: 100, height: 100, marginRight: '10px' }} />
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{userData.name}</Typography>
-          </Grid>
-          <Grid item xs={12} sm={8}>
-            <Table>
-              <TableBody>
-                <TableRow><TableCell align="right"><strong>Email:</strong></TableCell><TableCell>{userData.email}</TableCell></TableRow>
-                <TableRow><TableCell align="right"><strong>Phone:</strong></TableCell><TableCell>{userData.phone}</TableCell></TableRow>
-                <TableRow><TableCell align="right"><strong>Address:</strong></TableCell><TableCell>{userData.address}</TableCell></TableRow>
-                <TableRow><TableCell align="right"><strong>Designation:</strong></TableCell><TableCell>{userData.designation}</TableCell></TableRow>
-              </TableBody>
-            </Table>
-          </Grid>
-        </Grid>
+        <CenteredAvatar alt={userData.name} src={userData.image || profilePic} />
+        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>{userData.name}</Typography>
+        <Table>
+          <TableBody>
+            <TableRow><TableCell align="right"><strong>Email:</strong></TableCell><TableCell>{userData.email}</TableCell></TableRow>
+            <TableRow><TableCell align="right"><strong>Phone:</strong></TableCell><TableCell>{userData.phone}</TableCell></TableRow>
+            <TableRow><TableCell align="right"><strong>Address:</strong></TableCell><TableCell>{userData.address}</TableCell></TableRow>
+            <TableRow><TableCell align="right"><strong>Designation:</strong></TableCell><TableCell>{userData.designation}</TableCell></TableRow>
+          </TableBody>
+        </Table>
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
           <Button variant="contained" color="primary" onClick={handleEdit} startIcon={<EditIcon />}>Edit Profile</Button>
           <Button variant="outlined" color="primary" onClick={() => setOpenPassword(true)} startIcon={<LockIcon />}>Change Password</Button>
@@ -135,11 +131,16 @@ const Profile = () => {
       <Dialog open={openEdit} onClose={handleCancel}>
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent>
-          <TextField fullWidth margin="dense" label="Name" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} />
-          <TextField fullWidth margin="dense" label="Email" value={editData.email} onChange={(e) => setEditData({ ...editData, email: e.target.value })} />
-          <TextField fullWidth margin="dense" label="Phone" value={editData.phone} onChange={(e) => setEditData({ ...editData, phone: e.target.value })} />
-          <TextField fullWidth margin="dense" label="Address" value={editData.address} onChange={(e) => setEditData({ ...editData, address: e.target.value })} />
-          <TextField fullWidth margin="dense" label="Designation" value={editData.designation} onChange={(e) => setEditData({ ...editData, designation: e.target.value })} />
+          {['name', 'email', 'phone', 'address', 'designation'].map(field => (
+            <TextField
+              key={field}
+              fullWidth
+              margin="dense"
+              label={field.charAt(0).toUpperCase() + field.slice(1)}
+              value={editData[field]}
+              onChange={(e) => setEditData({ ...editData, [field]: e.target.value })}
+            />
+          ))}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleSave} variant="contained" color="primary" startIcon={<SaveIcon />}>Save</Button>
@@ -155,66 +156,48 @@ const Profile = () => {
             <InputLabel htmlFor="currentPassword">Current Password</InputLabel>
             <OutlinedInput
               id="currentPassword"
-              name="currentPassword"
               type={showPassword ? 'text' : 'password'}
               value={passwordData.currentPassword}
-              onChange={handlePasswordDataChange('currentPassword')}
+              onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
               endAdornment={
                 <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={toggleShowPassword}
-                    edge="end"
-                  >
+                  <IconButton aria-label="toggle password visibility" onClick={toggleShowPassword} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
               }
-              label="Current Password"
             />
           </FormControl>
           <FormControl fullWidth margin="dense">
             <InputLabel htmlFor="newPassword">New Password</InputLabel>
             <OutlinedInput
               id="newPassword"
-              name="newPassword"
               type={showPassword ? 'text' : 'password'}
               value={passwordData.newPassword}
-              onChange={handlePasswordDataChange('newPassword')}
+              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
               endAdornment={
                 <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={toggleShowPassword}
-                    edge="end"
-                  >
+                  <IconButton aria-label="toggle password visibility" onClick={toggleShowPassword} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
               }
-              label="New Password"
             />
           </FormControl>
           <FormControl fullWidth margin="dense">
-            <InputLabel htmlFor="confirmPassword">Confirm New Password</InputLabel>
+            <InputLabel htmlFor="confirmPassword">Confirm New Password</InputLabel
             <OutlinedInput
               id="confirmPassword"
-              name="confirmPassword"
               type={showPassword ? 'text' : 'password'}
               value={passwordData.confirmPassword}
-              onChange={handlePasswordDataChange('confirmPassword')}
+              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
               endAdornment={
                 <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={toggleShowPassword}
-                    edge="end"
-                  >
+                  <IconButton aria-label="toggle password visibility" onClick={toggleShowPassword} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
               }
-              label="Confirm New Password"
             />
           </FormControl>
         </DialogContent>
