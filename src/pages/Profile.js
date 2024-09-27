@@ -32,7 +32,6 @@ import LockIcon from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { styled } from '@mui/system';
-import { Buffer } from 'buffer'; // Import Buffer
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: '20px',
@@ -56,8 +55,8 @@ const Profile = () => {
   // Fetch profile data when the component mounts
   useEffect(() => {
     const fetchProfileData = async () => {
-      const profileId = localStorage.getItem('id'); // Assuming profileId is stored in localStorage as 'id'
-      const apiLink = 'http://192.168.13.150:3001/profile'; // Replace with your API link
+      const profileId = localStorage.getItem('id');
+      const apiLink = 'http://192.168.13.150:300/profile';
 
       try {
         const response = await axios.get(`${apiLink}/${profileId}`, {
@@ -66,14 +65,13 @@ const Profile = () => {
 
         // Convert Buffer image to Base64
         const imageBuffer = response.data.image.data;
-        const imageBase64 = Buffer.from(imageBuffer).toString('base64'); // Use Buffer from the 'buffer' package
+        const imageBase64 = Buffer.from(imageBuffer).toString('base64');
         response.data.image = `data:image/jpeg;base64,${imageBase64}`; // Set the Base64 image string
 
         setUserData(response.data);
         setEditData(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching profile data:', err.response || err); // Log the error response
         setError('Failed to fetch profile data');
         setLoading(false);
       }
@@ -89,7 +87,7 @@ const Profile = () => {
 
   const handleSave = async () => {
     const profileId = localStorage.getItem('id');
-    const apiLink = 'http://192.168.13.150:3001/profile'; // Replace with your API link
+    const apiLink = 'http://192.168.13.150:3001/profile';
 
     try {
       await axios.put(`${apiLink}/${profileId}`, editData, {
@@ -98,7 +96,6 @@ const Profile = () => {
       setUserData(editData);
       setOpenEdit(false);
     } catch (error) {
-      console.error('Failed to update profile:', error); // Log the error
       setError('Failed to update profile');
     }
   };
