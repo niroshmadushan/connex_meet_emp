@@ -26,7 +26,14 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openEdit, setOpenEdit] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const [openPassword, setOpenPassword] = useState(false);
+  const [editData, setEditData] = useState({});
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -69,6 +76,23 @@ const Profile = () => {
     setEditData(userData); // Reset the editData to the original userData on cancel
   };
 
+  const handlePasswordChange = () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert("New passwords do not match!");
+      return;
+    }
+    alert("Password changed successfully!");
+    setOpenPassword(false);
+  };
+
+  const handleChange = (prop) => (event) => {
+    setPasswordData({ ...passwordData, [prop]: event.target.value });
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
 
@@ -93,6 +117,7 @@ const Profile = () => {
         </Grid>
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
           <Button variant="contained" color="primary" onClick={handleEdit} startIcon={<EditIcon />}>Edit Profile</Button>
+          <Button variant="outlined" color="primary" onClick={() => setOpenPassword(true)} startIcon={<LockIcon />}>Change Password</Button>
         </Box>
       </StyledPaper>
 
@@ -108,6 +133,79 @@ const Profile = () => {
         <DialogActions>
           <Button onClick={handleSave} variant="contained" color="primary" startIcon={<SaveIcon />}>Save</Button>
           <Button onClick={handleCancel} variant="outlined" color="secondary" startIcon={<CancelIcon />}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openPassword} onClose={() => setOpenPassword(false)}>
+        <DialogTitle>Change Password</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth variant="outlined" margin="dense">
+            <InputLabel htmlFor="currentPassword">Current Password</InputLabel>
+            <OutlinedInput
+              id="currentPassword"
+              type={showPassword ? 'text' : 'password'}
+              value={passwordData.currentPassword}
+              onChange={handleChange('currentPassword')}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={togglePasswordVisibility}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="Current Password"
+            />
+          </FormControl>
+          <FormControl fullWidth variant="outlined" margin="dense">
+            <InputLabel htmlFor="newPassword">New Password</InputLabel>
+            <OutlinedInput
+              id="newPassword"
+              type={showPassword ? 'text' : 'password'}
+              value={passwordData.newPassword}
+              onChange={handleChange('newPassword')}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={togglePasswordVisibility}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="New Password"
+            />
+          </FormControl>
+          <FormControl fullWidth variant="outlined" margin="dense">
+            <InputLabel htmlFor="confirmPassword">Confirm New Password</InputLabel>
+            <OutlinedInput
+              id="confirmPassword"
+              type={showPassword ? 'text' : 'password'}
+              value={passwordData.confirmPassword}
+              onChange={handleChange('confirmPassword')}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={togglePasswordVisibility}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="Confirm New Password"
+            />
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handlePasswordChange} variant="contained" color="primary">Change Password</Button>
+          <Button onClick={() => setOpenPassword(false)} variant="outlined" color="secondary">Cancel</Button>
         </DialogActions>
       </Dialog>
     </Container>
