@@ -27,7 +27,7 @@ const Profile = () => {
   const [error, setError] = useState('');
   const [openEdit, setOpenEdit] = useState(false);
   const [openPassword, setOpenPassword] = useState(false);
-  const [editData, setEditData] = useState({});
+  const [editData, setEditData] = useState(null);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -76,21 +76,31 @@ const Profile = () => {
     setEditData(userData); // Reset the editData to the original userData on cancel
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert("New passwords do not match!");
       return;
     }
-    alert("Password changed successfully!");
-    setOpenPassword(false);
+    try {
+      const response = await axios.post('http://192.168.13.150:3001/updatePassword', {
+        id: userData.id,
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      }, { withCredentials: true });
+
+      alert(response.data.message);
+      setOpenPassword(false);
+    } catch (error) {
+      alert("Failed to update password: " + error.response.data.message);
+    }
   };
 
-  const handleChange = (prop) => (event) => {
+  const toggleShowPassword = () => {
+    setShowPassword(prev => !prev);
+  };
+
+  const handlePasswordDataChange = (prop) => (event) => {
     setPasswordData({ ...passwordData, [prop]: event.target.value });
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
   };
 
   if (loading) return <CircularProgress />;
@@ -121,6 +131,7 @@ const Profile = () => {
         </Box>
       </StyledPaper>
 
+      {/* Edit Profile Dialog */}
       <Dialog open={openEdit} onClose={handleCancel}>
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent>
@@ -136,21 +147,23 @@ const Profile = () => {
         </DialogActions>
       </Dialog>
 
+      {/* Change Password Dialog */}
       <Dialog open={openPassword} onClose={() => setOpenPassword(false)}>
         <DialogTitle>Change Password</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth variant="outlined" margin="dense">
+          <FormControl fullWidth margin="dense">
             <InputLabel htmlFor="currentPassword">Current Password</InputLabel>
             <OutlinedInput
               id="currentPassword"
+              name="currentPassword"
               type={showPassword ? 'text' : 'password'}
               value={passwordData.currentPassword}
-              onChange={handleChange('currentPassword')}
+              onChange={handlePasswordDataChange('currentPassword')}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
                     aria-label="toggle password visibility"
-                    onClick={togglePasswordVisibility}
+                    onClick={toggleShowPassword}
                     edge="end"
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -160,18 +173,19 @@ const Profile = () => {
               label="Current Password"
             />
           </FormControl>
-          <FormControl fullWidth variant="outlined" margin="dense">
+          <FormControl fullWidth margin="dense">
             <InputLabel htmlFor="newPassword">New Password</InputLabel>
             <OutlinedInput
               id="newPassword"
+              name="newPassword"
               type={showPassword ? 'text' : 'password'}
               value={passwordData.newPassword}
-              onChange={handleChange('newPassword')}
+              onChange={handlePasswordDataChange('newPassword')}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
                     aria-label="toggle password visibility"
-                    onClick={togglePasswordVisibility}
+                    onClick={toggleShowPassword}
                     edge="end"
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -181,18 +195,19 @@ const Profile = () => {
               label="New Password"
             />
           </FormControl>
-          <FormControl fullWidth variant="outlined" margin="dense">
+          <FormControl fullWidth margin="dense">
             <InputLabel htmlFor="confirmPassword">Confirm New Password</InputLabel>
             <OutlinedInput
               id="confirmPassword"
+              name="confirmPassword"
               type={showPassword ? 'text' : 'password'}
               value={passwordData.confirmPassword}
-              onChange={handleChange('confirmPassword')}
+              onChange={handlePasswordDataChange('confirmPassword')}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
                     aria-label="toggle password visibility"
-                    onClick={togglePasswordVisibility}
+                    onClick={toggleShowPassword}
                     edge="end"
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
