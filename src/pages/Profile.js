@@ -25,10 +25,14 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   alignItems: 'center',
 }));
 
-const CenteredAvatar = styled(Avatar)(({ theme }) => ({
-  width: 100,
-  height: 100,
-  marginBottom: '10px',
+const CustomButton = styled(Button)(({ theme }) => ({
+  fontSize: '0.875rem',
+  padding: '6px 16px',
+  transition: 'transform 0.3s ease',
+  '&:hover': {
+    backgroundColor: '#005bb5',
+    transform: 'scale(1.05)'
+  }
 }));
 
 const Profile = () => {
@@ -47,7 +51,7 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      const profileId = localStorage.getItem('id'); 
+      const profileId = localStorage.getItem('id');
       const apiLink = 'http://192.168.13.150:3001/profile';
 
       try {
@@ -58,13 +62,18 @@ const Profile = () => {
         setEditData(response.data);
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch profile data');
-        setLoading(false);
+        handleDialogClose();
+        Swal.fire('Error!', 'Failed to fetch profile data.', 'error');
       }
     };
 
     fetchProfileData();
   }, []);
+
+  const handleDialogClose = () => {
+    setOpenEdit(false);
+    setOpenPassword(false);
+  };
 
   const handleEdit = () => setOpenEdit(true);
   const handleSave = async () => {
@@ -75,13 +84,9 @@ const Profile = () => {
       setOpenEdit(false);
       Swal.fire('Success!', 'Profile updated successfully!', 'success');
     } catch (error) {
+      handleDialogClose();
       Swal.fire('Error!', 'Failed to update profile.', 'error');
     }
-  };
-
-  const handleCancel = () => {
-    setOpenEdit(false);
-    setEditData(userData); 
   };
 
   const handlePasswordChange = async () => {
@@ -99,6 +104,7 @@ const Profile = () => {
       Swal.fire('Success!', response.data.message, 'success');
       setOpenPassword(false);
     } catch (error) {
+      handleDialogClose();
       Swal.fire('Error!', error.response.data.message, 'error');
     }
   };
@@ -111,7 +117,7 @@ const Profile = () => {
   return (
     <Container sx={{ mt: 4 }}>
       <StyledPaper>
-        <CenteredAvatar alt={userData.name} src={userData.image || profilePic} />
+        <Avatar alt={userData.name} src={userData.image || profilePic} sx={{ width: 100, height: 100, marginBottom: '10px' }} />
         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>{userData.name}</Typography>
         <Table>
           <TableBody>
@@ -122,13 +128,13 @@ const Profile = () => {
           </TableBody>
         </Table>
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
-          <Button variant="contained" color="primary" onClick={handleEdit} startIcon={<EditIcon />}>Edit Profile</Button>
-          <Button variant="outlined" color="primary" onClick={() => setOpenPassword(true)} startIcon={<LockIcon />}>Change Password</Button>
+          <CustomButton variant="contained" color="primary" onClick={handleEdit} startIcon={<EditIcon />}>Edit Profile</CustomButton>
+          <CustomButton variant="outlined" color="primary" onClick={() => setOpenPassword(true)} startIcon={<LockIcon />}>Change Password</CustomButton>
         </Box>
       </StyledPaper>
 
-      {/* Edit Profile Dialog */}
-      <Dialog open={openEdit} onClose={handleCancel}>
+      {/* Dialogs for Editing and Changing Password */}
+      <Dialog open={openEdit} onClose={handleDialogClose}>
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent>
           {['name', 'email', 'phone', 'address', 'designation'].map(field => (
@@ -143,13 +149,12 @@ const Profile = () => {
           ))}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSave} variant="contained" color="primary" startIcon={<SaveIcon />}>Save</Button>
-          <Button onClick={handleCancel} variant="outlined" color="secondary" startIcon={<CancelIcon />}>Cancel</Button>
+          <CustomButton onClick={handleSave} variant="contained" color="primary" startIcon={<SaveIcon />}>Save</CustomButton>
+          <CustomButton onClick={handleDialogClose} variant="outlined" color="secondary" startIcon={<CancelIcon />}>Cancel</CustomButton>
         </DialogActions>
       </Dialog>
 
-      {/* Change Password Dialog */}
-      <Dialog open={openPassword} onClose={() => setOpenPassword(false)}>
+      <Dialog open={openPassword} onClose={handleDialogClose}>
         <DialogTitle>Change Password</DialogTitle>
         <DialogContent>
           <FormControl fullWidth margin="dense">
@@ -202,8 +207,8 @@ const Profile = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handlePasswordChange} variant="contained" color="primary">Change Password</Button>
-          <Button onClick={() => setOpenPassword(false)} variant="outlined" color="secondary">Cancel</Button>
+          <CustomButton onClick={handlePasswordChange} variant="contained" color="primary">Change Password</CustomButton>
+          <CustomButton onClick={() => setOpenPassword(false)} variant="outlined" color="secondary">Cancel</CustomButton>
         </DialogActions>
       </Dialog>
     </Container>
