@@ -24,7 +24,7 @@ const AppContent = () => {
     <Routes>
       {/* Redirect if authenticated */}
       {isAuthenticated && (
-        <Route path="/" element={<Navigate replace to="/connex_meet_emp/dash" />} />
+        <Route path="connex_meet_emp/" element={<Navigate replace to="/connex_meet_emp/dash" />} />
       )}
 
       {/* Public routes */}
