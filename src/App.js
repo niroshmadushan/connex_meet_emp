@@ -14,8 +14,8 @@ import Register from './pages/RegistrationPage';
 import Layout from './pages/Layout';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { AuthProvider, AuthContext } from './pages/AuthContext';
-import PrivateRoute from './components/PrivateRoute';
+import { AuthProvider, AuthContext } from './pages/AuthContext'; // Make sure the path is correct
+import PrivateRoute from './components/PrivateRoute'; // Make sure the path is correct
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 
@@ -24,16 +24,17 @@ const AppContent = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate a loading delay
-    const timer = setTimeout(() => {
+    // Only show the loading screen if authenticated, for a delay before redirection
+    if (isAuthenticated) {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 5000); // 5 seconds loading screen
+    } else {
       setIsLoading(false);
-    }, 5000); // Delay of 5 seconds
-
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
-    // Display loading screen
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
         <CircularProgress />
@@ -43,21 +44,21 @@ const AppContent = () => {
 
   return (
     <Routes>
-      {isAuthenticated && (
+      {/* Redirect if authenticated and loading is done */}
+      {isAuthenticated ? (
         <Route path="*" element={<Navigate replace to="/connex_meet_emp/dash" />} />
+      ) : (
+        <>
+          <Route path="/connex_meet_emp/" element={<Login />} />
+          <Route path="/connex_meet_emp/reg" element={<Register />} />
+          <Route path="/connex_meet_emp/dash" element={<PrivateRoute><Layout><HomeDashboard /></Layout></PrivateRoute>} />
+          <Route path="/connex_meet_emp/eventspage" element={<PrivateRoute><Layout><Home /></Layout></PrivateRoute>} />
+          <Route path="/connex_meet_emp/meeting-rooms" element={<PrivateRoute><Layout><MeetingRooms /></Layout></PrivateRoute>} />
+          <Route path="/connex_meet_emp/addmeeting" element={<PrivateRoute><Layout><AddMeetingSession /></Layout></PrivateRoute>} />
+          <Route path="/connex_meet_emp/addInternalMeeting" element={<PrivateRoute><Layout><AddMeetingInternal /></Layout></PrivateRoute>} />
+          <Route path="/connex_meet_emp/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
+        </>
       )}
-
-      {/* Public routes */}
-      <Route path="/connex_meet_emp/" element={<Login />} />
-      <Route path="/connex_meet_emp/reg" element={<Register />} />
-
-      {/* Protected routes */}
-      <Route path="/connex_meet_emp/dash" element={<PrivateRoute><Layout><HomeDashboard /></Layout></PrivateRoute>} />
-      <Route path="/connex_meet_emp/eventspage" element={<PrivateRoute><Layout><Home /></Layout></PrivateRoute>} />
-      <Route path="/connex_meet_emp/meeting-rooms" element={<PrivateRoute><Layout><MeetingRooms /></Layout></PrivateRoute>} />
-      <Route path="/connex_meet_emp/addmeeting" element={<PrivateRoute><Layout><AddMeetingSession /></Layout></PrivateRoute>} />
-      <Route path="/connex_meet_emp/addInternalMeeting" element={<PrivateRoute><Layout><AddMeetingInternal /></Layout></PrivateRoute>} />
-      <Route path="/connex_meet_emp/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
     </Routes>
   );
 };
