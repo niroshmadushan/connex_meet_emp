@@ -56,7 +56,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       const profileId = localStorage.getItem('id');
-      const apiLink = 'http://192.168.13.150:300/profile';
+      const apiLink = 'http://192.168.13.150:3001/profile';
 
       try {
         const response = await axios.get(`${apiLink}/${profileId}`, {
