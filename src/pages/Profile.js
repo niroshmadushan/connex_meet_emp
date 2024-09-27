@@ -185,7 +185,7 @@ const Profile = () => {
             />
           </FormControl>
           <FormControl fullWidth margin="dense">
-            <InputLabel htmlFor="confirmPassword">Confirm New Password</InputLabel
+            <InputLabel htmlFor="confirmPassword">Confirm New Password</InputLabel>
             <OutlinedInput
               id="confirmPassword"
               type={showPassword ? 'text' : 'password'}
