@@ -1,4 +1,3 @@
-// src/pages/MeetingRooms.js
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -76,7 +75,6 @@ const MeetingRooms = () => {
   const [open, setOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
-  // Fetch all rooms and their bookings from the API
   useEffect(() => {
     const fetchRoomsData = async () => {
       try {
@@ -86,7 +84,6 @@ const MeetingRooms = () => {
 
         const roomsData = roomsResponse.data;
 
-        // Fetch bookings for each room
         const bookingsPromises = roomsData.map((room) =>
           axios
             .get(`http://192.168.13.150:3001/bookings/${room.id}`, {
@@ -100,7 +97,6 @@ const MeetingRooms = () => {
         );
         const bookings = await Promise.all(bookingsPromises);
 
-        // Merge room data with bookings, ensuring bookings is always an array
         const roomsWithBookings = roomsData.map((room, index) => ({
           ...room,
           bookings: Array.isArray(bookings[index]) ? bookings[index] : [], // Ensure bookings is an array
