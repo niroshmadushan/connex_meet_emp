@@ -130,6 +130,7 @@ const MeetingRooms = () => {
     const startTime = room.start_time;
     const endTime = room.end_time;
 
+    // Convert time to a comparable number for calculations
     const convertTime = (time) => {
       const [timePart, period] = time.split(' ');
       const [hours, minutes] = timePart.split(':').map(Number);
@@ -166,6 +167,7 @@ const MeetingRooms = () => {
       freeSlots.push({ start: lastEndTime, end: roomEnd });
     }
 
+    // Format the free slots into readable strings
     const formatTime = (time) => {
       const hours = Math.floor(time / 100);
       const minutes = time % 100;
