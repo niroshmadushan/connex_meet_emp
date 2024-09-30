@@ -65,9 +65,9 @@ const AddMeetingSession = () => {
 
   const fetchRoomsAndBookings = async (selectedDate) => {
     try {
-      const roomsResponse = await axios.get(`http://localhost:3001/api/rooms`);
+      const roomsResponse = await axios.get(`http://192.168.13.150:3001/api/rooms`);
       const rooms = roomsResponse.data;
-      const bookingsResponse = await axios.get(`http://localhost:3001/api/bookings?date=${selectedDate}`);
+      const bookingsResponse = await axios.get(`http://192.168.13.150:3001/api/bookings?date=${selectedDate}`);
       const bookings = bookingsResponse.data;
 
       const placesByDate = { [selectedDate]: rooms.map((room) => room.name) };
