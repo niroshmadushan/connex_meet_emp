@@ -364,7 +364,7 @@ const AddMeetingSession = () => {
             )}
 
             {/* Start and End Time Fields */}
-            {formData.startTimeOptions.length > 0 && (
+            {/* {formData.startTimeOptions.length > 0 && ( */}
               <>
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -402,7 +402,7 @@ const AddMeetingSession = () => {
                   </TextField>
                 </Grid>
               </>
-            )}
+            {/* )} */}
 
             {/* Company Name and Employee Name Fields */}
             <Grid item xs={12} sm={6}>
