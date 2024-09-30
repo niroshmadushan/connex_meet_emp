@@ -1,12 +1,11 @@
 // src/pages/MeetingRooms.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Card,
   CardContent,
   Typography,
   Grid,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -19,37 +18,31 @@ import {
   Table,
   TableBody,
   TableRow,
-  TableCell
+  TableCell,
 } from '@mui/material';
 import { styled } from '@mui/system';
+import axios from 'axios';
 
 // Theme colors
 const themeColor = {
-  primary: '#007aff', // iOS-like blue color
-  textPrimary: '#333333', // Primary text color for better contrast
-  cardBg: '#ffffff', // White background for cards
-  availableBg: '#e0f7e9', // Light green background for available rooms
-  unavailableBg: '#f8d7da', // Light red background for unavailable rooms
-  lightGray: '#e0e0e0', // Light gray color for borders
+  primary: '#007aff',
+  textPrimary: '#333333',
+  cardBg: '#ffffff',
+  availableBg: '#e0f7e9',
+  unavailableBg: '#f8d7da',
+  lightGray: '#e0e0e0',
 };
 
-// Sample data for meeting rooms
-const meetingRooms = [
-  { name: 'Conference Room A', available: true, timeSlots: ['10:00 AM - 11:00 AM', '01:00 PM - 02:00 PM'], details: 'Capacity: 10, Projector available' },
-  { name: 'Conference Room B', available: false, timeSlots: [], details: 'Capacity: 20, Whiteboard available' },
-  { name: 'Main Hall', available: true, timeSlots: ['09:00 AM - 10:00 AM', '02:00 PM - 03:00 PM'], details: 'Capacity: 50, Stage available' },
-];
-
-// Custom styled components for cards
+// Custom styled components
 const StyledCard = styled(Card)(({ available }) => ({
   backgroundColor: themeColor.cardBg,
   color: themeColor.textPrimary,
-  marginBottom: '8px', // Reduce margin to make cards closer
-  borderRadius: '12px', // More rounded corners for a premium look
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Soft shadow for a premium look
+  marginBottom: '8px',
+  borderRadius: '12px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
   width: '100%',
-  height:'120px',
-  position: 'relative', // Needed for blinking dot
+  height: '120px',
+  position: 'relative',
   '&:hover': {
     transform: 'scale(1.05)',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -66,8 +59,8 @@ const BlinkingDot = styled(Box)(({ available }) => ({
   width: '10px',
   height: '10px',
   borderRadius: '50%',
-  backgroundColor: available ? '#4caf50' : '#f44336', // Green for available, Red for not available
-  animation: 'blink 1s infinite', // Blinking animation
+  backgroundColor: available ? '#4caf50' : '#f44336',
+  animation: 'blink 1s infinite',
   '@keyframes blink': {
     '0%, 100%': {
       opacity: 1,
@@ -78,21 +71,42 @@ const BlinkingDot = styled(Box)(({ available }) => ({
   },
 }));
 
-const StyledChip = styled(Chip)(({ theme }) => ({
-  marginRight: '2px',
-  width: '100%',
-  marginTop: '5px',
-  backgroundColor: themeColor.primary,
-  color: '#ffffff',
-  fontSize: '0.65rem',
-  '&:hover': {
-    backgroundColor: themeColor.primaryDark,
-  },
-}));
-
 const MeetingRooms = () => {
+  const [rooms, setRooms] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch rooms with credentials
+        const roomsResponse = await axios.get('http://192.168.13.150:3001/place', {
+          withCredentials: true,
+        });
+        const roomsData = roomsResponse.data;
+
+        // Fetch bookings for each room with credentials
+        const bookingsPromises = roomsData.map((room) =>
+          axios.get(`http://192.168.13.150:3001/bookings/${room.id}`, {
+            withCredentials: true,
+          })
+        );
+        const bookingsResponses = await Promise.all(bookingsPromises);
+
+        // Map room data with bookings
+        const roomsWithBookings = roomsData.map((room, index) => ({
+          ...room,
+          bookings: bookingsResponses[index].data,
+        }));
+
+        setRooms(roomsWithBookings);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleCardClick = (room) => {
     setSelectedRoom(room);
@@ -104,33 +118,75 @@ const MeetingRooms = () => {
     setSelectedRoom(null);
   };
 
+  // Function to calculate available time slots for a room
+  const getAvailableTimeSlots = (room) => {
+    const startTime = room.start_time;
+    const endTime = room.end_time;
+
+    // Convert time to a comparable number (e.g., "08:00 AM" -> 800, "05:00 PM" -> 1700)
+    const convertTime = (time) => {
+      const [timePart, period] = time.split(' ');
+      const [hours, minutes] = timePart.split(':').map(Number);
+      const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
+      return adjustedHours * 100 + minutes;
+    };
+
+    const roomStart = convertTime(startTime);
+    const roomEnd = convertTime(endTime);
+
+    // Extract and sort booking times
+    const sortedBookings = room.bookings
+      .map((booking) => ({
+        start: convertTime(booking.start_time),
+        end: convertTime(booking.end_time),
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    const freeSlots = [];
+    let lastEndTime = roomStart;
+
+    sortedBookings.forEach((booking) => {
+      if (lastEndTime < booking.start) {
+        // There's a free slot before the next booking
+        freeSlots.push({ start: lastEndTime, end: booking.start });
+      }
+      lastEndTime = Math.max(lastEndTime, booking.end);
+    });
+
+    // Check if there's a free slot after the last booking
+    if (lastEndTime < roomEnd) {
+      freeSlots.push({ start: lastEndTime, end: roomEnd });
+    }
+
+    // Convert back to readable time
+    const formatTime = (time) => {
+      const hours = Math.floor(time / 100);
+      const minutes = time % 100;
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+      return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
+
+    return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
+  };
+
   return (
     <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: '20px' }}>
       <Typography variant="h6" sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', color: themeColor.textPrimary }}>
         Meeting Rooms
       </Typography>
       <Grid container spacing={2} sx={{ width: '100%', maxWidth: '600px' }}>
-        {meetingRooms.map((room, index) => (
+        {rooms.map((room, index) => (
           <Grid item xs={12} key={index}>
-            <StyledCard available={room.available} onClick={() => handleCardClick(room)}>
-              {/* Blinking dot to indicate availability status */}
-              <BlinkingDot available={room.available} />
+            <StyledCard available={room.status_id === 4} onClick={() => handleCardClick(room)}>
+              <BlinkingDot available={room.status_id === 4} />
               <CardContent sx={{ padding: '10px' }}>
                 <Typography variant="subtitle1" sx={{ mb: 0.5, fontSize: '1rem', fontWeight: 'bold' }}>
                   {room.name}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem', color: themeColor.textPrimary }}>
-                  {room.details}
+                  {room.address}
                 </Typography>
-                {room.available ? (
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
-                    Available
-                  </Typography>
-                ) : (
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
-                    Not Available
-                  </Typography>
-                )}
               </CardContent>
             </StyledCard>
           </Grid>
@@ -138,57 +194,31 @@ const MeetingRooms = () => {
       </Grid>
 
       {/* Popup Dialog for Room Details */}
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        TransitionComponent={Slide}
-        TransitionProps={{ direction: 'up', timeout: 400 }}
-        PaperProps={{
-          style: {
-            borderRadius: '12px',
-            padding: '5px',
-            width: '100%',
-            maxWidth: '600px',
-            boxShadow: '0px 4px 20px rgba(0,0,0,0.1)',
-          },
-        }}
-      >
-        <DialogTitle sx={{ textAlign: 'center', color: themeColor.primary, fontWeight: 'bold' }}>
-          {selectedRoom?.name}
-        </DialogTitle>
+      <Dialog open={open} onClose={handleClose} TransitionComponent={Slide} TransitionProps={{ direction: 'up', timeout: 400 }}>
+        <DialogTitle sx={{ textAlign: 'center', color: themeColor.primary, fontWeight: 'bold' }}>{selectedRoom?.name}</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" sx={{ fontSize: '0.85rem', color: themeColor.textPrimary, mb: 1 }}>
-            {selectedRoom?.details}
+          <Typography variant="body2" sx={{ fontSize: '0.85rem', color: themeColor.textPrimary, mb: 1 }}>{selectedRoom?.address}</Typography>
+          <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
+            Available Time Slots:
           </Typography>
-          {selectedRoom?.available ? (
-            <>
-              <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
-                Available Time Slots:
-              </Typography>
-              <TableContainer component={Paper} sx={{ boxShadow: 'none', marginTop: '10px' }}>
-                <Table size="small" aria-label="available time slots">
-                  <TableBody>
-                    {selectedRoom.timeSlots.map((slot, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell align="center" sx={{ fontSize: '0.75rem', color: themeColor.textPrimary, border: `1px solid ${themeColor.lightGray}` }}>
-                          {slot}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
-          ) : (
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
-              Currently Not Available
-            </Typography>
+          {selectedRoom && (
+            <TableContainer component={Paper} sx={{ boxShadow: 'none', marginTop: '10px' }}>
+              <Table size="small" aria-label="available time slots">
+                <TableBody>
+                  {getAvailableTimeSlots(selectedRoom).map((slot, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell align="center" sx={{ fontSize: '0.75rem', color: themeColor.textPrimary, border: `1px solid ${themeColor.lightGray}` }}>
+                        {slot}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center' }}>
-          <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: themeColor.primary, color: '#fff' }}>
-            Close
-          </Button>
+          <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: themeColor.primary, color: '#fff' }}>Close</Button>
         </DialogActions>
       </Dialog>
     </Container>
