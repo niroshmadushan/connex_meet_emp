@@ -115,7 +115,7 @@ const AddMeetingSession = () => {
   useEffect(() => {
     if (formData.selectedSlot) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const timeOptions = generateTimeOptions(slotStart, slotEnd);
+      const timeOptions = generateTimeOptions(slotStart, slotEnd, 15);
       setFormData((prevData) => ({
         ...prevData,
         startTimeOptions: timeOptions,
@@ -130,16 +130,25 @@ const AddMeetingSession = () => {
   useEffect(() => {
     if (formData.startTime) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const endOptions = generateTimeOptions(formData.startTime, slotEnd);
+      const endOptions = generateTimeOptions(formData.startTime, slotEnd, 15);
       setFormData((prevData) => ({
         ...prevData,
-        endTimeOptions: endOptions.slice(1), // Remove the start time itself
+        endTimeOptions: endOptions.slice(1), // Show times after the selected start time
         endTime: '',
       }));
     }
   }, [formData.startTime]);
 
-  // Generate time options in 15-minute intervals
+  // Convert 12-hour time to 24-hour format
+  const convertTo24Hour = (time12h) => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+    return `${hours}:${minutes}`;
+  };
+
+  // Generate time options based on the selected slot (15-minute intervals)
   const generateTimeOptions = (start, end, step = 15) => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
@@ -154,14 +163,6 @@ const AddMeetingSession = () => {
       startTime.setMinutes(startTime.getMinutes() + step);
     }
     return options;
-  };
-
-  const convertTo24Hour = (time12h) => {
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') hours = '00';
-    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
-    return `${hours}:${minutes}`;
   };
 
   const getAvailableTimeSlots = (room) => {
@@ -222,31 +223,6 @@ const AddMeetingSession = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
-
-  // Handle adding participants to the meeting
-  const handleAddParticipant = () => {
-    if (formData.companyName.trim() && formData.employeeName.trim()) {
-      const newParticipant = {
-        companyName: formData.companyName,
-        employeeName: formData.employeeName,
-      };
-      setFormData((prevData) => ({
-        ...prevData,
-        participantList: [...prevData.participantList, newParticipant],
-        companyName: '',
-        employeeName: '',
-      }));
-    }
-  };
-
-  // Handle deleting participants from the list
-  const handleDeleteParticipant = (index) => {
-    const updatedList = formData.participantList.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      participantList: updatedList,
     });
   };
 
@@ -433,7 +409,7 @@ const AddMeetingSession = () => {
             <Grid item xs={12}>
               <Button
                 variant="contained"
-                onClick={handleAddParticipant}
+                onClick={() => handleAddParticipant()}
                 sx={{
                   backgroundColor: themeColor.primary,
                   color: '#fff',
