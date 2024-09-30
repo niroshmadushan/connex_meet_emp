@@ -1,4 +1,3 @@
-// src/pages/MeetingRooms.js
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -83,7 +82,18 @@ const MeetingRooms = () => {
         const roomsResponse = await axios.get('http://192.168.13.150:3001/place', {
           withCredentials: true,
         });
-        const roomsData = roomsResponse.data;
+
+        // Log the entire response to check its structure
+        console.log('Rooms Response:', roomsResponse);
+
+        // Check if data is in `roomsResponse.data` or nested elsewhere
+        let roomsData = roomsResponse.data;
+
+        // Ensure it's an array before mapping
+        if (!Array.isArray(roomsData)) {
+          console.error('API response is not an array:', roomsData);
+          roomsData = []; // Fallback to empty array
+        }
 
         // Fetch bookings for each room with credentials
         const bookingsPromises = roomsData.map((room) =>
@@ -123,7 +133,6 @@ const MeetingRooms = () => {
     const startTime = room.start_time;
     const endTime = room.end_time;
 
-    // Convert time to a comparable number (e.g., "08:00 AM" -> 800, "05:00 PM" -> 1700)
     const convertTime = (time) => {
       const [timePart, period] = time.split(' ');
       const [hours, minutes] = timePart.split(':').map(Number);
@@ -134,7 +143,6 @@ const MeetingRooms = () => {
     const roomStart = convertTime(startTime);
     const roomEnd = convertTime(endTime);
 
-    // Extract and sort booking times
     const sortedBookings = room.bookings
       .map((booking) => ({
         start: convertTime(booking.start_time),
@@ -147,18 +155,15 @@ const MeetingRooms = () => {
 
     sortedBookings.forEach((booking) => {
       if (lastEndTime < booking.start) {
-        // There's a free slot before the next booking
         freeSlots.push({ start: lastEndTime, end: booking.start });
       }
       lastEndTime = Math.max(lastEndTime, booking.end);
     });
 
-    // Check if there's a free slot after the last booking
     if (lastEndTime < roomEnd) {
       freeSlots.push({ start: lastEndTime, end: roomEnd });
     }
 
-    // Convert back to readable time
     const formatTime = (time) => {
       const hours = Math.floor(time / 100);
       const minutes = time % 100;
