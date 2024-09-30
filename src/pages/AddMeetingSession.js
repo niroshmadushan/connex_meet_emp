@@ -27,13 +27,11 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-// Define Theme Colors
 const themeColor = {
   primary: '#007aff',
   primaryDark: '#005bb5',
 };
 
-// Component Implementation
 const AddMeetingSession = () => {
   const [formData, setFormData] = useState({
     title: '',
@@ -62,37 +60,27 @@ const AddMeetingSession = () => {
       if (!formData.date) return;
 
       try {
-        // Fetch available rooms for the selected date
-        const roomsResponse = await axios.get(`http://192.168.13.150:3001/place`, {
-          withCredentials: true,
-        });
+        const roomsResponse = await axios.get(`http://192.168.13.150:3001/place`, { withCredentials: true });
         const roomsData = roomsResponse.data;
 
-        // Fetch time slots for the selected rooms on the selected date
-        const bookingsResponse = await axios.get(`http://192.168.13.150:3001/bookings`, {
-          withCredentials: true,
-        });
+        const bookingsResponse = await axios.get(`http://192.168.13.150:3001/bookings`, { withCredentials: true });
         const bookingsData = bookingsResponse.data;
 
-        // Parse and update available rooms and slots
         const roomsByDate = roomsData.reduce((acc, room) => {
           if (!acc[formData.date]) acc[formData.date] = [];
           acc[formData.date].push(room.name);
           return acc;
         }, {});
 
-        // Create a map of available time slots based on bookings
         const slotsByRoom = {};
         roomsData.forEach((room) => {
           const roomBookings = bookingsData.filter(
             (booking) => booking.place_id === room.id && booking.date === formData.date
           );
-
           const availableSlots = calculateAvailableTimeSlots(room, roomBookings);
           slotsByRoom[room.name] = availableSlots;
         });
 
-        // Update the form data with fetched room and slot details
         setFormData((prevData) => ({
           ...prevData,
           availableRooms: roomsByDate[formData.date] || [],
@@ -116,7 +104,7 @@ const AddMeetingSession = () => {
     if (formData.selectedRoom) {
       setFormData((prevData) => ({
         ...prevData,
-        availableSlots: availableTimeSlots[formData.selectedRoom] || [],
+        availableSlots: formData.availableSlots || [],
         selectedSlot: '',
         startTime: '',
         endTime: '',
@@ -126,7 +114,6 @@ const AddMeetingSession = () => {
     }
   }, [formData.selectedRoom]);
 
-  // Time option generation based on selected time slots
   useEffect(() => {
     if (formData.selectedSlot) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
@@ -141,7 +128,6 @@ const AddMeetingSession = () => {
     }
   }, [formData.selectedSlot]);
 
-  // Update end time options based on start time selection
   useEffect(() => {
     if (formData.startTime) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
@@ -154,54 +140,91 @@ const AddMeetingSession = () => {
     }
   }, [formData.startTime]);
 
-  // Calculate available slots based on room operating hours and existing bookings
-  const calculateAvailableTimeSlots = (room, bookings) => {
-    const roomStart = convertTimeToMinutes(room.start_time);
-    const roomEnd = convertTimeToMinutes(room.end_time);
-
-    // Sort bookings and calculate free slots
-    const sortedBookings = bookings
-      .map((booking) => ({
-        start: convertTimeToMinutes(booking.start_time),
-        end: convertTimeToMinutes(booking.end_time),
-      }))
-      .sort((a, b) => a.start - b.start);
-
-    const freeSlots = [];
-    let lastEnd = roomStart;
-
-    sortedBookings.forEach((booking) => {
-      if (lastEnd < booking.start) {
-        freeSlots.push(formatTimeRange(lastEnd, booking.start));
-      }
-      lastEnd = Math.max(lastEnd, booking.end);
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
     });
-
-    if (lastEnd < roomEnd) freeSlots.push(formatTimeRange(lastEnd, roomEnd));
-
-    return freeSlots;
   };
 
-  // Helper function to convert 12-hour time format to minutes since midnight
-  const convertTimeToMinutes = (time) => {
-    const [timePart, period] = time.split(' ');
-    const [hours, minutes] = timePart.split(':').map(Number);
-    const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : hours;
-    return hour24 * 60 + minutes;
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(formData);
+
+    Swal.fire({
+      title: 'Success!',
+      text: 'The meeting/session has been added successfully.',
+      icon: 'success',
+      confirmButtonText: 'OK',
+    }).then(() => {
+      setFormData({
+        title: '',
+        date: '',
+        availableRooms: [],
+        selectedRoom: '',
+        availableSlots: [],
+        selectedSlot: '',
+        startTime: '',
+        endTime: '',
+        companyName: '',
+        employeeName: '',
+        participantList: [],
+        type: 'meeting',
+        specialNote: '',
+        refreshment: '',
+      });
+      navigate('/home-dashboard');
+    });
   };
 
-  // Format a range of minutes into a readable time slot string
-  const formatTimeRange = (start, end) => {
-    const formatTime = (minutes) => {
-      const hour = Math.floor(minutes / 60);
-      const minute = minutes % 60;
-      const period = hour >= 12 ? 'PM' : 'AM';
-      const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-      return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
-    };
-    return `${formatTime(start)} - ${formatTime(end)}`;
+  const handleAddParticipant = () => {
+    if (formData.companyName.trim() && formData.employeeName.trim()) {
+      const newParticipant = {
+        companyName: formData.companyName,
+        employeeName: formData.employeeName,
+      };
+      setFormData((prevData) => ({
+        ...prevData,
+        participantList: [...prevData.participantList, newParticipant],
+        companyName: '',
+        employeeName: '',
+      }));
+    }
   };
 
+  const handleDeleteParticipant = (index) => {
+    const updatedList = formData.participantList.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      participantList: updatedList,
+    });
+  };
+
+  const generateTimeOptions = (start, end, step = 15) => {
+    const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
+    const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
+    const options = [];
+    while (startTime <= endTime) {
+      const timeString = startTime.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+      options.push(timeString);
+      startTime.setMinutes(startTime.getMinutes() + step);
+    }
+    return options;
+  };
+
+  const convertTo24Hour = (time12h) => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+    return `${hours}:${minutes}`;
+  };
+
+  
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
