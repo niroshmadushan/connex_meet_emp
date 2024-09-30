@@ -23,9 +23,9 @@ import TitleIcon from '@mui/icons-material/Title';
 import NotesIcon from '@mui/icons-material/Notes';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const themeColor = {
   primary: '#007aff',
@@ -54,45 +54,65 @@ const AddMeetingSession = () => {
 
   const navigate = useNavigate();
 
+  // Helper functions for API calls
+  const getAvailablePlaces = async (date) => {
+    try {
+      const response = await axios.get(`http://192.168.13.150:3001/api/rooms?date=${date}`);
+      const places = response.data.reduce((acc, room) => {
+        acc[date] = acc[date] ? [...acc[date], room.name] : [room.name];
+        return acc;
+      }, {});
+      return places;
+    } catch (error) {
+      console.error('Failed to fetch available places:', error);
+      return {};
+    }
+  };
+
+  const getAvailableTimeSlots = async (date, roomName) => {
+    try {
+      const response = await axios.get(`http://192.168.13.150:3001/api/bookings?date=${date}&room=${roomName}`);
+      const slots = response.data.map((slot) => `${slot.start_time} - ${slot.end_time}`);
+      return { [roomName]: slots };
+    } catch (error) {
+      console.error('Failed to fetch available time slots:', error);
+      return { [roomName]: [] };
+    }
+  };
+
   // Fetch available rooms based on the selected date
   useEffect(() => {
     if (formData.date) {
-      axios
-        .get(`http://192.168.13.150:3001/availableRooms?date=${formData.date}`)
-        .then((response) => {
-          setFormData((prevData) => ({
-            ...prevData,
-            availableRooms: response.data,
-            selectedRoom: '',
-            availableSlots: [],
-            selectedSlot: '',
-            startTime: '',
-            endTime: '',
-            startTimeOptions: [],
-            endTimeOptions: [],
-          }));
-        })
-        .catch((error) => console.error('Failed to fetch available rooms:', error));
+      getAvailablePlaces(formData.date).then((places) => {
+        setFormData((prevData) => ({
+          ...prevData,
+          availableRooms: places[formData.date] || [],
+          selectedRoom: '',
+          availableSlots: [],
+          selectedSlot: '',
+          startTime: '',
+          endTime: '',
+          startTimeOptions: [],
+          endTimeOptions: [],
+        }));
+      });
     }
   }, [formData.date]);
 
   // Fetch available time slots when the room is selected
   useEffect(() => {
     if (formData.selectedRoom) {
-      axios
-        .get(`http://192.168.13.150:3001/availableTimeSlots?date=${formData.date}&room=${formData.selectedRoom}`)
-        .then((response) => {
-          setFormData((prevData) => ({
-            ...prevData,
-            availableSlots: response.data,
-            selectedSlot: '',
-            startTime: '',
-            endTime: '',
-            startTimeOptions: [],
-            endTimeOptions: [],
-          }));
-        })
-        .catch((error) => console.error('Failed to fetch available slots:', error));
+      getAvailableTimeSlots(formData.date, formData.selectedRoom).then((slots) => {
+        setFormData((prevData) => ({
+          ...prevData,
+          availableSlots: slots[formData.selectedRoom] || [],
+          selectedSlot: '',
+          startTime: '',
+          endTime: '',
+          startTimeOptions: [],
+          endTimeOptions: [],
+        }));
+      });
     }
   }, [formData.selectedRoom]);
 
@@ -122,7 +142,6 @@ const AddMeetingSession = () => {
     }
   }, [formData.startTime]);
 
-  // Generate options between start and end times with a given step
   const generateTimeOptions = (start, end, step = 15) => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
@@ -177,7 +196,6 @@ const AddMeetingSession = () => {
     });
   };
 
-  // Submit the form data to the API
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -223,8 +241,6 @@ const AddMeetingSession = () => {
       })
       .catch((error) => console.error('Failed to add meeting:', error));
   };
-
-
 
   return (
     <Box sx={{ padding: '20px' }}>
