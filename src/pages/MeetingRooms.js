@@ -88,16 +88,22 @@ const MeetingRooms = () => {
 
         // Fetch bookings for each room
         const bookingsPromises = roomsData.map((room) =>
-          axios.get(`http://192.168.13.150:3001/bookings/${room.id}`, {
-            withCredentials: true,
-          })
+          axios
+            .get(`http://192.168.13.150:3001/bookings/${room.id}`, {
+              withCredentials: true,
+            })
+            .then((res) => res.data)
+            .catch((err) => {
+              console.error(`Failed to fetch bookings for room ${room.id}:`, err);
+              return []; // Return an empty array if there's an error
+            })
         );
-        const bookingsResponses = await Promise.all(bookingsPromises);
+        const bookings = await Promise.all(bookingsPromises);
 
-        // Merge room data with bookings
+        // Merge room data with bookings, ensuring bookings is always an array
         const roomsWithBookings = roomsData.map((room, index) => ({
           ...room,
-          bookings: bookingsResponses[index].data,
+          bookings: Array.isArray(bookings[index]) ? bookings[index] : [], // Ensure bookings is an array
         }));
 
         setRooms(roomsWithBookings);
@@ -134,13 +140,15 @@ const MeetingRooms = () => {
     const roomStart = convertTime(startTime);
     const roomEnd = convertTime(endTime);
 
-    // Convert bookings to sorted time ranges
-    const sortedBookings = room.bookings
-      .map((booking) => ({
-        start: convertTime(booking.start_time),
-        end: convertTime(booking.end_time),
-      }))
-      .sort((a, b) => a.start - b.start);
+    // Ensure bookings is always an array
+    const sortedBookings = Array.isArray(room.bookings)
+      ? room.bookings
+          .map((booking) => ({
+            start: convertTime(booking.start_time),
+            end: convertTime(booking.end_time),
+          }))
+          .sort((a, b) => a.start - b.start)
+      : [];
 
     const freeSlots = [];
     let lastEndTime = roomStart;
