@@ -28,13 +28,11 @@ import { isSameDay } from 'date-fns';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
-// Theme colors
 const themeColor = {
   primary: '#007aff',
   primaryDark: '#005bb5',
 };
 
-// Main component
 const AddMeetingSession = () => {
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -59,7 +57,6 @@ const AddMeetingSession = () => {
 
   const navigate = useNavigate();
 
-  // Fetch rooms and bookings data from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -76,7 +73,61 @@ const AddMeetingSession = () => {
     fetchData();
   }, []);
 
-  // Handle form field changes
+  // Function to calculate available time slots for the selected room
+  const getAvailableTimeSlots = (room) => {
+    const startTime = room.start_time;
+    const endTime = room.end_time;
+
+    const convertTime = (time) => {
+      const [timePart, period] = time.split(' ');
+      const [hours, minutes] = timePart.split(':').map(Number);
+      const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
+      return adjustedHours * 100 + minutes;
+    };
+
+    const roomStart = convertTime(startTime);
+    const roomEnd = convertTime(endTime);
+
+    const roomBookings = bookings.filter(
+      (booking) => booking.place_id === room.id && isSameDay(new Date(booking.date), new Date(formData.date))
+    );
+
+    if (roomBookings.length === 0) {
+      return [`${startTime} - ${endTime}`];
+    }
+
+    const sortedBookings = roomBookings
+      .map((booking) => ({
+        start: convertTime(booking.start_time),
+        end: convertTime(booking.end_time),
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    const freeSlots = [];
+    let lastEndTime = roomStart;
+
+    sortedBookings.forEach((booking) => {
+      if (lastEndTime < booking.start) {
+        freeSlots.push({ start: lastEndTime, end: booking.start });
+      }
+      lastEndTime = Math.max(lastEndTime, booking.end);
+    });
+
+    if (lastEndTime < roomEnd) {
+      freeSlots.push({ start: lastEndTime, end: roomEnd });
+    }
+
+    const formatTime = (time) => {
+      const hours = Math.floor(time / 100);
+      const minutes = time % 100;
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+      return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
+
+    return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
+  };
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -84,7 +135,6 @@ const AddMeetingSession = () => {
     });
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     Swal.fire({
@@ -113,7 +163,6 @@ const AddMeetingSession = () => {
     });
   };
 
-  // Handle adding a participant
   const handleAddParticipant = () => {
     if (formData.companyName.trim() && formData.employeeName.trim()) {
       const newParticipant = {
@@ -129,7 +178,6 @@ const AddMeetingSession = () => {
     }
   };
 
-  // Handle deleting a participant
   const handleDeleteParticipant = (index) => {
     const updatedList = formData.participantList.filter((_, i) => i !== index);
     setFormData({
@@ -138,25 +186,7 @@ const AddMeetingSession = () => {
     });
   };
 
-  // Handle date change and update available rooms
-  useEffect(() => {
-    if (formData.date) {
-      const filteredRooms = rooms.map((room) => room.name);
-      setFormData((prevData) => ({
-        ...prevData,
-        availableRooms: filteredRooms || [],
-        selectedRoom: '',
-        availableSlots: [],
-        selectedSlot: '',
-        startTime: '',
-        endTime: '',
-        startTimeOptions: [],
-        endTimeOptions: [],
-      }));
-    }
-  }, [formData.date, rooms]);
-
-  // Handle room selection change and update available slots
+  // Handle room selection and update available slots for the selected room
   useEffect(() => {
     if (formData.selectedRoom) {
       const selectedRoom = rooms.find((room) => room.name === formData.selectedRoom);
@@ -175,58 +205,6 @@ const AddMeetingSession = () => {
     }
   }, [formData.selectedRoom, formData.date]);
 
-  // Generate time options based on a selected slot
-  useEffect(() => {
-    if (formData.selectedSlot) {
-      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const timeOptions = generateTimeOptions(slotStart, slotEnd, 15);
-      setFormData((prevData) => ({
-        ...prevData,
-        startTimeOptions: timeOptions,
-        endTimeOptions: timeOptions,
-        startTime: '',
-        endTime: '',
-      }));
-    }
-  }, [formData.selectedSlot]);
-
-  useEffect(() => {
-    if (formData.startTime) {
-      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const endOptions = generateTimeOptions(formData.startTime, slotEnd, 15);
-      setFormData((prevData) => ({
-        ...prevData,
-        endTimeOptions: endOptions.slice(1),
-        endTime: '',
-      }));
-    }
-  }, [formData.startTime]);
-
-  // Function to convert 12-hour format to 24-hour
-  const convertTo24Hour = (time12h) => {
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') hours = '00';
-    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
-    return `${hours}:${minutes}`;
-  };
-
-  // Generate time options
-  const generateTimeOptions = (start, end, step = 15) => {
-    const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
-    const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
-    const options = [];
-    while (startTime <= endTime) {
-      const timeString = startTime.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
-      options.push(timeString);
-      startTime.setMinutes(startTime.getMinutes() + step);
-    }
-    return options;
-  }; 
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
@@ -234,8 +212,7 @@ const AddMeetingSession = () => {
       </Typography>
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
-
-            <Grid container spacing={3}>
+        <Grid container spacing={3}>
             {/* Title Field */}
             <Grid item xs={12}>
               <TextField
