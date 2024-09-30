@@ -57,6 +57,7 @@ const AddMeetingSession = () => {
 
   const navigate = useNavigate();
 
+  // Fetch rooms and bookings data from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -72,6 +73,14 @@ const AddMeetingSession = () => {
 
     fetchData();
   }, []);
+
+  // Handle form input changes
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   // Function to calculate available time slots for the selected room
   const getAvailableTimeSlots = (room) => {
@@ -128,13 +137,32 @@ const AddMeetingSession = () => {
     return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
   };
 
-  const handleChange = (e) => {
+  // Handle adding participants to the meeting
+  const handleAddParticipant = () => {
+    if (formData.companyName.trim() && formData.employeeName.trim()) {
+      const newParticipant = {
+        companyName: formData.companyName,
+        employeeName: formData.employeeName,
+      };
+      setFormData((prevData) => ({
+        ...prevData,
+        participantList: [...prevData.participantList, newParticipant],
+        companyName: '',
+        employeeName: '',
+      }));
+    }
+  };
+
+  // Handle deleting participants from the list
+  const handleDeleteParticipant = (index) => {
+    const updatedList = formData.participantList.filter((_, i) => i !== index);
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      participantList: updatedList,
     });
   };
 
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     Swal.fire({
@@ -160,29 +188,6 @@ const AddMeetingSession = () => {
         refreshment: '',
       });
       navigate('/home-dashboard');
-    });
-  };
-
-  const handleAddParticipant = () => {
-    if (formData.companyName.trim() && formData.employeeName.trim()) {
-      const newParticipant = {
-        companyName: formData.companyName,
-        employeeName: formData.employeeName,
-      };
-      setFormData((prevData) => ({
-        ...prevData,
-        participantList: [...prevData.participantList, newParticipant],
-        companyName: '',
-        employeeName: '',
-      }));
-    }
-  };
-
-  const handleDeleteParticipant = (index) => {
-    const updatedList = formData.participantList.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      participantList: updatedList,
     });
   };
 
@@ -212,8 +217,8 @@ const AddMeetingSession = () => {
       </Typography>
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
-        <Grid container spacing={3}>
-            {/* Title Field */}
+          {/* Title and Date Selection */}
+          <Grid container spacing={3}>
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -231,8 +236,6 @@ const AddMeetingSession = () => {
                 required
               />
             </Grid>
-
-            {/* Date Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -241,9 +244,7 @@ const AddMeetingSession = () => {
                 type="date"
                 value={formData.date}
                 onChange={handleChange}
-                InputLabelProps={{
-                  shrink: true,
-                }}
+                InputLabelProps={{ shrink: true }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -298,7 +299,7 @@ const AddMeetingSession = () => {
             )}
 
             {/* Start and End Time Fields */}
-            {/* {formData.startTimeOptions.length > 0 && ( */}
+            {formData.startTimeOptions.length > 0 && (
               <>
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -317,7 +318,6 @@ const AddMeetingSession = () => {
                     ))}
                   </TextField>
                 </Grid>
-
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
@@ -336,9 +336,9 @@ const AddMeetingSession = () => {
                   </TextField>
                 </Grid>
               </>
-            {/* )} */}
+            )}
 
-            {/* Company Name and Employee Name Fields */}
+            {/* Company and Employee Fields */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -348,7 +348,6 @@ const AddMeetingSession = () => {
                 onChange={handleChange}
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -367,9 +366,7 @@ const AddMeetingSession = () => {
                 sx={{
                   backgroundColor: themeColor.primary,
                   color: '#fff',
-                  ':hover': {
-                    backgroundColor: themeColor.primaryDark,
-                  },
+                  ':hover': { backgroundColor: themeColor.primaryDark },
                 }}
               >
                 Add Participant
@@ -406,7 +403,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
-            {/* Special Note Field */}
+            {/* Special Note and Refreshment Fields */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -418,16 +415,11 @@ const AddMeetingSession = () => {
                 rows={4}
                 placeholder="Enter any special notes regarding the event"
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <NotesIcon color="primary" />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start"><NotesIcon color="primary" /></InputAdornment>,
                 }}
               />
             </Grid>
 
-            {/* Refreshment Field */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -439,11 +431,7 @@ const AddMeetingSession = () => {
                 rows={2}
                 placeholder="Enter refreshment details if any"
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <RefreshIcon color="primary" />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start"><RefreshIcon color="primary" /></InputAdornment>,
                 }}
               />
             </Grid>
@@ -456,10 +444,7 @@ const AddMeetingSession = () => {
                 sx={{
                   backgroundColor: themeColor.primary,
                   color: '#fff',
-                  ':hover': {
-                    backgroundColor: themeColor.primaryDark,
-                  },
-                  transition: 'background-color 0.3s ease',
+                  ':hover': { backgroundColor: themeColor.primaryDark },
                   padding: '10px',
                   fontWeight: 'bold',
                 }}
