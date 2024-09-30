@@ -174,6 +174,31 @@ const AddMeetingSession = () => {
     });
   };
 
+  // Handle adding participants to the meeting
+  const handleAddParticipant = () => {
+    if (formData.companyName.trim() && formData.employeeName.trim()) {
+      const newParticipant = {
+        companyName: formData.companyName,
+        employeeName: formData.employeeName,
+      };
+      setFormData((prevData) => ({
+        ...prevData,
+        participantList: [...prevData.participantList, newParticipant],
+        companyName: '',
+        employeeName: '',
+      }));
+    }
+  };
+
+  // Handle deleting participants from the list
+  const handleDeleteParticipant = (index) => {
+    const updatedList = formData.participantList.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      participantList: updatedList,
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     Swal.fire({
