@@ -127,10 +127,10 @@ const MeetingRooms = () => {
 
   // Function to calculate available time slots for a room based on its operating hours and bookings
   const getAvailableTimeSlots = (room) => {
-    const startTime = room.start_time;
-    const endTime = room.end_time;
+    const startTime = room.start_time; // Operating start time (e.g., 08:00 AM)
+    const endTime = room.end_time;     // Operating end time (e.g., 05:00 PM)
 
-    // Convert time to a comparable number for calculations
+    // Helper function to convert time to a comparable number for calculations
     const convertTime = (time) => {
       const [timePart, period] = time.split(' ');
       const [hours, minutes] = timePart.split(':').map(Number);
@@ -138,18 +138,21 @@ const MeetingRooms = () => {
       return adjustedHours * 100 + minutes;
     };
 
-    const roomStart = convertTime(startTime);
-    const roomEnd = convertTime(endTime);
+    const roomStart = convertTime(startTime);  // Operating start time in "HHMM" format (e.g., 800 for 08:00 AM)
+    const roomEnd = convertTime(endTime);      // Operating end time in "HHMM" format (e.g., 1700 for 05:00 PM)
 
-    // Ensure bookings is always an array
-    const sortedBookings = Array.isArray(room.bookings)
-      ? room.bookings
-          .map((booking) => ({
-            start: convertTime(booking.start_time),
-            end: convertTime(booking.end_time),
-          }))
-          .sort((a, b) => a.start - b.start)
-      : [];
+    // If no bookings, return the entire operating time as a single free slot
+    if (!room.bookings || room.bookings.length === 0) {
+      return [`${startTime} - ${endTime}`];
+    }
+
+    // Convert bookings to sorted time ranges
+    const sortedBookings = room.bookings
+      .map((booking) => ({
+        start: convertTime(booking.start_time),
+        end: convertTime(booking.end_time),
+      }))
+      .sort((a, b) => a.start - b.start);
 
     const freeSlots = [];
     let lastEndTime = roomStart;
@@ -157,8 +160,10 @@ const MeetingRooms = () => {
     // Calculate free slots based on bookings
     sortedBookings.forEach((booking) => {
       if (lastEndTime < booking.start) {
+        // Free slot before the current booking
         freeSlots.push({ start: lastEndTime, end: booking.start });
       }
+      // Update last end time to the end of the current booking
       lastEndTime = Math.max(lastEndTime, booking.end);
     });
 
@@ -167,7 +172,7 @@ const MeetingRooms = () => {
       freeSlots.push({ start: lastEndTime, end: roomEnd });
     }
 
-    // Format the free slots into readable strings
+    // Format the free slots into readable strings (e.g., "08:00 AM - 11:00 AM")
     const formatTime = (time) => {
       const hours = Math.floor(time / 100);
       const minutes = time % 100;
