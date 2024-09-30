@@ -33,7 +33,7 @@ const themeColor = {
   lightGray: '#e0e0e0',
 };
 
-// Custom styled components
+// Custom styled components for cards
 const StyledCard = styled(Card)(({ available }) => ({
   backgroundColor: themeColor.cardBg,
   color: themeColor.textPrimary,
@@ -76,45 +76,37 @@ const MeetingRooms = () => {
   const [open, setOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
+  // Fetch all rooms and their bookings from the API
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchRoomsData = async () => {
       try {
-        // Fetch rooms with credentials
         const roomsResponse = await axios.get('http://192.168.13.150:3001/place', {
           withCredentials: true,
         });
 
-        // Log the entire response to check its structure
-        console.log('Rooms Response:', roomsResponse);
+        const roomsData = roomsResponse.data;
 
-        // Check if the response is an array of rooms
-        if (Array.isArray(roomsResponse.data)) {
-          const roomsData = roomsResponse.data;
+        // Fetch bookings for each room
+        const bookingsPromises = roomsData.map((room) =>
+          axios.get(`http://192.168.13.150:3001/bookings/${room.id}`, {
+            withCredentials: true,
+          })
+        );
+        const bookingsResponses = await Promise.all(bookingsPromises);
 
-          // Fetch bookings for each room with credentials
-          const bookingsPromises = roomsData.map((room) =>
-            axios.get(`http://192.168.13.150:3001/bookings/${room.id}`, {
-              withCredentials: true,
-            })
-          );
+        // Merge room data with bookings
+        const roomsWithBookings = roomsData.map((room, index) => ({
+          ...room,
+          bookings: bookingsResponses[index].data,
+        }));
 
-          // Fetch and associate bookings
-          const bookingsResponses = await Promise.all(bookingsPromises);
-          const roomsWithBookings = roomsData.map((room, index) => ({
-            ...room,
-            bookings: bookingsResponses[index].data,
-          }));
-
-          setRooms(roomsWithBookings);
-        } else {
-          console.error('Invalid data format: Expected an array of rooms.');
-        }
+        setRooms(roomsWithBookings);
       } catch (error) {
         console.error('Failed to fetch data:', error);
       }
     };
 
-    fetchData();
+    fetchRoomsData();
   }, []);
 
   const handleCardClick = (room) => {
@@ -127,7 +119,7 @@ const MeetingRooms = () => {
     setSelectedRoom(null);
   };
 
-  // Function to calculate available time slots for a room
+  // Function to calculate available time slots for a room based on its operating hours and bookings
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time;
     const endTime = room.end_time;
@@ -142,6 +134,7 @@ const MeetingRooms = () => {
     const roomStart = convertTime(startTime);
     const roomEnd = convertTime(endTime);
 
+    // Convert bookings to sorted time ranges
     const sortedBookings = room.bookings
       .map((booking) => ({
         start: convertTime(booking.start_time),
@@ -152,6 +145,7 @@ const MeetingRooms = () => {
     const freeSlots = [];
     let lastEndTime = roomStart;
 
+    // Calculate free slots based on bookings
     sortedBookings.forEach((booking) => {
       if (lastEndTime < booking.start) {
         freeSlots.push({ start: lastEndTime, end: booking.start });
@@ -191,6 +185,15 @@ const MeetingRooms = () => {
                 <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem', color: themeColor.textPrimary }}>
                   {room.address}
                 </Typography>
+                {room.status_id === 4 ? (
+                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
+                    Available
+                  </Typography>
+                ) : (
+                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
+                    Not Available
+                  </Typography>
+                )}
               </CardContent>
             </StyledCard>
           </Grid>
@@ -202,24 +205,25 @@ const MeetingRooms = () => {
         <DialogTitle sx={{ textAlign: 'center', color: themeColor.primary, fontWeight: 'bold' }}>{selectedRoom?.name}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ fontSize: '0.85rem', color: themeColor.textPrimary, mb: 1 }}>{selectedRoom?.address}</Typography>
-          {selectedRoom?.available ? (
-            <TableContainer component={Paper} sx={{ boxShadow: 'none', marginTop: '10px' }}>
-              <Table size="small" aria-label="available time slots">
-                <TableBody>
-                  {getAvailableTimeSlots(selectedRoom).map((slot, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell align="center" sx={{ fontSize: '0.75rem', color: themeColor.textPrimary, border: `1px solid ${themeColor.lightGray}` }}>
-                        {slot}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          ) : (
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
-              Currently Not Available
-            </Typography>
+          {selectedRoom && (
+            <>
+              <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
+                Available Time Slots:
+              </Typography>
+              <TableContainer component={Paper} sx={{ boxShadow: 'none', marginTop: '10px' }}>
+                <Table size="small" aria-label="available time slots">
+                  <TableBody>
+                    {getAvailableTimeSlots(selectedRoom).map((slot, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell align="center" sx={{ fontSize: '0.75rem', color: themeColor.textPrimary, border: `1px solid ${themeColor.lightGray}` }}>
+                          {slot}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
           )}
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center' }}>
