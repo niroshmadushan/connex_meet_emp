@@ -84,32 +84,14 @@ const MeetingRooms = () => {
         });
 
         // Log the entire response to check its structure
-        console.log('Rooms Response:', roomsResponse.data);
+        console.log('Rooms Response:', roomsResponse);
 
-        // Check if data is in `roomsResponse.data` or nested elsewhere
-        let roomsData = roomsResponse.data;
-
-        // Ensure it's an array before mapping
-        if (!Array.isArray(roomsData)) {
-          console.error('API response is not an array:', roomsData);
-          roomsData = []; // Fallback to empty array
+        // Check if the response is an array of rooms
+        if (Array.isArray(roomsResponse.data)) {
+          setRooms(roomsResponse.data);
+        } else {
+          console.error('Invalid data format: Expected an array of rooms.');
         }
-
-        // Fetch bookings for each room with credentials
-        const bookingsPromises = roomsData.map((room) =>
-          axios.get(`http://192.168.13.150:3001/bookings/${room.id}`, {
-            withCredentials: true,
-          })
-        );
-        const bookingsResponses = await Promise.all(bookingsPromises);
-
-        // Map room data with bookings
-        const roomsWithBookings = roomsData.map((room, index) => ({
-          ...room,
-          bookings: bookingsResponses[index].data,
-        }));
-
-        setRooms(roomsWithBookings);
       } catch (error) {
         console.error('Failed to fetch data:', error);
       }
@@ -126,53 +108,6 @@ const MeetingRooms = () => {
   const handleClose = () => {
     setOpen(false);
     setSelectedRoom(null);
-  };
-
-  // Function to calculate available time slots for a room
-  const getAvailableTimeSlots = (room) => {
-    const startTime = room.start_time;
-    const endTime = room.end_time;
-
-    const convertTime = (time) => {
-      const [timePart, period] = time.split(' ');
-      const [hours, minutes] = timePart.split(':').map(Number);
-      const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
-      return adjustedHours * 100 + minutes;
-    };
-
-    const roomStart = convertTime(startTime);
-    const roomEnd = convertTime(endTime);
-
-    const sortedBookings = room.bookings
-      .map((booking) => ({
-        start: convertTime(booking.start_time),
-        end: convertTime(booking.end_time),
-      }))
-      .sort((a, b) => a.start - b.start);
-
-    const freeSlots = [];
-    let lastEndTime = roomStart;
-
-    sortedBookings.forEach((booking) => {
-      if (lastEndTime < booking.start) {
-        freeSlots.push({ start: lastEndTime, end: booking.start });
-      }
-      lastEndTime = Math.max(lastEndTime, booking.end);
-    });
-
-    if (lastEndTime < roomEnd) {
-      freeSlots.push({ start: lastEndTime, end: roomEnd });
-    }
-
-    const formatTime = (time) => {
-      const hours = Math.floor(time / 100);
-      const minutes = time % 100;
-      const period = hours >= 12 ? 'PM' : 'AM';
-      const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
-      return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
-    };
-
-    return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
   };
 
   return (
@@ -203,24 +138,6 @@ const MeetingRooms = () => {
         <DialogTitle sx={{ textAlign: 'center', color: themeColor.primary, fontWeight: 'bold' }}>{selectedRoom?.name}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ fontSize: '0.85rem', color: themeColor.textPrimary, mb: 1 }}>{selectedRoom?.address}</Typography>
-          <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
-            Available Time Slots:
-          </Typography>
-          {selectedRoom && (
-            <TableContainer component={Paper} sx={{ boxShadow: 'none', marginTop: '10px' }}>
-              <Table size="small" aria-label="available time slots">
-                <TableBody>
-                  {getAvailableTimeSlots(selectedRoom).map((slot, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell align="center" sx={{ fontSize: '0.75rem', color: themeColor.textPrimary, border: `1px solid ${themeColor.lightGray}` }}>
-                        {slot}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center' }}>
           <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: themeColor.primary, color: '#fff' }}>Close</Button>
