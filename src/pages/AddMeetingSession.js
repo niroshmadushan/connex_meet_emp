@@ -115,7 +115,7 @@ const AddMeetingSession = () => {
   useEffect(() => {
     if (formData.selectedSlot) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const timeOptions = generateTimeOptions(slotStart, slotEnd);
+      const timeOptions = generateTimeOptions(slotStart, slotEnd, 15);
       setFormData((prevData) => ({
         ...prevData,
         startTimeOptions: timeOptions,
@@ -130,7 +130,7 @@ const AddMeetingSession = () => {
   useEffect(() => {
     if (formData.startTime) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const endOptions = generateTimeOptions(formData.startTime, slotEnd);
+      const endOptions = generateTimeOptions(formData.startTime, slotEnd, 15);
       setFormData((prevData) => ({
         ...prevData,
         endTimeOptions: endOptions.slice(1), // Show times after the selected start time
@@ -226,31 +226,6 @@ const AddMeetingSession = () => {
     });
   };
 
-  // Define `handleAddParticipant` function
-  const handleAddParticipant = () => {
-    if (formData.companyName.trim() && formData.employeeName.trim()) {
-      const newParticipant = {
-        companyName: formData.companyName,
-        employeeName: formData.employeeName,
-      };
-      setFormData((prevData) => ({
-        ...prevData,
-        participantList: [...prevData.participantList, newParticipant],
-        companyName: '',
-        employeeName: '',
-      }));
-    }
-  };
-
-  // Define `handleDeleteParticipant` function
-  const handleDeleteParticipant = (index) => {
-    const updatedList = formData.participantList.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      participantList: updatedList,
-    });
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     Swal.fire({
@@ -287,9 +262,257 @@ const AddMeetingSession = () => {
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            {/* Form Fields for Title, Date, Rooms, Time Slots, Start Time, End Time */}
-            {/* Complete form structure based on the provided fields */}
-            {/* ... (same as in the previous code snippet) ... */}
+            {/* Title and Date Fields */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <TitleIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Date"
+                name="date"
+                type="date"
+                value={formData.date}
+                onChange={handleChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EventIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+                required
+              />
+            </Grid>
+
+            {/* Room Selection and Available Slots */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Select Room</InputLabel>
+                <Select
+                  label="Select Room"
+                  name="selectedRoom"
+                  value={formData.selectedRoom}
+                  onChange={handleChange}
+                  required
+                >
+                  {formData.availableRooms.map((room, index) => (
+                    <MenuItem key={index} value={room}>
+                      {room}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Available Slots Dropdown */}
+            {formData.availableSlots.length > 0 && (
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel>Select Time Slot</InputLabel>
+                  <Select
+                    label="Select Time Slot"
+                    name="selectedSlot"
+                    value={formData.selectedSlot}
+                    onChange={handleChange}
+                    required
+                  >
+                    {formData.availableSlots.map((slot, index) => (
+                      <MenuItem key={index} value={slot}>
+                        {slot}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+
+            {/* Start and End Time Options */}
+            {formData.startTimeOptions.length > 0 && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Start Time"
+                    name="startTime"
+                    value={formData.startTime}
+                    onChange={handleChange}
+                    required
+                  >
+                    {formData.startTimeOptions.map((option, index) => (
+                      <MenuItem key={index} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="End Time"
+                    name="endTime"
+                    value={formData.endTime}
+                    onChange={handleChange}
+                    required
+                  >
+                    {formData.endTimeOptions.map((option, index) => (
+                      <MenuItem key={index} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </>
+            )}
+
+            {/* Participant List */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Company Name"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleChange}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Employee Name"
+                name="employeeName"
+                value={formData.employeeName}
+                onChange={handleChange}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                onClick={() => handleAddParticipant()}
+                sx={{
+                  backgroundColor: themeColor.primary,
+                  color: '#fff',
+                  ':hover': {
+                    backgroundColor: themeColor.primaryDark,
+                  },
+                }}
+              >
+                Add Participant
+              </Button>
+            </Grid>
+
+            {/* Display Participant List */}
+            {formData.participantList.length > 0 && (
+              <Grid item xs={12}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>#</TableCell>
+                      <TableCell>Company Name</TableCell>
+                      <TableCell>Employee Name</TableCell>
+                      <TableCell>Action</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {formData.participantList.map((participant, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{participant.companyName}</TableCell>
+                        <TableCell>{participant.employeeName}</TableCell>
+                        <TableCell>
+                          <IconButton onClick={() => handleDeleteParticipant(index)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Grid>
+            )}
+
+            {/* Special Note and Refreshment */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Special Note"
+                name="specialNote"
+                value={formData.specialNote}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                placeholder="Enter any special notes regarding the event"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <NotesIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Refreshment"
+                name="refreshment"
+                value={formData.refreshment}
+                onChange={handleChange}
+                multiline
+                rows={2}
+                placeholder="Enter refreshment details if any"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <RefreshIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            {/* Submit Button */}
+            <Grid item xs={12}>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  backgroundColor: themeColor.primary,
+                  color: '#fff',
+                  ':hover': {
+                    backgroundColor: themeColor.primaryDark,
+                  },
+                  transition: 'background-color 0.3s ease',
+                  padding: '10px',
+                  fontWeight: 'bold',
+                }}
+                fullWidth
+              >
+                Add Meeting
+              </Button>
+            </Grid>
           </Grid>
         </form>
       </Paper>
