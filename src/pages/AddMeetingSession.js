@@ -67,7 +67,7 @@ const AddMeetingSession = () => {
     try {
       const roomsResponse = await axios.get(`http://192.168.13.150:3001/api/rooms`);
       const rooms = roomsResponse.data;
-      const bookingsResponse = await axios.get(`http://192.168.13.150:3001/api/bookings?date=${selectedDate}`);
+      const bookingsResponse = await axios.get(`http://192.168.13.150:3001/api/bookings?date=09/30/2024`);
       const bookings = bookingsResponse.data;
 
       console.log(selectedDate);
