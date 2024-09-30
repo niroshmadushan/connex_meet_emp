@@ -139,6 +139,7 @@ const AddMeetingSession = () => {
     }
   }, [formData.startTime]);
 
+  // Generate time options with the correct 12-hour format
   const generateTimeOptions = (start, end, step = 15) => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
@@ -155,6 +156,7 @@ const AddMeetingSession = () => {
     return options;
   };
 
+  // Convert 12-hour time format to 24-hour for comparisons
   const convertTo24Hour = (time12h) => {
     const [time, modifier] = time12h.split(' ');
     let [hours, minutes] = time.split(':');
@@ -163,6 +165,7 @@ const AddMeetingSession = () => {
     return `${hours}:${minutes}`;
   };
 
+  // Calculate available time slots for the selected room
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time;
     const endTime = room.end_time;
@@ -215,66 +218,6 @@ const AddMeetingSession = () => {
     };
 
     return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  // Handle adding participants to the meeting
-  const handleAddParticipant = () => {
-    if (formData.companyName.trim() && formData.employeeName.trim()) {
-      const newParticipant = {
-        companyName: formData.companyName,
-        employeeName: formData.employeeName,
-      };
-      setFormData((prevData) => ({
-        ...prevData,
-        participantList: [...prevData.participantList, newParticipant],
-        companyName: '',
-        employeeName: '',
-      }));
-    }
-  };
-
-  // Handle deleting participants from the list
-  const handleDeleteParticipant = (index) => {
-    const updatedList = formData.participantList.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      participantList: updatedList,
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    Swal.fire({
-      title: 'Success!',
-      text: 'The meeting/session has been added successfully.',
-      icon: 'success',
-      confirmButtonText: 'OK',
-    }).then(() => {
-      setFormData({
-        title: '',
-        date: '',
-        availableRooms: [],
-        selectedRoom: '',
-        availableSlots: [],
-        selectedSlot: '',
-        startTime: '',
-        endTime: '',
-        companyName: '',
-        employeeName: '',
-        participantList: [],
-        type: 'meeting',
-        specialNote: '',
-        refreshment: '',
-      });
-      navigate('/home-dashboard');
-    });
   };
 
   return (
