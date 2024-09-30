@@ -57,7 +57,6 @@ const AddMeetingSession = () => {
 
   const navigate = useNavigate();
 
-  // Fetch rooms and bookings data from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -74,7 +73,64 @@ const AddMeetingSession = () => {
     fetchData();
   }, []);
 
-  // Handle changes in date and update available rooms based on the selected date
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    Swal.fire({
+      title: 'Success!',
+      text: 'The meeting/session has been added successfully.',
+      icon: 'success',
+      confirmButtonText: 'OK',
+    }).then(() => {
+      setFormData({
+        title: '',
+        date: '',
+        availableRooms: [],
+        selectedRoom: '',
+        availableSlots: [],
+        selectedSlot: '',
+        startTime: '',
+        endTime: '',
+        companyName: '',
+        employeeName: '',
+        participantList: [],
+        type: 'meeting',
+        specialNote: '',
+        refreshment: '',
+      });
+      navigate('/home-dashboard');
+    });
+  };
+
+  const handleAddParticipant = () => {
+    if (formData.companyName.trim() && formData.employeeName.trim()) {
+      const newParticipant = {
+        companyName: formData.companyName,
+        employeeName: formData.employeeName,
+      };
+      setFormData((prevData) => ({
+        ...prevData,
+        participantList: [...prevData.participantList, newParticipant],
+        companyName: '',
+        employeeName: '',
+      }));
+    }
+  };
+
+  const handleDeleteParticipant = (index) => {
+    const updatedList = formData.participantList.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      participantList: updatedList,
+    });
+  };
+
   useEffect(() => {
     if (formData.date) {
       const filteredRooms = rooms.map((room) => room.name);
@@ -92,7 +148,6 @@ const AddMeetingSession = () => {
     }
   }, [formData.date, rooms]);
 
-  // Handle room selection change and update available slots for the selected room
   useEffect(() => {
     if (formData.selectedRoom) {
       const selectedRoom = rooms.find((room) => room.name === formData.selectedRoom);
@@ -111,7 +166,6 @@ const AddMeetingSession = () => {
     }
   }, [formData.selectedRoom, formData.date]);
 
-  // When a slot is selected, update start and end time options based on the slot
   useEffect(() => {
     if (formData.selectedSlot) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
@@ -126,20 +180,18 @@ const AddMeetingSession = () => {
     }
   }, [formData.selectedSlot]);
 
-  // Update end time options based on selected start time
   useEffect(() => {
     if (formData.startTime) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
       const endOptions = generateTimeOptions(formData.startTime, slotEnd, 15);
       setFormData((prevData) => ({
         ...prevData,
-        endTimeOptions: endOptions.slice(1), // Show times after the selected start time
+        endTimeOptions: endOptions.slice(1),
         endTime: '',
       }));
     }
   }, [formData.startTime]);
 
-  // Generate time options with the correct 12-hour format
   const generateTimeOptions = (start, end, step = 15) => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
@@ -156,7 +208,6 @@ const AddMeetingSession = () => {
     return options;
   };
 
-  // Convert 12-hour time format to 24-hour for comparisons
   const convertTo24Hour = (time12h) => {
     const [time, modifier] = time12h.split(' ');
     let [hours, minutes] = time.split(':');
@@ -165,7 +216,6 @@ const AddMeetingSession = () => {
     return `${hours}:${minutes}`;
   };
 
-  // Calculate available time slots for the selected room
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time;
     const endTime = room.end_time;
@@ -227,8 +277,9 @@ const AddMeetingSession = () => {
       </Typography>
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            {/* Title, Date, Room, Time Slots, Start and End Time */}
+
+            <Grid container spacing={3}>
+            {/* Title Field */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -246,6 +297,8 @@ const AddMeetingSession = () => {
                 required
               />
             </Grid>
+
+            {/* Date Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -268,7 +321,7 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
-            {/* Room Selection and Available Slots */}
+            {/* Room Selection */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Room</InputLabel>
@@ -310,8 +363,8 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
-            {/* Start and End Time Options */}
-            
+            {/* Start and End Time Fields */}
+            {formData.startTimeOptions.length > 0 && (
               <>
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -349,9 +402,9 @@ const AddMeetingSession = () => {
                   </TextField>
                 </Grid>
               </>
-            
+            )}
 
-            {/* Participant Fields */}
+            {/* Company Name and Employee Name Fields */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -372,6 +425,7 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
+            {/* Add Participant Button */}
             <Grid item xs={12}>
               <Button
                 variant="contained"
@@ -388,7 +442,7 @@ const AddMeetingSession = () => {
               </Button>
             </Grid>
 
-            {/* Participant Table */}
+            {/* Participant List Table */}
             {formData.participantList.length > 0 && (
               <Grid item xs={12}>
                 <Table>
@@ -418,7 +472,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
-            {/* Special Note and Refreshment */}
+            {/* Special Note Field */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -439,6 +493,7 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
+            {/* Refreshment Field */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
