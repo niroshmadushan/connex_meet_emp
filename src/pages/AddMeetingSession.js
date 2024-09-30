@@ -140,6 +140,51 @@ const AddMeetingSession = () => {
     }
   }, [formData.startTime]);
 
+  // Function to calculate available slots based on room operating hours and existing bookings
+  const calculateAvailableTimeSlots = (room, bookings) => {
+    const roomStart = convertTimeToMinutes(room.start_time);
+    const roomEnd = convertTimeToMinutes(room.end_time);
+
+    const sortedBookings = bookings
+      .map((booking) => ({
+        start: convertTimeToMinutes(booking.start_time),
+        end: convertTimeToMinutes(booking.end_time),
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    const freeSlots = [];
+    let lastEnd = roomStart;
+
+    sortedBookings.forEach((booking) => {
+      if (lastEnd < booking.start) {
+        freeSlots.push(formatTimeRange(lastEnd, booking.start));
+      }
+      lastEnd = Math.max(lastEnd, booking.end);
+    });
+
+    if (lastEnd < roomEnd) freeSlots.push(formatTimeRange(lastEnd, roomEnd));
+
+    return freeSlots;
+  };
+
+  const convertTimeToMinutes = (time) => {
+    const [timePart, period] = time.split(' ');
+    const [hours, minutes] = timePart.split(':').map(Number);
+    const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : hours;
+    return hour24 * 60 + minutes;
+  };
+
+  const formatTimeRange = (start, end) => {
+    const formatTime = (minutes) => {
+      const hour = Math.floor(minutes / 60);
+      const minute = minutes % 60;
+      const period = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+      return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
+    };
+    return `${formatTime(start)} - ${formatTime(end)}`;
+  };
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -223,8 +268,6 @@ const AddMeetingSession = () => {
     if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
     return `${hours}:${minutes}`;
   };
-
-  
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
