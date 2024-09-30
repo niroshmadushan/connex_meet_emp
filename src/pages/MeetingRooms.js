@@ -195,7 +195,7 @@ const MeetingRooms = () => {
         type="date"
         value={format(selectedDate, 'yyyy-MM-dd')} // Set default date value
         onChange={(e) => setSelectedDate(new Date(e.target.value))}
-        sx={{ mb: 3, width: '200px' }}
+        sx={{ mb: 3, width: '200px',mt:3 }}
         InputLabelProps={{
           shrink: true,
         }}
