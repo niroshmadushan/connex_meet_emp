@@ -198,15 +198,11 @@ const AddMeetingSession = () => {
     const options = [];
   
     while (startTime <= endTime) {
-      const timeString = startTime.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
+      const timeString = convertTo12Hour(startTime.toTimeString().substring(0, 5)); // Format to 12-hour for display
       options.push(timeString);
       startTime.setMinutes(startTime.getMinutes() + step);
     }
-    
+  
     return options;
   };
   
@@ -215,9 +211,9 @@ const AddMeetingSession = () => {
     const [time, modifier] = time12h.split(' ');
     let [hours, minutes] = time.split(':');
     
-    // Handle edge cases like "12:00 AM" or "12:00 PM"
+    // Handle "12:00 AM" and "12:00 PM" cases
     if (hours === '12') {
-      hours = modifier === 'AM' ? '00' : '12'; // Midnight = 00, Noon = 12
+      hours = modifier === 'AM' ? '00' : '12';
     } else {
       hours = modifier === 'PM' ? (parseInt(hours, 10) + 12).toString() : hours;
     }
@@ -225,17 +221,25 @@ const AddMeetingSession = () => {
     return `${hours}:${minutes}`;
   };
   
-  
+  const convertTo12Hour = (time24h) => {
+    let [hours, minutes] = time24h.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    
+    // Convert back to 12-hour format
+    hours = hours % 12 || 12; // Adjust 0 to 12 for midnight
+    return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
 
   const getAvailableTimeSlots = (room) => {
-    const startTime = room.start_time;
-    const endTime = room.end_time;
+    const startTime = room.start_time; // Already in 12-hour format
+    const endTime = room.end_time;     // Already in 12-hour format
   
+    // Convert the 12-hour time to 24-hour format for internal calculations
     const convertTime = (time) => {
       const [timePart, period] = time.split(' ');
       const [hours, minutes] = timePart.split(':').map(Number);
       const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
-      return adjustedHours * 100 + minutes;
+      return adjustedHours * 100 + minutes; // Use 100-based format for comparisons
     };
   
     const roomStart = convertTime(startTime);
@@ -246,9 +250,10 @@ const AddMeetingSession = () => {
     );
   
     if (roomBookings.length === 0) {
-      return [`${startTime} - ${endTime}`];
+      return [`${startTime} - ${endTime}`]; // If no bookings, the entire slot is free
     }
   
+    // Sort and find free slots
     const sortedBookings = roomBookings
       .map((booking) => ({
         start: convertTime(booking.start_time),
@@ -270,12 +275,11 @@ const AddMeetingSession = () => {
       freeSlots.push({ start: lastEndTime, end: roomEnd });
     }
   
+    // Convert slots back to 12-hour format for display
     const formatTime = (time) => {
       const hours = Math.floor(time / 100);
       const minutes = time % 100;
-      const period = hours >= 12 ? 'PM' : 'AM';
-      const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
-      return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+      return convertTo12Hour(`${hours}:${minutes.toString().padStart(2, '0')}`);
     };
   
     return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
