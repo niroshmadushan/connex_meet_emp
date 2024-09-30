@@ -337,7 +337,7 @@ const AddMeetingSession = () => {
               </FormControl>
             </Grid>
 
-            {formData.availableSlots.length > 0 && (
+            {/* {formData.availableSlots.length > 0 && ( */}
               <Grid item xs={12}>
                 <FormControl fullWidth>
                   <InputLabel>Select Time Slot</InputLabel>
@@ -356,9 +356,9 @@ const AddMeetingSession = () => {
                   </Select>
                 </FormControl>
               </Grid>
-            )}
+            {/* )}
 
-            {formData.startTimeOptions.length > 0 && (
+            {formData.startTimeOptions.length > 0 && ( */}
               <>
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -396,7 +396,7 @@ const AddMeetingSession = () => {
                   </TextField>
                 </Grid>
               </>
-            )}
+            {/* )} */}
 
             {/* Company Name and Employee Name Fields */}
             <Grid item xs={12} sm={6}>
