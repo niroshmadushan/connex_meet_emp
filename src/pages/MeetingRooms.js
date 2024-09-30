@@ -84,7 +84,7 @@ const MeetingRooms = () => {
         });
 
         // Log the entire response to check its structure
-        console.log('Rooms Response:', roomsResponse);
+        console.log('Rooms Response:', roomsResponse.data);
 
         // Check if data is in `roomsResponse.data` or nested elsewhere
         let roomsData = roomsResponse.data;
