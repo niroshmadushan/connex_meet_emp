@@ -139,7 +139,7 @@ const AddMeetingSession = () => {
     }
   }, [formData.startTime]);
 
-  // Convert time range into 15-minute step slots
+  // Generate time options in 15-minute intervals
   const generateTimeOptions = (start, end, step = 15) => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
@@ -164,7 +164,6 @@ const AddMeetingSession = () => {
     return `${hours}:${minutes}`;
   };
 
-  // Calculate available time slots based on the room's operating hours and existing bookings
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time;
     const endTime = room.end_time;
@@ -223,6 +222,31 @@ const AddMeetingSession = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    });
+  };
+
+  // Handle adding participants to the meeting
+  const handleAddParticipant = () => {
+    if (formData.companyName.trim() && formData.employeeName.trim()) {
+      const newParticipant = {
+        companyName: formData.companyName,
+        employeeName: formData.employeeName,
+      };
+      setFormData((prevData) => ({
+        ...prevData,
+        participantList: [...prevData.participantList, newParticipant],
+        companyName: '',
+        employeeName: '',
+      }));
+    }
+  };
+
+  // Handle deleting participants from the list
+  const handleDeleteParticipant = (index) => {
+    const updatedList = formData.participantList.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      participantList: updatedList,
     });
   };
 
@@ -385,26 +409,24 @@ const AddMeetingSession = () => {
               </>
             )}
 
-             {/* Company Name and Employee Name Fields */}
-             <Grid item xs={12} sm={6}>
+            {/* Participant List */}
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Company Name"
                 name="companyName"
                 value={formData.companyName}
                 onChange={handleChange}
-                
               />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Employee Name"
                 name="employeeName"
                 value={formData.employeeName}
                 onChange={handleChange}
-                
               />
             </Grid>
 
@@ -424,7 +446,7 @@ const AddMeetingSession = () => {
               </Button>
             </Grid>
 
-            {/* Participant List */}
+            {/* Display Participant List */}
             {formData.participantList.length > 0 && (
               <Grid item xs={12}>
                 <Table>
@@ -454,30 +476,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
-            {/* Event Type */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                select
-                label="Type of Event"
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EventIcon color="primary" />
-                    </InputAdornment>
-                  ),
-                }}
-              >
-                <MenuItem value="meeting">Meeting</MenuItem>
-                <MenuItem value="conference">Conference</MenuItem>
-              </TextField>
-            </Grid>
-
-            {/* Special Note */}
+            {/* Special Note and Refreshment */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -498,7 +497,6 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
-            {/* Refreshments */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
