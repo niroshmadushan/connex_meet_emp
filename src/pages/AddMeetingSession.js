@@ -24,7 +24,7 @@ import NotesIcon from '@mui/icons-material/Notes';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
-import { format, isSameDay } from 'date-fns';
+import { isSameDay } from 'date-fns';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
@@ -139,16 +139,6 @@ const AddMeetingSession = () => {
     }
   }, [formData.startTime]);
 
-  // Convert 12-hour time to 24-hour format
-  const convertTo24Hour = (time12h) => {
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') hours = '00';
-    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
-    return `${hours}:${minutes}`;
-  };
-
-  // Generate time options based on the selected slot (15-minute intervals)
   const generateTimeOptions = (start, end, step = 15) => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
@@ -163,6 +153,14 @@ const AddMeetingSession = () => {
       startTime.setMinutes(startTime.getMinutes() + step);
     }
     return options;
+  };
+
+  const convertTo24Hour = (time12h) => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+    return `${hours}:${minutes}`;
   };
 
   const getAvailableTimeSlots = (room) => {
@@ -226,6 +224,31 @@ const AddMeetingSession = () => {
     });
   };
 
+  // Handle adding participants to the meeting
+  const handleAddParticipant = () => {
+    if (formData.companyName.trim() && formData.employeeName.trim()) {
+      const newParticipant = {
+        companyName: formData.companyName,
+        employeeName: formData.employeeName,
+      };
+      setFormData((prevData) => ({
+        ...prevData,
+        participantList: [...prevData.participantList, newParticipant],
+        companyName: '',
+        employeeName: '',
+      }));
+    }
+  };
+
+  // Handle deleting participants from the list
+  const handleDeleteParticipant = (index) => {
+    const updatedList = formData.participantList.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      participantList: updatedList,
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     Swal.fire({
@@ -262,7 +285,7 @@ const AddMeetingSession = () => {
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            {/* Title and Date Fields */}
+            {/* Title, Date, Room, Time Slots, Start and End Time */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -385,8 +408,8 @@ const AddMeetingSession = () => {
               </>
             )}
 
-            {/* Participant List */}
-            <Grid item xs={12}>
+            {/* Participant Fields */}
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Company Name"
@@ -396,7 +419,7 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Employee Name"
@@ -409,7 +432,7 @@ const AddMeetingSession = () => {
             <Grid item xs={12}>
               <Button
                 variant="contained"
-                onClick={() => handleAddParticipant()}
+                onClick={handleAddParticipant}
                 sx={{
                   backgroundColor: themeColor.primary,
                   color: '#fff',
@@ -422,7 +445,7 @@ const AddMeetingSession = () => {
               </Button>
             </Grid>
 
-            {/* Display Participant List */}
+            {/* Participant Table */}
             {formData.participantList.length > 0 && (
               <Grid item xs={12}>
                 <Table>
