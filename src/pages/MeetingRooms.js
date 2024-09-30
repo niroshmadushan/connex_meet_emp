@@ -103,6 +103,16 @@ const MeetingRooms = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Whenever the selected date changes, update the availability display
+    if (selectedRoom) {
+      setOpen(false);
+      setTimeout(() => {
+        setOpen(true);
+      }, 100);
+    }
+  }, [selectedDate, selectedRoom]);
+
   const handleCardClick = (room) => {
     setSelectedRoom(room);
     setOpen(true);
@@ -179,91 +189,89 @@ const MeetingRooms = () => {
 
   return (
     <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: '20px' }}>
-    {/* Date Picker for Selecting Date */}
-    <TextField
-      label="Select Date"
-      type="date"
-      value={format(selectedDate, 'yyyy-MM-dd')} // Set default date value
-      onChange={(e) => setSelectedDate(new Date(e.target.value))}
-      sx={{ mb: 3, width: '200px' }}
-      InputLabelProps={{
-        shrink: true,
-      }}
-    />
+      {/* Date Picker for Selecting Date */}
+      <TextField
+        label="Select Date"
+        type="date"
+        value={format(selectedDate, 'yyyy-MM-dd')} // Set default date value
+        onChange={(e) => setSelectedDate(new Date(e.target.value))}
+        sx={{ mb: 3, width: '200px' }}
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
 
-    {/* Page Title */}
-    <Typography variant="h6" sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', color: themeColor.textPrimary }}>
-      Meeting Rooms Availability
-    </Typography>
+      {/* Page Title */}
+      <Typography variant="h6" sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', color: themeColor.textPrimary }}>
+        Meeting Rooms Availability
+      </Typography>
 
-    {/* Room Cards */}
-    <Grid container spacing={2} sx={{ width: '100%', maxWidth: '600px' }}>
-      {rooms.map((room, index) => (
-        <Grid item xs={12} key={index}>
-          <StyledCard available={room.status_id === 4} onClick={() => handleCardClick(room)}>
-            <BlinkingDot available={room.status_id === 4} />
-            <CardContent sx={{ padding: '10px' }}>
-              <Typography variant="subtitle1" sx={{ mb: 0.5, fontSize: '1rem', fontWeight: 'bold' }}>
-                {room.name}
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem', color: themeColor.textPrimary }}>
-                {room.address}
-              </Typography>
-              {room.status_id === 4 ? (
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
-                  Available
+      {/* Room Cards */}
+      <Grid container spacing={2} sx={{ width: '100%', maxWidth: '600px' }}>
+        {rooms.map((room, index) => (
+          <Grid item xs={12} key={index}>
+            <StyledCard available={room.status_id === 4} onClick={() => handleCardClick(room)}>
+              <BlinkingDot available={room.status_id === 4} />
+              <CardContent sx={{ padding: '10px' }}>
+                <Typography variant="subtitle1" sx={{ mb: 0.5, fontSize: '1rem', fontWeight: 'bold' }}>
+                  {room.name}
                 </Typography>
-              ) : (
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
-                  Not Available
+                <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem', color: themeColor.textPrimary }}>
+                  {room.address}
                 </Typography>
-              )}
-            </CardContent>
-          </StyledCard>
-        </Grid>
-      ))}
-    </Grid>
+                {room.status_id === 4 ? (
+                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
+                    Available
+                  </Typography>
+                ) : (
+                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
+                    Not Available
+                  </Typography>
+                )}
+              </CardContent>
+            </StyledCard>
+          </Grid>
+        ))}
+      </Grid>
 
-    {/* Popup Dialog for Room Details */}
-    <Dialog open={open} onClose={handleClose} TransitionComponent={Slide} TransitionProps={{ direction: 'up', timeout: 400 }}>
-      <DialogTitle sx={{ textAlign: 'center', color: themeColor.primary, fontWeight: 'bold' }}>
-        {selectedRoom?.name}
-      </DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" sx={{ fontSize: '0.85rem', color: themeColor.textPrimary, mb: 1 }}>
-          {selectedRoom?.address}
-        </Typography>
-        {selectedRoom && (
-          <>
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
-              Available Time Slots for {format(selectedDate, 'MM/dd/yyyy')}:
-            </Typography>
-            <TableContainer component={Paper} sx={{ boxShadow: 'none', marginTop: '10px' }}>
-              <Table size="small" aria-label="available time slots">
-                <TableBody>
-                  {getAvailableTimeSlots(selectedRoom).map((slot, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell align="center" sx={{ fontSize: '0.75rem', color: themeColor.textPrimary, border: `1px solid ${themeColor.lightGray}` }}>
-                        {slot}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </>
-        )}
-      </DialogContent>
-      <DialogActions sx={{ justifyContent: 'center' }}>
-        <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: themeColor.primary, color: '#fff' }}>
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
-  </Container>
-);
+      {/* Popup Dialog for Room Details */}
+      <Dialog open={open} onClose={handleClose} TransitionComponent={Slide} TransitionProps={{ direction: 'up', timeout: 400 }}>
+        <DialogTitle sx={{ textAlign: 'center', color: themeColor.primary, fontWeight: 'bold' }}>
+          {selectedRoom?.name}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ fontSize: '0.85rem', color: themeColor.textPrimary, mb: 1 }}>
+            {selectedRoom?.address}
+          </Typography>
+          {selectedRoom && (
+            <>
+              <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
+                Available Time Slots for {format(selectedDate, 'MM/dd/yyyy')}:
+              </Typography>
+              <TableContainer component={Paper} sx={{ boxShadow: 'none', marginTop: '10px' }}>
+                <Table size="small" aria-label="available time slots">
+                  <TableBody>
+                    {getAvailableTimeSlots(selectedRoom).map((slot, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell align="center" sx={{ fontSize: '0.75rem', color: themeColor.textPrimary, border: `1px solid ${themeColor.lightGray}` }}>
+                          {slot}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center' }}>
+          <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: themeColor.primary, color: '#fff' }}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
+  );
 };
 
 export default MeetingRooms;
-
-    
