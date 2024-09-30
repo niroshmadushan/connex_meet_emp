@@ -11,21 +11,22 @@ import {
   Select,
   FormControl,
   InputLabel,
-  IconButton,
   Table,
   TableHead,
   TableRow,
   TableCell,
   TableBody,
+  IconButton,
 } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import TitleIcon from '@mui/icons-material/Title';
 import NotesIcon from '@mui/icons-material/Notes';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
+import axios from 'axios';
+import { isSameDay } from 'date-fns';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 const themeColor = {
   primary: '#007aff',
@@ -33,6 +34,8 @@ const themeColor = {
 };
 
 const AddMeetingSession = () => {
+  const [rooms, setRooms] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -54,73 +57,65 @@ const AddMeetingSession = () => {
 
   const navigate = useNavigate();
 
-  // Helper functions for API calls
-  const getAvailablePlaces = async (date) => {
-    try {
-      const response = await axios.get(`http://192.168.13.150:3001/api/rooms?date=${date}`);
-      const places = response.data.reduce((acc, room) => {
-        acc[date] = acc[date] ? [...acc[date], room.name] : [room.name];
-        return acc;
-      }, {});
-      return places;
-    } catch (error) {
-      console.error('Failed to fetch available places:', error);
-      return {};
-    }
-  };
+  // Fetch rooms and bookings data from the API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const roomsResponse = await axios.get('http://192.168.13.150:3001/place', { withCredentials: true });
+        setRooms(roomsResponse.data);
 
-  const getAvailableTimeSlots = async (date, roomName) => {
-    try {
-      const response = await axios.get(`http://192.168.13.150:3001/api/bookings?date=${date}&room=${roomName}`);
-      const slots = response.data.map((slot) => `${slot.start_time} - ${slot.end_time}`);
-      return { [roomName]: slots };
-    } catch (error) {
-      console.error('Failed to fetch available time slots:', error);
-      return { [roomName]: [] };
-    }
-  };
+        const bookingsResponse = await axios.get('http://192.168.13.150:3001/bookings', { withCredentials: true });
+        setBookings(bookingsResponse.data);
+      } catch (error) {
+        console.error('Failed to fetch room and booking data:', error);
+      }
+    };
 
-  // Fetch available rooms based on the selected date
+    fetchData();
+  }, []);
+
+  // Handle changes in date and update available rooms based on the selected date
   useEffect(() => {
     if (formData.date) {
-      getAvailablePlaces(formData.date).then((places) => {
-        console.log(formData.date)
-        setFormData((prevData) => ({
-          ...prevData,
-          availableRooms: places[formData.date] || [],
-          selectedRoom: '',
-          availableSlots: [],
-          selectedSlot: '',
-          startTime: '',
-          endTime: '',
-          startTimeOptions: [],
-          endTimeOptions: [],
-        }));
-      });
+      const filteredRooms = rooms.map((room) => room.name);
+      setFormData((prevData) => ({
+        ...prevData,
+        availableRooms: filteredRooms || [],
+        selectedRoom: '',
+        availableSlots: [],
+        selectedSlot: '',
+        startTime: '',
+        endTime: '',
+        startTimeOptions: [],
+        endTimeOptions: [],
+      }));
     }
-  }, [formData.date]);
+  }, [formData.date, rooms]);
 
-  // Fetch available time slots when the room is selected
+  // Handle room selection change and update available slots for the selected room
   useEffect(() => {
     if (formData.selectedRoom) {
-      getAvailableTimeSlots(formData.date, formData.selectedRoom).then((slots) => {
+      const selectedRoom = rooms.find((room) => room.name === formData.selectedRoom);
+      if (selectedRoom) {
+        const availableTimeSlots = getAvailableTimeSlots(selectedRoom);
         setFormData((prevData) => ({
           ...prevData,
-          availableSlots: slots[formData.selectedRoom] || [],
+          availableSlots: availableTimeSlots,
           selectedSlot: '',
           startTime: '',
           endTime: '',
           startTimeOptions: [],
           endTimeOptions: [],
         }));
-      });
+      }
     }
-  }, [formData.selectedRoom]);
+  }, [formData.selectedRoom, formData.date]);
 
+  // When a slot is selected, update start and end time options based on the slot
   useEffect(() => {
     if (formData.selectedSlot) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const timeOptions = generateTimeOptions(slotStart, slotEnd);
+      const timeOptions = generateTimeOptions(slotStart, slotEnd, 15);
       setFormData((prevData) => ({
         ...prevData,
         startTimeOptions: timeOptions,
@@ -131,13 +126,14 @@ const AddMeetingSession = () => {
     }
   }, [formData.selectedSlot]);
 
+  // Update end time options based on selected start time
   useEffect(() => {
     if (formData.startTime) {
       const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const endOptions = generateTimeOptions(formData.startTime, slotEnd);
+      const endOptions = generateTimeOptions(formData.startTime, slotEnd, 15);
       setFormData((prevData) => ({
         ...prevData,
-        endTimeOptions: endOptions.slice(1),
+        endTimeOptions: endOptions.slice(1), // Show times after the selected start time
         endTime: '',
       }));
     }
@@ -167,6 +163,60 @@ const AddMeetingSession = () => {
     return `${hours}:${minutes}`;
   };
 
+  const getAvailableTimeSlots = (room) => {
+    const startTime = room.start_time;
+    const endTime = room.end_time;
+
+    const convertTime = (time) => {
+      const [timePart, period] = time.split(' ');
+      const [hours, minutes] = timePart.split(':').map(Number);
+      const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
+      return adjustedHours * 100 + minutes;
+    };
+
+    const roomStart = convertTime(startTime);
+    const roomEnd = convertTime(endTime);
+
+    const roomBookings = bookings.filter(
+      (booking) => booking.place_id === room.id && isSameDay(new Date(booking.date), new Date(formData.date))
+    );
+
+    if (roomBookings.length === 0) {
+      return [`${startTime} - ${endTime}`];
+    }
+
+    const sortedBookings = roomBookings
+      .map((booking) => ({
+        start: convertTime(booking.start_time),
+        end: convertTime(booking.end_time),
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    const freeSlots = [];
+    let lastEndTime = roomStart;
+
+    sortedBookings.forEach((booking) => {
+      if (lastEndTime < booking.start) {
+        freeSlots.push({ start: lastEndTime, end: booking.start });
+      }
+      lastEndTime = Math.max(lastEndTime, booking.end);
+    });
+
+    if (lastEndTime < roomEnd) {
+      freeSlots.push({ start: lastEndTime, end: roomEnd });
+    }
+
+    const formatTime = (time) => {
+      const hours = Math.floor(time / 100);
+      const minutes = time % 100;
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+      return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
+
+    return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
+  };
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -174,6 +224,7 @@ const AddMeetingSession = () => {
     });
   };
 
+  // Handle adding participants to the meeting
   const handleAddParticipant = () => {
     if (formData.companyName.trim() && formData.employeeName.trim()) {
       const newParticipant = {
@@ -189,6 +240,7 @@ const AddMeetingSession = () => {
     }
   };
 
+  // Handle deleting participants from the list
   const handleDeleteParticipant = (index) => {
     const updatedList = formData.participantList.filter((_, i) => i !== index);
     setFormData({
@@ -199,59 +251,41 @@ const AddMeetingSession = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const meetingData = {
-      title: formData.title,
-      date: formData.date,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      room: formData.selectedRoom,
-      participants: formData.participantList,
-      type: formData.type,
-      specialNote: formData.specialNote,
-      refreshment: formData.refreshment,
-    };
-
-    axios
-      .post('http://192.168.13.150:3001/meetings', meetingData)
-      .then(() => {
-        Swal.fire({
-          title: 'Success!',
-          text: 'The meeting/session has been added successfully.',
-          icon: 'success',
-          confirmButtonText: 'OK',
-        }).then(() => {
-          setFormData({
-            title: '',
-            date: '',
-            availableRooms: [],
-            selectedRoom: '',
-            availableSlots: [],
-            selectedSlot: '',
-            startTime: '',
-            endTime: '',
-            companyName: '',
-            employeeName: '',
-            participantList: [],
-            type: 'meeting',
-            specialNote: '',
-            refreshment: '',
-          });
-          navigate('/home-dashboard');
-        });
-      })
-      .catch((error) => console.error('Failed to add meeting:', error));
+    Swal.fire({
+      title: 'Success!',
+      text: 'The meeting/session has been added successfully.',
+      icon: 'success',
+      confirmButtonText: 'OK',
+    }).then(() => {
+      setFormData({
+        title: '',
+        date: '',
+        availableRooms: [],
+        selectedRoom: '',
+        availableSlots: [],
+        selectedSlot: '',
+        startTime: '',
+        endTime: '',
+        companyName: '',
+        employeeName: '',
+        participantList: [],
+        type: 'meeting',
+        specialNote: '',
+        refreshment: '',
+      });
+      navigate('/home-dashboard');
+    });
   };
 
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
-        Add a New Meeting 
+        Add a New Meeting
       </Typography>
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            {/* Title and Date */}
+            {/* Title, Date, Room, Time Slots, Start and End Time */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -269,7 +303,6 @@ const AddMeetingSession = () => {
                 required
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -292,7 +325,7 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
-            {/* Room and Time Slot Selection */}
+            {/* Room Selection and Available Slots */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Room</InputLabel>
@@ -312,6 +345,7 @@ const AddMeetingSession = () => {
               </FormControl>
             </Grid>
 
+            {/* Available Slots Dropdown */}
             {formData.availableSlots.length > 0 && (
               <Grid item xs={12}>
                 <FormControl fullWidth>
@@ -333,6 +367,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
+            {/* Start and End Time Options */}
             {formData.startTimeOptions.length > 0 && (
               <>
                 <Grid item xs={12} sm={6}>
@@ -373,7 +408,7 @@ const AddMeetingSession = () => {
               </>
             )}
 
-            {/* Company Name and Employee Name Fields */}
+            {/* Participant Fields */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -381,7 +416,6 @@ const AddMeetingSession = () => {
                 name="companyName"
                 value={formData.companyName}
                 onChange={handleChange}
-                
               />
             </Grid>
 
@@ -392,7 +426,6 @@ const AddMeetingSession = () => {
                 name="employeeName"
                 value={formData.employeeName}
                 onChange={handleChange}
-                
               />
             </Grid>
 
@@ -412,7 +445,7 @@ const AddMeetingSession = () => {
               </Button>
             </Grid>
 
-            {/* Participant List */}
+            {/* Participant Table */}
             {formData.participantList.length > 0 && (
               <Grid item xs={12}>
                 <Table>
@@ -442,30 +475,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
-            {/* Event Type */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                select
-                label="Type of Event"
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EventIcon color="primary" />
-                    </InputAdornment>
-                  ),
-                }}
-              >
-                <MenuItem value="meeting">Meeting</MenuItem>
-                <MenuItem value="conference">Conference</MenuItem>
-              </TextField>
-            </Grid>
-
-            {/* Special Note */}
+            {/* Special Note and Refreshment */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -486,7 +496,6 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
-            {/* Refreshments */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
