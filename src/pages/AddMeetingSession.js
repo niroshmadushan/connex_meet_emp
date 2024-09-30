@@ -174,29 +174,6 @@ const AddMeetingSession = () => {
     });
   };
 
-  const handleAddParticipant = () => {
-    if (formData.companyName.trim() && formData.employeeName.trim()) {
-      const newParticipant = {
-        companyName: formData.companyName,
-        employeeName: formData.employeeName,
-      };
-      setFormData((prevData) => ({
-        ...prevData,
-        participantList: [...prevData.participantList, newParticipant],
-        companyName: '',
-        employeeName: '',
-      }));
-    }
-  };
-
-  const handleDeleteParticipant = (index) => {
-    const updatedList = formData.participantList.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      participantList: updatedList,
-    });
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     Swal.fire({
@@ -233,8 +210,7 @@ const AddMeetingSession = () => {
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-          <Grid container spacing={3}>
-            {/* Title and Date */}
+            {/* Title and Date Fields */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -252,7 +228,6 @@ const AddMeetingSession = () => {
                 required
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -275,7 +250,7 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
-            {/* Room and Time Slot Selection */}
+            {/* Room Selection and Available Slots */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Room</InputLabel>
@@ -295,6 +270,7 @@ const AddMeetingSession = () => {
               </FormControl>
             </Grid>
 
+            {/* Available Slots Dropdown */}
             {formData.availableSlots.length > 0 && (
               <Grid item xs={12}>
                 <FormControl fullWidth>
@@ -316,6 +292,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
+            {/* Start and End Time Options */}
             {formData.startTimeOptions.length > 0 && (
               <>
                 <Grid item xs={12} sm={6}>
@@ -510,7 +487,6 @@ const AddMeetingSession = () => {
                 Add Meeting
               </Button>
             </Grid>
-          </Grid>
           </Grid>
         </form>
       </Paper>
