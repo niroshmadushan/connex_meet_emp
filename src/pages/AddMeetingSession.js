@@ -84,6 +84,7 @@ const AddMeetingSession = () => {
   useEffect(() => {
     if (formData.date) {
       getAvailablePlaces(formData.date).then((places) => {
+        console.log(formData.date)
         setFormData((prevData) => ({
           ...prevData,
           availableRooms: places[formData.date] || [],
