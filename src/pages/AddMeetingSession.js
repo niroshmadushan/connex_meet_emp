@@ -70,7 +70,7 @@ const AddMeetingSession = () => {
       const bookingsResponse = await axios.get(`http://192.168.13.150:3001/api/bookings?date=09/30/2024`);
       const bookings = bookingsResponse.data;
 
-      console.log(selectedDate);
+      console.log(bookings);
       const placesByDate = { [selectedDate]: rooms.map((room) => room.name) };
 
       const slotsByRoom = rooms.reduce((acc, room) => {
