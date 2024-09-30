@@ -11,40 +11,32 @@ import {
   Select,
   FormControl,
   InputLabel,
-  IconButton,
   Table,
   TableHead,
   TableRow,
   TableCell,
   TableBody,
+  IconButton,
 } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
-import RoomIcon from '@mui/icons-material/Room';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TitleIcon from '@mui/icons-material/Title';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import NotesIcon from '@mui/icons-material/Notes';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
+import axios from 'axios';
+import { format, isSameDay } from 'date-fns';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
-const availablePlaces = {
-  '2024-09-04': ['Room 1', 'Room 3', 'Room 4'],
-  '2024-09-05': ['Room 2', 'Room 3'],
-};
-
-const availableTimeSlots = {
-  'Room 1': ['10:00 AM - 12:30 PM', '01:00 PM - 02:30 PM', '04:00 PM - 06:00 PM'],
-  'Room 3': ['09:00 AM - 11:00 AM', '03:00 PM - 05:00 PM'],
-  'Room 4': ['11:00 AM - 01:00 PM', '02:00 PM - 04:00 PM'],
-};
-
+// Theme colors
 const themeColor = {
   primary: '#007aff',
   primaryDark: '#005bb5',
 };
 
 const AddMeetingSession = () => {
+  const [rooms, setRooms] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -66,11 +58,30 @@ const AddMeetingSession = () => {
 
   const navigate = useNavigate();
 
+  // Fetch rooms and bookings data from the API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const roomsResponse = await axios.get('http://192.168.13.150:3001/place', { withCredentials: true });
+        setRooms(roomsResponse.data);
+
+        const bookingsResponse = await axios.get('http://192.168.13.150:3001/bookings', { withCredentials: true });
+        setBookings(bookingsResponse.data);
+      } catch (error) {
+        console.error('Failed to fetch room and booking data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Handle changes in date and update available rooms based on the selected date
   useEffect(() => {
     if (formData.date) {
+      const filteredRooms = rooms.map((room) => room.name);
       setFormData((prevData) => ({
         ...prevData,
-        availableRooms: availablePlaces[formData.date] || [],
+        availableRooms: filteredRooms || [],
         selectedRoom: '',
         availableSlots: [],
         selectedSlot: '',
@@ -80,70 +91,80 @@ const AddMeetingSession = () => {
         endTimeOptions: [],
       }));
     }
-  }, [formData.date]);
+  }, [formData.date, rooms]);
 
+  // Handle room selection change and update available slots for the selected room
   useEffect(() => {
     if (formData.selectedRoom) {
-      setFormData((prevData) => ({
-        ...prevData,
-        availableSlots: availableTimeSlots[formData.selectedRoom] || [],
-        selectedSlot: '',
-        startTime: '',
-        endTime: '',
-        startTimeOptions: [],
-        endTimeOptions: [],
-      }));
+      const selectedRoom = rooms.find((room) => room.name === formData.selectedRoom);
+      if (selectedRoom) {
+        const availableTimeSlots = getAvailableTimeSlots(selectedRoom);
+        setFormData((prevData) => ({
+          ...prevData,
+          availableSlots: availableTimeSlots,
+          selectedSlot: '',
+          startTime: '',
+          endTime: '',
+          startTimeOptions: [],
+          endTimeOptions: [],
+        }));
+      }
     }
-  }, [formData.selectedRoom]);
+  }, [formData.selectedRoom, formData.date]);
 
-  useEffect(() => {
-    if (formData.selectedSlot) {
-      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const timeOptions = generateTimeOptions(slotStart, slotEnd);
-      setFormData((prevData) => ({
-        ...prevData,
-        startTimeOptions: timeOptions,
-        endTimeOptions: timeOptions,
-        startTime: '',
-        endTime: '',
-      }));
+  // Calculate available time slots for the selected room based on the selected date
+  const getAvailableTimeSlots = (room) => {
+    const startTime = room.start_time;
+    const endTime = room.end_time;
+
+    const convertTime = (time) => {
+      const [timePart, period] = time.split(' ');
+      const [hours, minutes] = timePart.split(':').map(Number);
+      const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
+      return adjustedHours * 100 + minutes;
+    };
+
+    const roomStart = convertTime(startTime);
+    const roomEnd = convertTime(endTime);
+
+    const roomBookings = bookings.filter(
+      (booking) => booking.place_id === room.id && isSameDay(new Date(booking.date), new Date(formData.date))
+    );
+
+    if (roomBookings.length === 0) {
+      return [`${startTime} - ${endTime}`];
     }
-  }, [formData.selectedSlot]);
 
-  useEffect(() => {
-    if (formData.startTime) {
-      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
-      const endOptions = generateTimeOptions(formData.startTime, slotEnd);
-      setFormData((prevData) => ({
-        ...prevData,
-        endTimeOptions: endOptions.slice(1),
-        endTime: '',
-      }));
+    const sortedBookings = roomBookings
+      .map((booking) => ({
+        start: convertTime(booking.start_time),
+        end: convertTime(booking.end_time),
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    const freeSlots = [];
+    let lastEndTime = roomStart;
+
+    sortedBookings.forEach((booking) => {
+      if (lastEndTime < booking.start) {
+        freeSlots.push({ start: lastEndTime, end: booking.start });
+      }
+      lastEndTime = Math.max(lastEndTime, booking.end);
+    });
+
+    if (lastEndTime < roomEnd) {
+      freeSlots.push({ start: lastEndTime, end: roomEnd });
     }
-  }, [formData.startTime]);
 
-  const generateTimeOptions = (start, end, step = 15) => {
-    const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
-    const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
-    const options = [];
-    while (startTime <= endTime) {
-      const timeString = startTime.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
-      options.push(timeString);
-      startTime.setMinutes(startTime.getMinutes() + step);
-    }
-    return options;
-  };
+    const formatTime = (time) => {
+      const hours = Math.floor(time / 100);
+      const minutes = time % 100;
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+      return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
 
-  const convertTo24Hour = (time12h) => {
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') hours = '00';
-    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
-    return `${hours}:${minutes}`;
+    return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
   };
 
   const handleChange = (e) => {
@@ -178,8 +199,6 @@ const AddMeetingSession = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
-
     Swal.fire({
       title: 'Success!',
       text: 'The meeting/session has been added successfully.',
@@ -209,10 +228,11 @@ const AddMeetingSession = () => {
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
-        Add a New Meeting 
+        Add a New Meeting
       </Typography>
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
+          <Grid container spacing={3}>
           <Grid container spacing={3}>
             {/* Title and Date */}
             <Grid item xs={12}>
@@ -490,6 +510,7 @@ const AddMeetingSession = () => {
                 Add Meeting
               </Button>
             </Grid>
+          </Grid>
           </Grid>
         </form>
       </Paper>
