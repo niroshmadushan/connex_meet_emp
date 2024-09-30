@@ -206,6 +206,7 @@ const AddMeetingSession = () => {
       options.push(timeString);
       startTime.setMinutes(startTime.getMinutes() + step);
     }
+    
     return options;
   };
   
@@ -215,56 +216,60 @@ const AddMeetingSession = () => {
     let [hours, minutes] = time.split(':');
     
     // Handle edge cases like "12:00 AM" or "12:00 PM"
-    if (hours === '12') hours = '00';
-    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+    if (hours === '12') {
+      hours = modifier === 'AM' ? '00' : '12'; // Midnight = 00, Noon = 12
+    } else {
+      hours = modifier === 'PM' ? (parseInt(hours, 10) + 12).toString() : hours;
+    }
   
     return `${hours}:${minutes}`;
   };
+  
   
 
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time;
     const endTime = room.end_time;
-
+  
     const convertTime = (time) => {
       const [timePart, period] = time.split(' ');
       const [hours, minutes] = timePart.split(':').map(Number);
       const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
       return adjustedHours * 100 + minutes;
     };
-
+  
     const roomStart = convertTime(startTime);
     const roomEnd = convertTime(endTime);
-
+  
     const roomBookings = bookings.filter(
       (booking) => booking.place_id === room.id && isSameDay(new Date(booking.date), new Date(formData.date))
     );
-
+  
     if (roomBookings.length === 0) {
       return [`${startTime} - ${endTime}`];
     }
-
+  
     const sortedBookings = roomBookings
       .map((booking) => ({
         start: convertTime(booking.start_time),
         end: convertTime(booking.end_time),
       }))
       .sort((a, b) => a.start - b.start);
-
+  
     const freeSlots = [];
     let lastEndTime = roomStart;
-
+  
     sortedBookings.forEach((booking) => {
       if (lastEndTime < booking.start) {
         freeSlots.push({ start: lastEndTime, end: booking.start });
       }
       lastEndTime = Math.max(lastEndTime, booking.end);
     });
-
+  
     if (lastEndTime < roomEnd) {
       freeSlots.push({ start: lastEndTime, end: roomEnd });
     }
-
+  
     const formatTime = (time) => {
       const hours = Math.floor(time / 100);
       const minutes = time % 100;
@@ -272,7 +277,7 @@ const AddMeetingSession = () => {
       const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
       return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
     };
-
+  
     return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
   };
 
