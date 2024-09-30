@@ -26,6 +26,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { format, parse } from 'date-fns';  // Importing date-fns for date formatting
 
 const themeColor = {
   primary: '#007aff',
@@ -56,23 +57,32 @@ const AddMeetingSession = () => {
   const [availableTimeSlots, setAvailableTimeSlots] = useState({});
   const navigate = useNavigate();
 
-  // Fetch rooms and bookings data when date changes
+  // Format date to MM/dd/yyyy
+  const formatDateToMDY = (date) => format(date, 'MM/dd/yyyy');
+
+  // Convert a date string from yyyy-MM-dd to MM/dd/yyyy format
+  const convertToMDYFormat = (dateStr) => {
+    const parsedDate = parse(dateStr, 'yyyy-MM-dd', new Date());
+    return formatDateToMDY(parsedDate);
+  };
+
+  // Update the form data when date changes and convert it to the required format
   useEffect(() => {
     if (formData.date) {
-      fetchRoomsAndBookings(formData.date);
+      const formattedDate = convertToMDYFormat(formData.date);
+      fetchRoomsAndBookings(formattedDate);
     }
   }, [formData.date]);
 
+  // Fetch rooms and bookings based on the selected date
   const fetchRoomsAndBookings = async (selectedDate) => {
     try {
       const roomsResponse = await axios.get(`http://192.168.13.150:3001/api/rooms`);
       const rooms = roomsResponse.data;
-      const bookingsResponse = await axios.get(`http://192.168.13.150:3001/api/bookings?date=09/30/2024`);
+      const bookingsResponse = await axios.get(`http://192.168.13.150:3001/api/bookings?date=${selectedDate}`);
       const bookings = bookingsResponse.data;
 
-      console.log(bookings);
       const placesByDate = { [selectedDate]: rooms.map((room) => room.name) };
-
       const slotsByRoom = rooms.reduce((acc, room) => {
         const roomBookings = bookings.filter((booking) => booking.place_id === room.id);
         const availableSlots = calculateAvailableTimeSlots(room, roomBookings);
@@ -209,7 +219,7 @@ const AddMeetingSession = () => {
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            {/* Title and Date Inputs */}
+            {/* Title Input */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -228,6 +238,7 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
+            {/* Date Input */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -290,7 +301,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
-            {/* Start and End Time Inputs */}
+            {/* Start and End Time Selection */}
             {formData.startTimeOptions.length > 0 && (
               <>
                 <Grid item xs={12} sm={6}>
@@ -393,7 +404,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
-            {/* Event Type Selection */}
+            {/* Type of Event */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -484,3 +495,4 @@ const AddMeetingSession = () => {
 };
 
 export default AddMeetingSession;
+
