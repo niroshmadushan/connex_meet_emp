@@ -28,7 +28,6 @@ import { format, isSameDay } from 'date-fns';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
-// Theme colors
 const themeColor = {
   primary: '#007aff',
   primaryDark: '#005bb5',
@@ -112,7 +111,60 @@ const AddMeetingSession = () => {
     }
   }, [formData.selectedRoom, formData.date]);
 
-  // Calculate available time slots for the selected room based on the selected date
+  // When a slot is selected, update start and end time options based on the slot
+  useEffect(() => {
+    if (formData.selectedSlot) {
+      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
+      const timeOptions = generateTimeOptions(slotStart, slotEnd);
+      setFormData((prevData) => ({
+        ...prevData,
+        startTimeOptions: timeOptions,
+        endTimeOptions: timeOptions,
+        startTime: '',
+        endTime: '',
+      }));
+    }
+  }, [formData.selectedSlot]);
+
+  // Update end time options based on selected start time
+  useEffect(() => {
+    if (formData.startTime) {
+      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
+      const endOptions = generateTimeOptions(formData.startTime, slotEnd);
+      setFormData((prevData) => ({
+        ...prevData,
+        endTimeOptions: endOptions.slice(1), // Remove the start time itself
+        endTime: '',
+      }));
+    }
+  }, [formData.startTime]);
+
+  // Convert time range into 15-minute step slots
+  const generateTimeOptions = (start, end, step = 15) => {
+    const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
+    const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
+    const options = [];
+    while (startTime <= endTime) {
+      const timeString = startTime.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+      options.push(timeString);
+      startTime.setMinutes(startTime.getMinutes() + step);
+    }
+    return options;
+  };
+
+  const convertTo24Hour = (time12h) => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+    return `${hours}:${minutes}`;
+  };
+
+  // Calculate available time slots based on the room's operating hours and existing bookings
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time;
     const endTime = room.end_time;
@@ -171,31 +223,6 @@ const AddMeetingSession = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
-
-  // Handle adding participants to the meeting
-  const handleAddParticipant = () => {
-    if (formData.companyName.trim() && formData.employeeName.trim()) {
-      const newParticipant = {
-        companyName: formData.companyName,
-        employeeName: formData.employeeName,
-      };
-      setFormData((prevData) => ({
-        ...prevData,
-        participantList: [...prevData.participantList, newParticipant],
-        companyName: '',
-        employeeName: '',
-      }));
-    }
-  };
-
-  // Handle deleting participants from the list
-  const handleDeleteParticipant = (index) => {
-    const updatedList = formData.participantList.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      participantList: updatedList,
     });
   };
 
@@ -358,8 +385,8 @@ const AddMeetingSession = () => {
               </>
             )}
 
-            {/* Company Name and Employee Name Fields */}
-            <Grid item xs={12} sm={6}>
+             {/* Company Name and Employee Name Fields */}
+             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Company Name"
