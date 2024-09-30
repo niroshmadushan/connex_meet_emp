@@ -1,4 +1,3 @@
-// src/pages/MeetingRooms.js
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -72,48 +71,33 @@ const BlinkingDot = styled(Box)(({ available }) => ({
 }));
 
 const MeetingRooms = () => {
-  const [rooms, setRooms] = useState([]);
+  const [rooms, setRooms] = useState([]);  // State for storing rooms data
+  const [bookings, setBookings] = useState([]);  // State for storing all bookings
   const [open, setOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
-  // Fetch all rooms and their bookings from the API
+  // Fetch rooms and all bookings from the API
   useEffect(() => {
-    const fetchRoomsData = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch room data from /place endpoint
         const roomsResponse = await axios.get('http://192.168.13.150:3001/place', {
           withCredentials: true,
         });
-
         const roomsData = roomsResponse.data;
+        setRooms(roomsData);
 
-        // Fetch bookings for each room
-        const bookingsPromises = roomsData.map((room) =>
-          axios
-            .get(`http://192.168.13.150:3001/bookings/${room.id}`, {
-              withCredentials: true,
-            })
-            .then((res) => res.data)
-            .catch((err) => {
-              console.error(`Failed to fetch bookings for room ${room.id}:`, err);
-              return []; // Return an empty array if there's an error
-            })
-        );
-        const bookings = await Promise.all(bookingsPromises);
-        console.log(bookings);
-
-        // Merge room data with bookings, ensuring bookings is always an array
-        const roomsWithBookings = roomsData.map((room, index) => ({
-          ...room,
-          bookings: Array.isArray(bookings[index]) ? bookings[index] : [], // Ensure bookings is an array
-        }));
-
-        setRooms(roomsWithBookings);
+        // Fetch all bookings at once from /bookings endpoint
+        const bookingsResponse = await axios.get('http://192.168.13.150:3001/bookings', {
+          withCredentials: true,
+        });
+        setBookings(bookingsResponse.data);  // Store all bookings data in state
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error('Failed to fetch room and booking data:', error);
       }
     };
 
-    fetchRoomsData();
+    fetchData();
   }, []);
 
   const handleCardClick = (room) => {
@@ -126,12 +110,12 @@ const MeetingRooms = () => {
     setSelectedRoom(null);
   };
 
-  // Function to calculate available time slots for a room based on its operating hours and bookings
+  // Calculate available time slots for the selected room
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time; // Operating start time (e.g., 08:00 AM)
     const endTime = room.end_time;     // Operating end time (e.g., 05:00 PM)
 
-    // Helper function to convert time to a comparable number for calculations
+    // Convert time to a comparable number for calculations
     const convertTime = (time) => {
       const [timePart, period] = time.split(' ');
       const [hours, minutes] = timePart.split(':').map(Number);
@@ -142,13 +126,16 @@ const MeetingRooms = () => {
     const roomStart = convertTime(startTime);  // Operating start time in "HHMM" format (e.g., 800 for 08:00 AM)
     const roomEnd = convertTime(endTime);      // Operating end time in "HHMM" format (e.g., 1700 for 05:00 PM)
 
+    // Filter bookings for the current room
+    const roomBookings = bookings.filter((booking) => booking.place_id === room.id);
+
     // If no bookings, return the entire operating time as a single free slot
-    if (!room.bookings || room.bookings.length === 0) {
+    if (roomBookings.length === 0) {
       return [`${startTime} - ${endTime}`];
     }
 
     // Convert bookings to sorted time ranges
-    const sortedBookings = room.bookings
+    const sortedBookings = roomBookings
       .map((booking) => ({
         start: convertTime(booking.start_time),
         end: convertTime(booking.end_time),
