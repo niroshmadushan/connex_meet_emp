@@ -18,9 +18,11 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  TextField,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import axios from 'axios';
+import { format, isSameDay } from 'date-fns';
 
 // Theme colors
 const themeColor = {
@@ -73,6 +75,7 @@ const BlinkingDot = styled(Box)(({ available }) => ({
 const MeetingRooms = () => {
   const [rooms, setRooms] = useState([]);  // State for storing rooms data
   const [bookings, setBookings] = useState([]);  // State for storing all bookings
+  const [selectedDate, setSelectedDate] = useState(new Date());  // State for selected date
   const [open, setOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
@@ -110,7 +113,7 @@ const MeetingRooms = () => {
     setSelectedRoom(null);
   };
 
-  // Calculate available time slots for the selected room
+  // Calculate available time slots for the selected room based on the selected date
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time; // Operating start time (e.g., 08:00 AM)
     const endTime = room.end_time;     // Operating end time (e.g., 05:00 PM)
@@ -126,8 +129,10 @@ const MeetingRooms = () => {
     const roomStart = convertTime(startTime);  // Operating start time in "HHMM" format (e.g., 800 for 08:00 AM)
     const roomEnd = convertTime(endTime);      // Operating end time in "HHMM" format (e.g., 1700 for 05:00 PM)
 
-    // Filter bookings for the current room
-    const roomBookings = bookings.filter((booking) => booking.place_id === room.id);
+    // Filter bookings based on the selected date and the current room ID
+    const roomBookings = bookings.filter((booking) =>
+      booking.place_id === room.id && isSameDay(new Date(booking.date), selectedDate)
+    );
 
     // If no bookings, return the entire operating time as a single free slot
     if (roomBookings.length === 0) {
@@ -174,68 +179,91 @@ const MeetingRooms = () => {
 
   return (
     <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: '20px' }}>
-      <Typography variant="h6" sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', color: themeColor.textPrimary }}>
-        Meeting Rooms
-      </Typography>
-      <Grid container spacing={2} sx={{ width: '100%', maxWidth: '600px' }}>
-        {rooms.map((room, index) => (
-          <Grid item xs={12} key={index}>
-            <StyledCard available={room.status_id === 4} onClick={() => handleCardClick(room)}>
-              <BlinkingDot available={room.status_id === 4} />
-              <CardContent sx={{ padding: '10px' }}>
-                <Typography variant="subtitle1" sx={{ mb: 0.5, fontSize: '1rem', fontWeight: 'bold' }}>
-                  {room.name}
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem', color: themeColor.textPrimary }}>
-                  {room.address}
-                </Typography>
-                {room.status_id === 4 ? (
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
-                    Available
-                  </Typography>
-                ) : (
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
-                    Not Available
-                  </Typography>
-                )}
-              </CardContent>
-            </StyledCard>
-          </Grid>
-        ))}
-      </Grid>
+    {/* Date Picker for Selecting Date */}
+    <TextField
+      label="Select Date"
+      type="date"
+      value={format(selectedDate, 'yyyy-MM-dd')} // Set default date value
+      onChange={(e) => setSelectedDate(new Date(e.target.value))}
+      sx={{ mb: 3, width: '200px' }}
+      InputLabelProps={{
+        shrink: true,
+      }}
+    />
 
-      {/* Popup Dialog for Room Details */}
-      <Dialog open={open} onClose={handleClose} TransitionComponent={Slide} TransitionProps={{ direction: 'up', timeout: 400 }}>
-        <DialogTitle sx={{ textAlign: 'center', color: themeColor.primary, fontWeight: 'bold' }}>{selectedRoom?.name}</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" sx={{ fontSize: '0.85rem', color: themeColor.textPrimary, mb: 1 }}>{selectedRoom?.address}</Typography>
-          {selectedRoom && (
-            <>
-              <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
-                Available Time Slots:
+    {/* Page Title */}
+    <Typography variant="h6" sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', color: themeColor.textPrimary }}>
+      Meeting Rooms Availability
+    </Typography>
+
+    {/* Room Cards */}
+    <Grid container spacing={2} sx={{ width: '100%', maxWidth: '600px' }}>
+      {rooms.map((room, index) => (
+        <Grid item xs={12} key={index}>
+          <StyledCard available={room.status_id === 4} onClick={() => handleCardClick(room)}>
+            <BlinkingDot available={room.status_id === 4} />
+            <CardContent sx={{ padding: '10px' }}>
+              <Typography variant="subtitle1" sx={{ mb: 0.5, fontSize: '1rem', fontWeight: 'bold' }}>
+                {room.name}
               </Typography>
-              <TableContainer component={Paper} sx={{ boxShadow: 'none', marginTop: '10px' }}>
-                <Table size="small" aria-label="available time slots">
-                  <TableBody>
-                    {getAvailableTimeSlots(selectedRoom).map((slot, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell align="center" sx={{ fontSize: '0.75rem', color: themeColor.textPrimary, border: `1px solid ${themeColor.lightGray}` }}>
-                          {slot}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: 'center' }}>
-          <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: themeColor.primary, color: '#fff' }}>Close</Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
-  );
+              <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem', color: themeColor.textPrimary }}>
+                {room.address}
+              </Typography>
+              {room.status_id === 4 ? (
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
+                  Available
+                </Typography>
+              ) : (
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
+                  Not Available
+                </Typography>
+              )}
+            </CardContent>
+          </StyledCard>
+        </Grid>
+      ))}
+    </Grid>
+
+    {/* Popup Dialog for Room Details */}
+    <Dialog open={open} onClose={handleClose} TransitionComponent={Slide} TransitionProps={{ direction: 'up', timeout: 400 }}>
+      <DialogTitle sx={{ textAlign: 'center', color: themeColor.primary, fontWeight: 'bold' }}>
+        {selectedRoom?.name}
+      </DialogTitle>
+      <DialogContent>
+        <Typography variant="body2" sx={{ fontSize: '0.85rem', color: themeColor.textPrimary, mb: 1 }}>
+          {selectedRoom?.address}
+        </Typography>
+        {selectedRoom && (
+          <>
+            <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
+              Available Time Slots for {format(selectedDate, 'MM/dd/yyyy')}:
+            </Typography>
+            <TableContainer component={Paper} sx={{ boxShadow: 'none', marginTop: '10px' }}>
+              <Table size="small" aria-label="available time slots">
+                <TableBody>
+                  {getAvailableTimeSlots(selectedRoom).map((slot, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell align="center" sx={{ fontSize: '0.75rem', color: themeColor.textPrimary, border: `1px solid ${themeColor.lightGray}` }}>
+                        {slot}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: 'center' }}>
+        <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: themeColor.primary, color: '#fff' }}>
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  </Container>
+);
 };
 
 export default MeetingRooms;
+
+    
