@@ -99,6 +99,7 @@ const MeetingRooms = () => {
             })
         );
         const bookings = await Promise.all(bookingsPromises);
+        console.log(bookings);
 
         // Merge room data with bookings, ensuring bookings is always an array
         const roomsWithBookings = roomsData.map((room, index) => ({
