@@ -196,6 +196,7 @@ const AddMeetingSession = () => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
     const options = [];
+  
     while (startTime <= endTime) {
       const timeString = startTime.toLocaleTimeString('en-US', {
         hour: '2-digit',
@@ -207,14 +208,19 @@ const AddMeetingSession = () => {
     }
     return options;
   };
-
+  
+  // Corrected time conversion for 24-hour format
   const convertTo24Hour = (time12h) => {
     const [time, modifier] = time12h.split(' ');
     let [hours, minutes] = time.split(':');
+    
+    // Handle edge cases like "12:00 AM" or "12:00 PM"
     if (hours === '12') hours = '00';
     if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+  
     return `${hours}:${minutes}`;
   };
+  
 
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time;
