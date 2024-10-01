@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import {
   Box,
   TextField,
@@ -41,6 +42,7 @@ const AddMeetingSession = () => {
     date: '',
     availableRooms: [],
     selectedRoom: '',
+    selectedRoomId: '',
     availableSlots: [],
     selectedSlot: '',
     startTime: '',
@@ -53,9 +55,21 @@ const AddMeetingSession = () => {
     type: 'meeting',
     specialNote: '',
     refreshment: '',
+    id: '', // For storing `id` from local storage
+    orgId: '', // For storing `orgId` from local storage
   });
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const userId = localStorage.getItem('id') || '';
+    const userOrgId = localStorage.getItem('orgid') || '';
+    setFormData((prevData) => ({
+      ...prevData,
+      id: userId,
+      orgId: userOrgId,
+    }));
+  }, []);
 
   // Fetch rooms and bookings data from the API
   useEffect(() => {
@@ -139,24 +153,42 @@ const AddMeetingSession = () => {
     }
   }, [formData.startTime]);
 
+  useEffect(() => {
+    if (formData.selectedRoomId) {
+      const selectedRoom = rooms.find((room) => room.id === formData.selectedRoomId);
+      if (selectedRoom) {
+        const availableTimeSlots = getAvailableTimeSlots(selectedRoom);
+        setFormData((prevData) => ({
+          ...prevData,
+          availableSlots: availableTimeSlots,
+          selectedSlot: '',
+          startTime: '',
+          endTime: '',
+          startTimeOptions: [],
+          endTimeOptions: [],
+        }));
+      }
+    }
+  }, [formData.selectedRoomId, formData.date]);
+  
   const generateTimeOptions = (start, end, step = 15) => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
     const options = [];
-  
+
     while (startTime <= endTime) {
       const timeString = convertTo12Hour(startTime.toTimeString().substring(0, 5)); // Format to 12-hour for display
       options.push(timeString);
       startTime.setMinutes(startTime.getMinutes() + step);
     }
-  
+
     return options;
   };
 
   const convertTo12Hour = (time24h) => {
     let [hours, minutes] = time24h.split(':').map(Number);
     const period = hours >= 12 ? 'PM' : 'AM';
-  
+
     // Convert back to 12-hour format
     hours = hours % 12 || 12; // Adjust 0 to 12 for midnight
     return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
@@ -165,21 +197,21 @@ const AddMeetingSession = () => {
   const convertTo24Hour = (time12h) => {
     const [time, modifier] = time12h.split(' ');
     let [hours, minutes] = time.split(':');
-  
+
     // Handle "12:00 AM" and "12:00 PM" edge cases
     if (hours === '12') {
       hours = modifier === 'AM' ? '00' : '12';
     } else {
       hours = modifier === 'PM' ? (parseInt(hours, 10) + 12).toString() : hours;
     }
-  
+
     return `${hours.padStart(2, '0')}:${minutes}`; // Ensure "01" format instead of "1"
   };
 
   const getAvailableTimeSlots = (room) => {
     const startTime = room.start_time; // Already in 12-hour format
     const endTime = room.end_time;     // Already in 12-hour format
-  
+
     // Convert the 12-hour time to 24-hour format for internal calculations
     const convertTime = (time) => {
       const [timePart, period] = time.split(' ');
@@ -187,18 +219,18 @@ const AddMeetingSession = () => {
       const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
       return adjustedHours * 100 + minutes; // Use 100-based format for comparisons
     };
-  
+
     const roomStart = convertTime(startTime);
     const roomEnd = convertTime(endTime);
-  
+
     const roomBookings = bookings.filter(
       (booking) => booking.place_id === room.id && isSameDay(new Date(booking.date), new Date(formData.date))
     );
-  
+
     if (roomBookings.length === 0) {
       return [`${startTime} - ${endTime}`]; // If no bookings, the entire slot is free
     }
-  
+
     // Sort and find free slots
     const sortedBookings = roomBookings
       .map((booking) => ({
@@ -206,28 +238,28 @@ const AddMeetingSession = () => {
         end: convertTime(booking.end_time),
       }))
       .sort((a, b) => a.start - b.start);
-  
+
     const freeSlots = [];
     let lastEndTime = roomStart;
-  
+
     sortedBookings.forEach((booking) => {
       if (lastEndTime < booking.start) {
         freeSlots.push({ start: lastEndTime, end: booking.start });
       }
       lastEndTime = Math.max(lastEndTime, booking.end);
     });
-  
+
     if (lastEndTime < roomEnd) {
       freeSlots.push({ start: lastEndTime, end: roomEnd });
     }
-  
+
     // Convert slots back to 12-hour format for display
     const formatTime = (time) => {
       const hours = Math.floor(time / 100);
       const minutes = time % 100;
       return convertTo12Hour(`${hours}:${minutes.toString().padStart(2, '0')}`);
     };
-  
+
     return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
   };
 
@@ -262,39 +294,78 @@ const AddMeetingSession = () => {
       participantList: updatedList,
     });
   };
-
-  const handleSubmit = (e) => {
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    Swal.fire({
-      title: 'Success!',
-      text: 'The meeting/session has been added successfully.',
-      icon: 'success',
-      confirmButtonText: 'OK',
-    }).then(() => {
-      setFormData({
-        title: '',
-        date: '',
-        availableRooms: [],
-        selectedRoom: '',
-        availableSlots: [],
-        selectedSlot: '',
-        startTime: '',
-        endTime: '',
-        companyName: '',
-        employeeName: '',
-        participantList: [],
-        type: 'meeting',
-        specialNote: '',
-        refreshment: '',
+    const formattedDate = formData.date ? format(new Date(formData.date), 'MM/dd/yyyy') : '';
+    // Prepare the data for the API request
+    const bookingData = {
+      title: formData.title,
+      date: formattedDate,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      type: formData.type,
+      specialNote: formData.specialNote,
+      refreshment: formData.refreshment,
+      selectedRoomId: formData.selectedRoomId,
+      companyName: formData.companyName,
+      employeeName: formData.employeeName,
+      participantList: formData.participantList,
+      id: formData.id, // ID from local storage
+      orgId: formData.orgId, // Org ID from local storage
+    };
+  
+    try {
+      // Send the booking data to the API endpoint
+      await axios.post('http://192.168.13.150:3001/add-booking', bookingData, {
+        withCredentials: true,
       });
-      navigate('/home-dashboard');
-    });
+  
+      // Show success message and reset the form
+      Swal.fire({
+        title: 'Success!',
+        text: 'The meeting/session has been added successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+      }).then(() => {
+        setFormData({
+          title: '',
+          date: '',
+          availableRooms: [],
+          selectedRoom: '',
+          selectedRoomId: '',
+          availableSlots: [],
+          selectedSlot: '',
+          startTime: '',
+          endTime: '',
+          companyName: '',
+          employeeName: '',
+          participantList: [],
+          type: 'meeting',
+          specialNote: '',
+          refreshment: '',
+          id: '',
+          orgId: '',
+        });
+        navigate('/home-dashboard');
+      });
+    } catch (error) {
+      // Handle the error if the POST request fails
+      Swal.fire({
+        title: 'Error!',
+        text: 'There was a problem adding the meeting. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      console.error('Error adding booking:', error);
+    }
   };
+  
 
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
-        Add a New Meeting
+        Add a New internal Meeting
       </Typography>
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
@@ -345,14 +416,14 @@ const AddMeetingSession = () => {
                 <InputLabel>Select Room</InputLabel>
                 <Select
                   label="Select Room"
-                  name="selectedRoom"
-                  value={formData.selectedRoom}
+                  name="selectedRoomId"
+                  value={formData.selectedRoomId}
                   onChange={handleChange}
                   required
                 >
-                  {formData.availableRooms.map((room, index) => (
-                    <MenuItem key={index} value={room}>
-                      {room}
+                  {rooms.map((room) => (
+                    <MenuItem key={room.id} value={room.id}>
+                      {room.name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -383,43 +454,43 @@ const AddMeetingSession = () => {
 
             {/* Start and End Time Options */}
             {/* {formData.startTimeOptions.length > 0 && ( */}
-              <>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    select
-                    label="Start Time"
-                    name="startTime"
-                    value={formData.startTime}
-                    onChange={handleChange}
-                    required
-                  >
-                    {formData.startTimeOptions.map((option, index) => (
-                      <MenuItem key={index} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
+            <>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  select
+                  label="Start Time"
+                  name="startTime"
+                  value={formData.startTime}
+                  onChange={handleChange}
+                  required
+                >
+                  {formData.startTimeOptions.map((option, index) => (
+                    <MenuItem key={index} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    select
-                    label="End Time"
-                    name="endTime"
-                    value={formData.endTime}
-                    onChange={handleChange}
-                    required
-                  >
-                    {formData.endTimeOptions.map((option, index) => (
-                      <MenuItem key={index} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-              </>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  select
+                  label="End Time"
+                  name="endTime"
+                  value={formData.endTime}
+                  onChange={handleChange}
+                  required
+                >
+                  {formData.endTimeOptions.map((option, index) => (
+                    <MenuItem key={index} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            </>
             {/* )} */}
 
             {/* Participant Fields */}

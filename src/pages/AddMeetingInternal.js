@@ -52,7 +52,7 @@ const AddMeetingSession = () => {
     companyName: '',
     employeeName: '',
     participantList: [],
-    type: 'meeting',
+    type: 'internalmeeting',
     specialNote: '',
     refreshment: '',
     id: '', // For storing `id` from local storage
@@ -341,7 +341,7 @@ const AddMeetingSession = () => {
           companyName: '',
           employeeName: '',
           participantList: [],
-          type: 'meeting',
+          type: 'internalmeeting',
           specialNote: '',
           refreshment: '',
           id: '',
