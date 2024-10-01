@@ -301,17 +301,17 @@ const AddMeetingSession = () => {
     const bookingData = {
       title: formData.title,
       date: formData.date,
-      start_time: formData.startTime,
-      end_time: formData.endTime,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
       type: formData.type,
-      special_note: formData.specialNote,
+      specialNote: formData.specialNote,
       refreshment: formData.refreshment,
-      place_id: formData.selectedRoomId,
-      company_name: formData.companyName,
-      employee_name: formData.employeeName,
-      participants: formData.participantList,
-      user_id: formData.id, // ID from local storage
-      org_id: formData.orgId, // Org ID from local storage
+      selectedRoomId: formData.selectedRoomId,
+      companyName: formData.companyName,
+      employeeName: formData.employeeName,
+      participantList: formData.participantList,
+      id: formData.id, // ID from local storage
+      orgId: formData.orgId, // Org ID from local storage
     };
   
     try {
