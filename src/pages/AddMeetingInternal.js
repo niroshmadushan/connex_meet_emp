@@ -349,11 +349,11 @@ const AddMeetingSession = () => {
                   onChange={handleChange}
                   required
                 >
-                  {formData.availableRooms.map((room, index) => (
-                    <MenuItem key={index} value={room}>
-                      {room}
-                    </MenuItem>
-                  ))}
+                 {rooms.map((room) => (
+        <MenuItem key={room.id} value={room.id}>
+          {room.name}
+        </MenuItem>
+      ))}
                 </Select>
               </FormControl>
             </Grid>
