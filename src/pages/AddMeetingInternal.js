@@ -287,6 +287,7 @@ const AddMeetingSession = () => {
         specialNote: '',
         refreshment: '',
       });
+      console.log(formData);
       navigate('/home-dashboard');
     });
   };
