@@ -57,7 +57,8 @@ const AddMeetingSession = () => {
   });
 
   const navigate = useNavigate();
-
+const empid=localStorage.getItem('id');
+const orgid=localStorage.getItem('orgid');
   // Fetch rooms and bookings data from the API
   useEffect(() => {
     const fetchData = async () => {
@@ -305,6 +306,8 @@ const AddMeetingSession = () => {
         type: 'meeting',
         specialNote: '',
         refreshment: '',
+        eid:empid,
+        oid:orgid,
       });
       console.log(formData);
       navigate('/home-dashboard');
