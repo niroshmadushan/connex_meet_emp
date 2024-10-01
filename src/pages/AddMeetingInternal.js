@@ -295,6 +295,7 @@ const AddMeetingSession = () => {
         date: '',
         availableRooms: [],
         selectedRoom: '',
+        selectedRoomId: '',
         availableSlots: [],
         selectedSlot: '',
         startTime: '',
