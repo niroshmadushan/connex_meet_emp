@@ -296,7 +296,7 @@ const AddMeetingSession = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    const formattedDate = formData.date ? format(new Date(formData.date), 'MM/dd/yyyy') : '';
     // Prepare the data for the API request
     const bookingData = {
       title: formData.title,
