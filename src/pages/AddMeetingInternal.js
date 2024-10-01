@@ -274,9 +274,7 @@ const AddMeetingSession = () => {
       setFormData({
         title: '',
         date: '',
-        availableRooms: [],
         selectedRoom: '',
-        availableSlots: [],
         selectedSlot: '',
         startTime: '',
         endTime: '',
