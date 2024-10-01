@@ -91,7 +91,9 @@ const Login = () => {
       if (response.status === 200) {
         const token = response.data.token;
         const id= response.data.id;
-        localStorage.setItem('id',id); // Get token from response
+        const oid= response.data.oid;
+        localStorage.setItem('id',id);
+        localStorage.setItem('orgid',oid); // Get token from response
         login(token); // Call login function to store token and authenticate user
         navigate('/connex_meet_emp/dash'); // Redirect to dashboard
       }
