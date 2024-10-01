@@ -57,6 +57,7 @@ const AddMeetingSession = () => {
 
   const navigate = useNavigate();
 
+  // Fetch rooms and bookings data from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -73,58 +74,160 @@ const AddMeetingSession = () => {
     fetchData();
   }, []);
 
-  // Function to calculate available time slots for the selected room
-  const getAvailableTimeSlots = (room) => {
-    const startTime = room.start_time;
-    const endTime = room.end_time;
+  // Handle changes in date and update available rooms based on the selected date
+  useEffect(() => {
+    if (formData.date) {
+      const filteredRooms = rooms.map((room) => room.name);
+      setFormData((prevData) => ({
+        ...prevData,
+        availableRooms: filteredRooms || [],
+        selectedRoom: '',
+        availableSlots: [],
+        selectedSlot: '',
+        startTime: '',
+        endTime: '',
+        startTimeOptions: [],
+        endTimeOptions: [],
+      }));
+    }
+  }, [formData.date, rooms]);
 
+  // Handle room selection change and update available slots for the selected room
+  useEffect(() => {
+    if (formData.selectedRoom) {
+      const selectedRoom = rooms.find((room) => room.name === formData.selectedRoom);
+      if (selectedRoom) {
+        const availableTimeSlots = getAvailableTimeSlots(selectedRoom);
+        setFormData((prevData) => ({
+          ...prevData,
+          availableSlots: availableTimeSlots,
+          selectedSlot: '',
+          startTime: '',
+          endTime: '',
+          startTimeOptions: [],
+          endTimeOptions: [],
+        }));
+      }
+    }
+  }, [formData.selectedRoom, formData.date]);
+
+  // When a slot is selected, update start and end time options based on the slot
+  useEffect(() => {
+    if (formData.selectedSlot) {
+      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
+      const timeOptions = generateTimeOptions(slotStart, slotEnd, 15);
+      setFormData((prevData) => ({
+        ...prevData,
+        startTimeOptions: timeOptions,
+        endTimeOptions: timeOptions,
+        startTime: '',
+        endTime: '',
+      }));
+    }
+  }, [formData.selectedSlot]);
+
+  // Update end time options based on selected start time
+  useEffect(() => {
+    if (formData.startTime) {
+      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
+      const endOptions = generateTimeOptions(formData.startTime, slotEnd, 15);
+      setFormData((prevData) => ({
+        ...prevData,
+        endTimeOptions: endOptions.slice(1), // Show times after the selected start time
+        endTime: '',
+      }));
+    }
+  }, [formData.startTime]);
+
+  const generateTimeOptions = (start, end, step = 15) => {
+    const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
+    const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
+    const options = [];
+  
+    while (startTime <= endTime) {
+      const timeString = convertTo12Hour(startTime.toTimeString().substring(0, 5)); // Format to 12-hour for display
+      options.push(timeString);
+      startTime.setMinutes(startTime.getMinutes() + step);
+    }
+  
+    return options;
+  };
+
+  const convertTo12Hour = (time24h) => {
+    let [hours, minutes] = time24h.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+  
+    // Convert back to 12-hour format
+    hours = hours % 12 || 12; // Adjust 0 to 12 for midnight
+    return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+
+  const convertTo24Hour = (time12h) => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+  
+    // Handle "12:00 AM" and "12:00 PM" edge cases
+    if (hours === '12') {
+      hours = modifier === 'AM' ? '00' : '12';
+    } else {
+      hours = modifier === 'PM' ? (parseInt(hours, 10) + 12).toString() : hours;
+    }
+  
+    return `${hours.padStart(2, '0')}:${minutes}`; // Ensure "01" format instead of "1"
+  };
+
+  const getAvailableTimeSlots = (room) => {
+    const startTime = room.start_time; // Already in 12-hour format
+    const endTime = room.end_time;     // Already in 12-hour format
+  
+    // Convert the 12-hour time to 24-hour format for internal calculations
     const convertTime = (time) => {
       const [timePart, period] = time.split(' ');
       const [hours, minutes] = timePart.split(':').map(Number);
       const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
-      return adjustedHours * 100 + minutes;
+      return adjustedHours * 100 + minutes; // Use 100-based format for comparisons
     };
-
+  
     const roomStart = convertTime(startTime);
     const roomEnd = convertTime(endTime);
-
+  
     const roomBookings = bookings.filter(
       (booking) => booking.place_id === room.id && isSameDay(new Date(booking.date), new Date(formData.date))
     );
-
+  
     if (roomBookings.length === 0) {
-      return [`${startTime} - ${endTime}`];
+      return [`${startTime} - ${endTime}`]; // If no bookings, the entire slot is free
     }
-
+  
+    // Sort and find free slots
     const sortedBookings = roomBookings
       .map((booking) => ({
         start: convertTime(booking.start_time),
         end: convertTime(booking.end_time),
       }))
       .sort((a, b) => a.start - b.start);
-
+  
     const freeSlots = [];
     let lastEndTime = roomStart;
-
+  
     sortedBookings.forEach((booking) => {
       if (lastEndTime < booking.start) {
         freeSlots.push({ start: lastEndTime, end: booking.start });
       }
       lastEndTime = Math.max(lastEndTime, booking.end);
     });
-
+  
     if (lastEndTime < roomEnd) {
       freeSlots.push({ start: lastEndTime, end: roomEnd });
     }
-
+  
+    // Convert slots back to 12-hour format for display
     const formatTime = (time) => {
       const hours = Math.floor(time / 100);
       const minutes = time % 100;
-      const period = hours >= 12 ? 'PM' : 'AM';
-      const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
-      return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+      return convertTo12Hour(`${hours}:${minutes.toString().padStart(2, '0')}`);
     };
-
+  
     return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
   };
 
@@ -132,6 +235,31 @@ const AddMeetingSession = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    });
+  };
+
+  // Handle adding participants to the meeting
+  const handleAddParticipant = () => {
+    if (formData.companyName.trim() && formData.employeeName.trim()) {
+      const newParticipant = {
+        companyName: formData.companyName,
+        employeeName: formData.employeeName,
+      };
+      setFormData((prevData) => ({
+        ...prevData,
+        participantList: [...prevData.participantList, newParticipant],
+        companyName: '',
+        employeeName: '',
+      }));
+    }
+  };
+
+  // Handle deleting participants from the list
+  const handleDeleteParticipant = (index) => {
+    const updatedList = formData.participantList.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      participantList: updatedList,
     });
   };
 
@@ -163,57 +291,15 @@ const AddMeetingSession = () => {
     });
   };
 
-  const handleAddParticipant = () => {
-    if (formData.companyName.trim() && formData.employeeName.trim()) {
-      const newParticipant = {
-        companyName: formData.companyName,
-        employeeName: formData.employeeName,
-      };
-      setFormData((prevData) => ({
-        ...prevData,
-        participantList: [...prevData.participantList, newParticipant],
-        companyName: '',
-        employeeName: '',
-      }));
-    }
-  };
-
-  const handleDeleteParticipant = (index) => {
-    const updatedList = formData.participantList.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      participantList: updatedList,
-    });
-  };
-
-  // Handle room selection and update available slots for the selected room
-  useEffect(() => {
-    if (formData.selectedRoom) {
-      const selectedRoom = rooms.find((room) => room.name === formData.selectedRoom);
-      if (selectedRoom) {
-        const availableTimeSlots = getAvailableTimeSlots(selectedRoom);
-        setFormData((prevData) => ({
-          ...prevData,
-          availableSlots: availableTimeSlots,
-          selectedSlot: '',
-          startTime: '',
-          endTime: '',
-          startTimeOptions: [],
-          endTimeOptions: [],
-        }));
-      }
-    }
-  }, [formData.selectedRoom, formData.date]);
-
   return (
     <Box sx={{ padding: '20px' }}>
-      <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
-        Add a New Meeting
+       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
+        Add a New Internal Meeting
       </Typography>
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
-        <Grid container spacing={3}>
-            {/* Title Field */}
+          <Grid container spacing={3}>
+            {/* Title, Date, Room, Time Slots, Start and End Time */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -231,8 +317,6 @@ const AddMeetingSession = () => {
                 required
               />
             </Grid>
-
-            {/* Date Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -255,7 +339,7 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
-            {/* Room Selection */}
+            {/* Room Selection and Available Slots */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Room</InputLabel>
@@ -297,7 +381,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
-            {/* Start and End Time Fields */}
+            {/* Start and End Time Options */}
             {/* {formData.startTimeOptions.length > 0 && ( */}
               <>
                 <Grid item xs={12} sm={6}>
@@ -338,7 +422,7 @@ const AddMeetingSession = () => {
               </>
             {/* )} */}
 
-            {/* Company Name and Employee Name Fields */}
+            {/* Participant Fields */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -359,7 +443,6 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
-            {/* Add Participant Button */}
             <Grid item xs={12}>
               <Button
                 variant="contained"
@@ -376,7 +459,7 @@ const AddMeetingSession = () => {
               </Button>
             </Grid>
 
-            {/* Participant List Table */}
+            {/* Participant Table */}
             {formData.participantList.length > 0 && (
               <Grid item xs={12}>
                 <Table>
@@ -406,7 +489,7 @@ const AddMeetingSession = () => {
               </Grid>
             )}
 
-            {/* Special Note Field */}
+            {/* Special Note and Refreshment */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -427,7 +510,6 @@ const AddMeetingSession = () => {
               />
             </Grid>
 
-            {/* Refreshment Field */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
