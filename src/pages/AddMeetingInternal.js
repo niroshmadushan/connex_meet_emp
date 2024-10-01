@@ -365,18 +365,24 @@ const AddMeetingSession = () => {
               <FormControl fullWidth>
                 <InputLabel>Select Room</InputLabel>
                 <Select
-                  label="Select Room"
-                  name="selectedRoomId"
-                  value={formData.selectedRoomId}
-                  onChange={handleChange}
-                  required
-                >
-                  {formData.availableRooms.map((room, index) => (
-                    <MenuItem key={index} value={room.id}>
-                      {room.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+    label="Select Room"
+    name="selectedRoomId"
+    value={formData.selectedRoomId || ''} // Ensure value is always defined
+    onChange={handleChange}
+    required
+  >
+    {formData.availableRooms.length > 0 ? (
+      formData.availableRooms.map((room, index) => (
+        <MenuItem key={index} value={room.id}>
+          {room.name}
+        </MenuItem>
+      ))
+    ) : (
+      <MenuItem value="" disabled>
+        No Rooms Available
+      </MenuItem>
+    )}
+  </Select>
               </FormControl>
             </Grid>
 
