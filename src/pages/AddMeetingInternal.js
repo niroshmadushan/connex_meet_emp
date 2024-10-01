@@ -352,7 +352,7 @@ const AddMeetingSession = () => {
                   required
                 >
                   {formData.availableRooms.map((room, index) => (
-                    <MenuItem key={index} value={room.id}>
+                    <MenuItem key={index} value={room}>
                       {room}
                     </MenuItem>
                   ))}
