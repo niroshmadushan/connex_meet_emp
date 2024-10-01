@@ -294,36 +294,72 @@ const AddMeetingSession = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    Swal.fire({
-      title: 'Success!',
-      text: 'The meeting/session has been added successfully.',
-      icon: 'success',
-      confirmButtonText: 'OK',
-    }).then(() => {
-      setFormData({
-        title: '',
-        date: '',
-        availableRooms: [],
-        selectedRoom: '',
-        availableSlots: [],
-        selectedSlot: '',
-        startTime: '',
-        endTime: '',
-        companyName: '',
-        employeeName: '',
-        participantList: [],
-        type: 'meeting',
-        specialNote: '',
-        refreshment: '',
-        id: '',
-        orgId: '',
+  
+    // Prepare the data for the API request
+    const bookingData = {
+      title: formData.title,
+      date: formData.date,
+      start_time: formData.startTime,
+      end_time: formData.endTime,
+      type: formData.type,
+      special_note: formData.specialNote,
+      refreshment: formData.refreshment,
+      place_id: formData.selectedRoomId,
+      company_name: formData.companyName,
+      employee_name: formData.employeeName,
+      participants: formData.participantList,
+      user_id: formData.id, // ID from local storage
+      org_id: formData.orgId, // Org ID from local storage
+    };
+  
+    try {
+      // Send the booking data to the API endpoint
+      await axios.post('http://192.168.13.150:3001/add-booking', bookingData, {
+        withCredentials: true,
       });
-      console.log(formData);
-      navigate('/home-dashboard');
-    });
+  
+      // Show success message and reset the form
+      Swal.fire({
+        title: 'Success!',
+        text: 'The meeting/session has been added successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+      }).then(() => {
+        setFormData({
+          title: '',
+          date: '',
+          availableRooms: [],
+          selectedRoom: '',
+          selectedRoomId: '',
+          availableSlots: [],
+          selectedSlot: '',
+          startTime: '',
+          endTime: '',
+          companyName: '',
+          employeeName: '',
+          participantList: [],
+          type: 'meeting',
+          specialNote: '',
+          refreshment: '',
+          id: '',
+          orgId: '',
+        });
+        navigate('/home-dashboard');
+      });
+    } catch (error) {
+      // Handle the error if the POST request fails
+      Swal.fire({
+        title: 'Error!',
+        text: 'There was a problem adding the meeting. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      console.error('Error adding booking:', error);
+    }
   };
+  
 
   return (
     <Box sx={{ padding: '20px' }}>
