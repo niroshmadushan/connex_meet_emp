@@ -54,11 +54,22 @@ const AddMeetingSession = () => {
     type: 'meeting',
     specialNote: '',
     refreshment: '',
+    id: '', // For storing `id` from local storage
+    orgId: '', // For storing `orgId` from local storage
   });
 
   const navigate = useNavigate();
-const empid=localStorage.getItem('id');
-const orgid=localStorage.getItem('orgid');
+
+  useEffect(() => {
+    const userId = localStorage.getItem('id') || '';
+    const userOrgId = localStorage.getItem('orgid') || '';
+    setFormData((prevData) => ({
+      ...prevData,
+      id: userId,
+      orgId: userOrgId,
+    }));
+  }, []);
+
   // Fetch rooms and bookings data from the API
   useEffect(() => {
     const fetchData = async () => {
@@ -306,8 +317,8 @@ const orgid=localStorage.getItem('orgid');
         type: 'meeting',
         specialNote: '',
         refreshment: '',
-        eid:empid,
-        oid:orgid,
+        id: '',
+        orgId: '',
       });
       console.log(formData);
       navigate('/home-dashboard');
