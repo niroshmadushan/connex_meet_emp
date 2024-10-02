@@ -1,23 +1,15 @@
-// src/pages/Dashboard.js
 import React from 'react';
 import { Box, Typography, Paper, Grid } from '@mui/material';
-import { Bar, Pie, Line, Radar } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import Slider from 'react-slick';
+import CountUp from 'react-countup';
+import { MeetingRoom, CheckCircle, Cancel } from '@mui/icons-material';
 import {
   Chart as ChartJS,
   ArcElement,
-  BarElement,
-  LineElement,
-  CategoryScale,
-  LinearScale,
   Tooltip,
   Legend,
-  Title,
-  RadarController,
-  PointElement,
-  RadialLinearScale,
 } from 'chart.js';
-import CountUp from 'react-countup';
 
 // Import images for the carousel
 import img1 from '../img/about-us-page-examples-1-61fd8f9784626-sej.webp';
@@ -25,271 +17,228 @@ import img2 from '../img/find-company-information-image.jpg';
 import img3 from '../img/Mobile Bank.jpg';
 import img4 from '../img/Microsoft.jpg';
 
-// Registering the necessary chart.js modules
-ChartJS.register(
-  ArcElement,
-  BarElement,
-  LineElement,
-  RadarController,
-  PointElement,
-  RadialLinearScale,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-  Title
-);
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
-// Slider settings for carousel
+// Carousel settings for smooth transitions
 const sliderSettings = {
   dots: false,
   infinite: true,
-  speed: 500,
+  speed: 300,
   slidesToShow: 1,
   slidesToScroll: 1,
   autoplay: true,
-  autoplaySpeed: 3000,
-  arrows: true,
+  autoplaySpeed: 2500,
+  arrows: false,
 };
 
 const Dashboard = () => {
-  // Data for analytics
-  const totalMeetings = 100;
-  const successfulMeetings = 75;
-  const canceledMeetings = 25;
-  const totalSessions = 50;
-  const successfulSessions = 40;
-  const canceledSessions = 10;
-  const totalInterviews = 30;
-  const successfulInterviews = 25;
-  const canceledInterviews = 5;
-  const totalServices = 60;
-  const successfulServices = 55;
-  const canceledServices = 5;
-  const starRatingMeetings = 4.5;
-  const starRatingSessions = 4.2;
-  const starRatingInterviews = 4.8;
-  const starRatingServices = 4.6;
+  // Meeting statistics
+  const totalMeetings = 200;
+  const successfulMeetings = 150;
+  const canceledMeetings = 50;
 
-  // Bar chart data for overall success and cancellations
-  const barData = {
-    labels: ['Meetings', 'Sessions', 'Interviews', 'Services'],
+  // Donut chart data
+  const donutData = {
+    labels: ['Total Meetings', 'Successful Meetings', 'Canceled Meetings'],
     datasets: [
       {
-        label: 'Successful',
-        data: [successfulMeetings, successfulSessions, successfulInterviews, successfulServices],
-        backgroundColor: '#007aff',
-        borderColor: '#005bb5',
-        borderWidth: 2,
-        borderRadius: 5,
-        barThickness: 20,
-      },
-      {
-        label: 'Canceled',
-        data: [canceledMeetings, canceledSessions, canceledInterviews, canceledServices],
-        backgroundColor: '#f44336',
-        borderColor: '#d32f2f',
-        borderWidth: 2,
-        borderRadius: 5,
-        barThickness: 20,
+        data: [totalMeetings, successfulMeetings, canceledMeetings],
+        backgroundColor: ['#64b5f6', '#2196f3', '#ff5252'],
+        hoverBackgroundColor: ['#42a5f5', '#1e88e5', '#ff1744'],
+        borderWidth: 3,
+        cutout: '70%',
       },
     ],
-  };
-
-  // Pie chart data for distribution of meetings
-  const pieData = {
-    labels: ['Meetings', 'Sessions', 'Interviews', 'Services'],
-    datasets: [
-      {
-        data: [totalMeetings, totalSessions, totalInterviews, totalServices],
-        backgroundColor: ['#007aff', '#1e88e5', '#29b6f6', '#4fc3f7'],
-        hoverBackgroundColor: ['#005bb5', '#1976d2', '#0288d1', '#039be5'],
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  // Line chart data for feedback ratings
-  const lineData = {
-    labels: ['Meetings', 'Sessions', 'Interviews', 'Services'],
-    datasets: [
-      {
-        label: 'Average Rating',
-        data: [starRatingMeetings, starRatingSessions, starRatingInterviews, starRatingServices],
-        fill: false,
-        backgroundColor: '#ffc107',
-        borderColor: '#ffeb3b',
-        tension: 0.3,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-      },
-    ],
-  };
-
-  // Radar chart data for feedback ratings
-  const radarData = {
-    labels: ['Meetings', 'Sessions', 'Interviews', 'Services'],
-    datasets: [
-      {
-        label: 'Feedback Ratings',
-        data: [starRatingMeetings, starRatingSessions, starRatingInterviews, starRatingServices],
-        backgroundColor: 'rgba(0, 122, 255, 0.2)',
-        borderColor: '#007aff',
-        pointBackgroundColor: '#007aff',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#007aff',
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  // Chart options with animations
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false, // Maintain size for mobile view
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          font: {
-            size: 12,
-            weight: 'bold',
-            family: 'Arial, sans-serif',
-          },
-          color: '#333',
-        },
-      },
-      title: {
-        display: false,
-      },
-    },
-    animation: {
-      duration: 2000,
-      easing: 'easeOutQuart',
-    },
-  };
-
-  const radarOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          font: {
-            size: 12,
-            weight: 'bold',
-            family: 'Arial, sans-serif',
-          },
-          color: '#333',
-        },
-      },
-    },
-    scales: {
-      r: {
-        angleLines: {
-          color: '#e0e0e0',
-        },
-        grid: {
-          color: '#e0e0e0',
-        },
-        ticks: {
-          display: true,
-          font: {
-            size: 10,
-          },
-        },
-        suggestedMin: 0,
-        suggestedMax: 5,
-      },
-    },
-    animation: {
-      duration: 2000,
-      easing: 'easeOutBounce',
-    },
   };
 
   return (
-    <Box sx={{ padding: '10px' }}>
-      {/* Image Carousel at the Top */}
-      <Box sx={{ position: 'relative', width: '90%', mb: 2, marginLeft: '5%', zIndex: 1 }}>
+    <Box sx={{ backgroundColor: '#f7f9fc', minHeight: '80vh', padding: '10px' }}>
+      {/* Top Title */}
+      <Typography
+        variant="h4"
+        sx={{
+          textAlign: 'center',
+          fontWeight: 'bold',
+          color: '#007aff',
+          paddingBottom: '10px',
+          fontFamily: 'Helvetica Neue, Arial, sans-serif',
+          fontSize: '1.5rem',
+        }}
+      >
+        Connex Meet
+      </Typography>
+
+      {/* Top Image Carousel */}
+      <Box
+        sx={{
+          height: '25vh',
+          borderRadius: '10px',
+          overflow: 'hidden',
+          marginBottom: '15px',
+        }}
+      >
         <Slider {...sliderSettings}>
-          <div>
-            <img src={img1} alt="New Event 1" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} />
-          </div>
-          <div>
-            <img src={img2} alt="New Event 2" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} />
-          </div>
-          <div>
-            <img src={img3} alt="News Update 1" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} />
-          </div>
-          <div>
-            <img src={img4} alt="News Update 2" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} />
-          </div>
+          <img
+            src={img1}
+            alt="Image 1"
+            style={{ width: '100%', height: '25vh', objectFit: 'cover' }}
+          />
+          <img
+            src={img2}
+            alt="Image 2"
+            style={{ width: '100%', height: '25vh', objectFit: 'cover' }}
+          />
+          <img
+            src={img3}
+            alt="Image 3"
+            style={{ width: '100%', height: '25vh', objectFit: 'cover' }}
+          />
+          <img
+            src={img4}
+            alt="Image 4"
+            style={{ width: '100%', height: '25vh', objectFit: 'cover' }}
+          />
         </Slider>
       </Box>
 
-      {/* Analytics Header */}
-      <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px', textAlign: 'center', color: '#007aff', fontFamily: 'Roboto, sans-serif' }}>
-        Meeting Analytics
-      </Typography>
-
-      {/* Overview of Total Counts */}
-      <Grid container spacing={1} sx={{ marginBottom: '10px' }}>
-        <Grid item xs={6} sm={3}>
-          <Paper elevation={3} sx={{ padding: '10px', textAlign: 'center', backgroundColor: '#007aff', color: '#fff', borderRadius: '8px', animation: 'fadeIn 1s' }}>
-            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Total Meetings</Typography>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              <CountUp start={0} end={totalMeetings} duration={2} separator="," />
-            </Typography>
+      {/* Meeting Statistics - Compact Display */}
+      <Grid
+        container
+        spacing={1}
+        sx={{
+          marginBottom: '15px',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Grid item xs={4}>
+          <Paper
+            sx={{
+              textAlign: 'center',
+              padding: '10px',
+              backgroundColor: '#f0f4ff',
+              color: '#007aff',
+              borderRadius: '10px',
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <CheckCircle sx={{ marginRight: '4px', fontSize: '20px' }} />
+            <Box>
+              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
+                Total Meetings
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                <CountUp start={0} end={totalMeetings} duration={2} />
+              </Typography>
+            </Box>
           </Paper>
         </Grid>
-        <Grid item xs={6} sm={3}>
-          <Paper elevation={3} sx={{ padding: '10px', textAlign: 'center', backgroundColor: '#1e88e5', color: '#fff', borderRadius: '8px', animation: 'fadeIn 1s' }}>
-            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Total Sessions</Typography>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              <CountUp start={0} end={totalSessions} duration={2} separator="," />
-            </Typography>
+        <Grid item xs={4}>
+          <Paper
+            sx={{
+              textAlign: 'center',
+              padding: '10px',
+              backgroundColor: '#e3f2fd',
+              color: '#1e88e5',
+              borderRadius: '10px',
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <MeetingRoom sx={{ marginRight: '4px', fontSize: '20px' }} />
+            <Box>
+              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
+                Successful
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                <CountUp start={0} end={successfulMeetings} duration={2} />
+              </Typography>
+            </Box>
           </Paper>
         </Grid>
-        <Grid item xs={6} sm={3}>
-          <Paper elevation={3} sx={{ padding: '10px', textAlign: 'center', backgroundColor: '#29b6f6', color: '#fff', borderRadius: '8px', animation: 'fadeIn 1s' }}>
-            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Total Interviews</Typography>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              <CountUp start={0} end={totalInterviews} duration={2} separator="," />
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Paper elevation={3} sx={{ padding: '10px', textAlign: 'center', backgroundColor: '#4fc3f7', color: '#fff', borderRadius: '8px', animation: 'fadeIn 1s' }}>
-            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Total Services</Typography>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              <CountUp start={0} end={totalServices} duration={2} separator="," />
-            </Typography>
+        <Grid item xs={4}>
+          <Paper
+            sx={{
+              textAlign: 'center',
+              padding: '10px',
+              backgroundColor: '#ffebee',
+              color: '#ff5252',
+              borderRadius: '10px',
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Cancel sx={{ marginRight: '4px', fontSize: '20px' }} />
+            <Box>
+              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
+                Canceled
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                <CountUp start={0} end={canceledMeetings} duration={2} />
+              </Typography>
+            </Box>
           </Paper>
         </Grid>
       </Grid>
 
-      {/* Bar Chart for Success and Cancellations */}
-      <Paper elevation={3} sx={{ padding: '10px', marginBottom: '10px', height: '180px', borderRadius: '8px', animation: 'fadeIn 1s' }}>
-        <Bar data={barData} options={chartOptions} />
+      {/* Donut Chart */}
+      <Paper
+        sx={{
+          height: '20vh',
+          padding: '10px',
+          borderRadius: '10px',
+          marginBottom: '15px',
+          textAlign: 'center',
+        }}
+      >
+        <Typography
+          variant="body1"
+          sx={{ color: '#007aff', fontWeight: 'bold', marginBottom: '5px' }}
+        >
+          Meeting Overview
+        </Typography>
+        <Doughnut data={donutData} />
       </Paper>
 
-      {/* Pie Chart for Distribution */}
-      <Paper elevation={3} sx={{ padding: '10px', marginBottom: '10px', height: '180px', borderRadius: '8px', animation: 'fadeIn 1s' }}>
-        <Pie data={pieData} options={chartOptions} />
-      </Paper>
+      {/* Text Box Section */}
+      <Box
+        sx={{
+          height: '15vh',
+          padding: '15px',
+          backgroundColor: '#f0f4ff',
+          borderRadius: '10px',
+          textAlign: 'center',
+          marginBottom: '10px',
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#007aff' }}>
+          What You Can Do in This App
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#333' }}>
+          Book meetings, view details, and check available places with ease.
+        </Typography>
+      </Box>
 
-      {/* Line Chart for Ratings */}
-      <Paper elevation={3} sx={{ padding: '10px', marginBottom: '10px', height: '180px', borderRadius: '8px', animation: 'fadeIn 1s' }}>
-        <Line data={lineData} options={chartOptions} />
-      </Paper>
-
-      {/* Radar Chart for Feedback Comparison */}
-      <Paper elevation={3} sx={{ padding: '10px', height: '180px', borderRadius: '8px', animation: 'fadeIn 1s' }}>
-        <Radar data={radarData} options={radarOptions} />
-      </Paper>
+      {/* Footer */}
+      <Box
+        sx={{
+          height: '5vh',
+          textAlign: 'center',
+          padding: '5px',
+          backgroundColor: '#e3f2fd',
+          color: '#007aff',
+          borderRadius: '10px',
+        }}
+      >
+        <Typography variant="body2">© 2024 Connex Meet. All rights reserved.</Typography>
+      </Box>
     </Box>
   );
 };
