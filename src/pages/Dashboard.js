@@ -1,9 +1,9 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid } from '@mui/material';
+import { Box, Typography, Paper, Grid, Divider } from '@mui/material';
 import { Doughnut } from 'react-chartjs-2';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
-import { MeetingRoom, CheckCircle, Cancel } from '@mui/icons-material';
+import { MeetingRoom, CheckCircle, Cancel, Info, Book, EventAvailable } from '@mui/icons-material';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -174,25 +174,78 @@ const Dashboard = () => {
       </Grid>
 
       {/* Meeting Overview */}
-      <Box sx={{ height: '25vh', padding: '5px', borderRadius: '10px' }}>
-        <Paper
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          height: '20vh',
+          marginBottom: '15px',
+        }}
+      >
+        {/* Information Section */}
+        <Box
           sx={{
-            height: '25vh',
+            width: '30%',
             padding: '10px',
-            textAlign: 'center',
+            backgroundColor: '#e3f2fd',
             borderRadius: '10px',
-            backgroundColor: '#f7f9fc',
-            marginBottom: '10px',
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#007aff', marginBottom: '5px' }}>
-            Meeting Overview
+          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#007aff' }}>
+            Meeting Overview:
           </Typography>
-          <Box sx={{ height: '20vh' }}>
-            <Doughnut data={donutData} />
-          </Box>
-        </Paper>
+          <Typography variant="body2" sx={{ color: '#007aff', fontWeight: 'bold' }}>
+            Total: {totalMeetings}
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#1e88e5' }}>
+            Successful: {successfulMeetings}
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#ff5252' }}>
+            Canceled: {canceledMeetings}
+          </Typography>
+        </Box>
+
+        {/* Donut Chart */}
+        <Box
+          sx={{
+            width: '70%',
+            backgroundColor: '#f7f9fc',
+            padding: '10px',
+            borderRadius: '10px',
+          }}
+        >
+          <Doughnut data={donutData} />
+        </Box>
       </Box>
+
+      {/* Feature Information */}
+      <Paper
+        elevation={3}
+        sx={{
+          textAlign: 'center',
+          padding: '10px',
+          backgroundColor: '#f0f4ff',
+          color: '#007aff',
+          borderRadius: '10px',
+          marginBottom: '15px',
+          height: '20vh',
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '5px' }}>
+          What You Can Do In This App
+        </Typography>
+        <Box sx={{ textAlign: 'left' }}>
+          <Typography variant="body2" sx={{ marginBottom: '4px' }}>
+            <EventAvailable sx={{ fontSize: '16px', color: '#2196f3' }} /> Book and manage meetings.
+          </Typography>
+          <Typography variant="body2" sx={{ marginBottom: '4px' }}>
+            <Info sx={{ fontSize: '16px', color: '#64b5f6' }} /> View available rooms and schedules.
+          </Typography>
+          <Typography variant="body2">
+            <Book sx={{ fontSize: '16px', color: '#ff5252' }} /> Track meeting details and participants.
+          </Typography>
+        </Box>
+      </Paper>
 
       {/* Footer */}
       <Box
