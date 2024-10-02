@@ -401,7 +401,7 @@ const AddMeetingSession = () => {
                   >
                     {formData.availableSlots.map((slot, index) => (
                       <MenuItem key={index} value={slot}>
-                       {slot && slot.trim() !== '' ? slot : 'Unavailable'}
+                       {slot && slot.trim() !== null ? slot : 'Unavailable'}
                       </MenuItem>
                     ))}
                   </Select>
