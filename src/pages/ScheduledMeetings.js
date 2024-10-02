@@ -12,6 +12,8 @@ import {
   IconButton,
   CardActions,
   Button,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import RoomIcon from '@mui/icons-material/Room';
@@ -72,7 +74,7 @@ const ScheduledMeetings = () => {
     {
       id: 1,
       title: 'Team Sync',
-      date: dayjs().add(1, 'day').format('YYYY-MM-DD'), // Upcoming Meeting (tomorrow)
+      date: dayjs().add(1, 'day').format('YYYY-MM-DD'),
       time: '10:00 AM - 11:30 AM',
       room: 'Room 1',
       participants: [
@@ -85,7 +87,7 @@ const ScheduledMeetings = () => {
     {
       id: 2,
       title: 'Review Meeting',
-      date: dayjs().subtract(2, 'days').format('YYYY-MM-DD'), // Finished Meeting
+      date: dayjs().subtract(2, 'days').format('YYYY-MM-DD'),
       time: '09:00 AM - 10:00 AM',
       room: 'Room 3',
       participants: [
@@ -100,8 +102,8 @@ const ScheduledMeetings = () => {
     {
       id: 3,
       title: 'Client Presentation',
-      date: dayjs().format('YYYY-MM-DD'), // Ongoing Meeting (today)
-      time: dayjs().subtract(1, 'hour').format('hh:mm A') + ' - ' + dayjs().add(1, 'hour').format('hh:mm A'), // ongoing time
+      date: dayjs().format('YYYY-MM-DD'),
+      time: dayjs().subtract(1, 'hour').format('hh:mm A') + ' - ' + dayjs().add(1, 'hour').format('hh:mm A'),
       room: 'Room 2',
       participants: [
         { companyName: 'Company C', employeeName: 'Alice Brown' },
@@ -114,6 +116,7 @@ const ScheduledMeetings = () => {
 
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [open, setOpen] = useState(false);
+  const [viewType, setViewType] = useState('normal'); // Toggle view state
 
   const handleOpen = (meeting) => {
     setSelectedMeeting(meeting);
@@ -163,72 +166,32 @@ const ScheduledMeetings = () => {
     );
   };
 
+  const countUpcoming = (meetings) => {
+    return meetings.filter((meeting) => getMeetingStatus(meeting.date, meeting.time) === 'upcoming').length;
+  };
+
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
         Scheduled Meetings
       </Typography>
 
-      {/* Normal Meetings */}
-      <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-        Normal Meetings
-      </Typography>
-      <Grid container spacing={3}>
-        {normalMeetings.map((meeting) => {
-          const status = getMeetingStatus(meeting.date, meeting.time);
+      {/* Toggle Button for Normal and Special Meetings */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+        <ToggleButtonGroup
+          value={viewType}
+          exclusive
+          onChange={(e, newValue) => setViewType(newValue)}
+          aria-label="meeting type"
+        >
+          <ToggleButton value="normal">Normal Meetings ({countUpcoming(normalMeetings)})</ToggleButton>
+          <ToggleButton value="special">Special Meetings ({countUpcoming(specialMeetings)})</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
 
-          return (
-            <Grid item xs={12} md={6} key={meeting.id}>
-              <StyledCard onClick={() => handleOpen(meeting)}>
-                <CardContent>
-                  <Chip
-                    icon={<BlinkingDot color={statusColors[status]} />}
-                    label={status.charAt(0).toUpperCase() + status.slice(1)}
-                    sx={{
-                      backgroundColor: statusColors[status] + '22',
-                      color: statusColors[status],
-                      fontWeight: 'bold',
-                      marginBottom: '10px',
-                    }}
-                  />
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                    {meeting.title}
-                  </Typography>
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <EventIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
-                    {meeting.date}
-                  </Typography>
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <AccessTimeIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
-                    {meeting.time}
-                  </Typography>
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <RoomIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
-                    {meeting.room}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(meeting.id);
-                    }}
-                  >
-                    <DeleteIcon sx={{ color: 'red' }} />
-                  </IconButton>
-                </CardActions>
-              </StyledCard>
-            </Grid>
-          );
-        })}
-      </Grid>
-
-      {/* Special Meetings */}
-      <Typography variant="h6" sx={{ fontWeight: 'bold', marginTop: '30px', marginBottom: '10px' }}>
-        Special Meetings
-      </Typography>
+      {/* Show Normal or Special Meetings Based on Toggle */}
       <Grid container spacing={3}>
-        {specialMeetings.map((meeting) => {
+        {(viewType === 'normal' ? normalMeetings : specialMeetings).map((meeting) => {
           const status = getMeetingStatus(meeting.date, meeting.time);
 
           return (
@@ -265,16 +228,12 @@ const ScheduledMeetings = () => {
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDelete(meeting.id, true);
+                      handleDelete(meeting.id, viewType === 'special');
                     }}
                   >
                     <DeleteIcon sx={{ color: 'red' }} />
                   </IconButton>
-                  {meeting.approved ? (
-                    <Typography variant="body1" sx={{ color: 'green', fontWeight: 'bold' }}>
-                      Approved
-                    </Typography>
-                  ) : (
+                  {viewType === 'special' && meeting.approved === false && (
                     <Button
                       variant="contained"
                       color="primary"
@@ -292,76 +251,6 @@ const ScheduledMeetings = () => {
           );
         })}
       </Grid>
-
-      {/* Modal for displaying full meeting details */}
-      <Modal
-        open={open}
-        onClose={handleClose}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
-      >
-        <Fade in={open}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 400,
-              bgcolor: 'background.paper',
-              borderRadius: '12px',
-              boxShadow: 24,
-              p: 4,
-            }}
-          >
-            {selectedMeeting && (
-              <>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                  {selectedMeeting.title}
-                </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                  <EventIcon sx={{ marginRight: '8px' }} />
-                  {selectedMeeting.date}
-                </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                  <AccessTimeIcon sx={{ marginRight: '8px' }} />
-                  {selectedMeeting.time}
-                </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                  <RoomIcon sx={{ marginRight: '8px' }} />
-                  {selectedMeeting.room}
-                </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                  <GroupIcon sx={{ marginRight: '8px' }} />
-                  Participants:
-                </Typography>
-                <ul>
-                  {selectedMeeting.participants.map((participant, index) => (
-                    <li key={index}>
-                      {participant.companyName} - {participant.employeeName}
-                    </li>
-                  ))}
-                </ul>
-                {selectedMeeting.specialNote && (
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <NotesIcon sx={{ marginRight: '8px' }} />
-                    {selectedMeeting.specialNote}
-                  </Typography>
-                )}
-                {selectedMeeting.refreshment && (
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <RefreshIcon sx={{ marginRight: '8px' }} />
-                    Refreshment: {selectedMeeting.refreshment}
-                  </Typography>
-                )}
-              </>
-            )}
-          </Box>
-        </Fade>
-      </Modal>
     </Box>
   );
 };
