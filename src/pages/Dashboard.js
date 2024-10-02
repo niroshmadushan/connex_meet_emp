@@ -12,14 +12,14 @@ import {
   Legend,
 } from 'chart.js';
 
-// Register Chart.js components
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
-
-// Dummy images for the carousel
+// Import images for the carousel (all imports should be at the top of the file)
 import img1 from '../img/about-us-page-examples-1-61fd8f9784626-sej.webp';
 import img2 from '../img/find-company-information-image.jpg';
 import img3 from '../img/Mobile Bank.jpg';
 import img4 from '../img/Microsoft.jpg';
+
+// Register Chart.js components
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 // Carousel settings
 const sliderSettings = {
@@ -149,49 +149,6 @@ const Dashboard = () => {
         </Typography>
         <Bar data={barData} options={chartOptions} />
       </Paper>
-
-      {/* Actions Section */}
-      <Grid container spacing={2} sx={{ marginBottom: '20px' }}>
-        <Grid item xs={12} md={4}>
-          <CardContent sx={{ backgroundColor: '#42a5f5', borderRadius: '8px', padding: '20px', color: '#fff' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-              Book a Meeting
-            </Typography>
-            <Typography variant="body2" sx={{ marginBottom: '15px' }}>
-              Schedule a new meeting with your colleagues or clients.
-            </Typography>
-            <Button variant="contained" sx={{ backgroundColor: '#1e88e5' }}>
-              Book Now
-            </Button>
-          </CardContent>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <CardContent sx={{ backgroundColor: '#66bb6a', borderRadius: '8px', padding: '20px', color: '#fff' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-              View Meetings
-            </Typography>
-            <Typography variant="body2" sx={{ marginBottom: '15px' }}>
-              Check out the details of your upcoming and past meetings.
-            </Typography>
-            <Button variant="contained" sx={{ backgroundColor: '#43a047' }}>
-              View Details
-            </Button>
-          </CardContent>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <CardContent sx={{ backgroundColor: '#ffa726', borderRadius: '8px', padding: '20px', color: '#fff' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-              Check Availability
-            </Typography>
-            <Typography variant="body2" sx={{ marginBottom: '15px' }}>
-              Find available meeting rooms based on time and place.
-            </Typography>
-            <Button variant="contained" sx={{ backgroundColor: '#fb8c00' }}>
-              Check Now
-            </Button>
-          </CardContent>
-        </Grid>
-      </Grid>
 
       {/* Footer */}
       <Box sx={{ textAlign: 'center', padding: '10px', backgroundColor: '#1e88e5', color: '#fff', borderRadius: '8px' }}>
