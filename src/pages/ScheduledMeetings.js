@@ -166,8 +166,11 @@ const ScheduledMeetings = () => {
     );
   };
 
-  const countUpcoming = (meetings) => {
-    return meetings.filter((meeting) => getMeetingStatus(meeting.date, meeting.time) === 'upcoming').length;
+  // Count both upcoming and ongoing meetings
+  const countActiveMeetings = (meetings) => {
+    return meetings.filter(
+      (meeting) => ['upcoming', 'ongoing'].includes(getMeetingStatus(meeting.date, meeting.time))
+    ).length;
   };
 
   return (
@@ -184,8 +187,8 @@ const ScheduledMeetings = () => {
           onChange={(e, newValue) => setViewType(newValue)}
           aria-label="meeting type"
         >
-          <ToggleButton value="normal">Normal Meetings ({countUpcoming(normalMeetings)})</ToggleButton>
-          <ToggleButton value="special">Special Meetings ({countUpcoming(specialMeetings)})</ToggleButton>
+          <ToggleButton value="normal">Normal Meetings ({countActiveMeetings(normalMeetings)})</ToggleButton>
+          <ToggleButton value="special">Special Meetings ({countActiveMeetings(specialMeetings)})</ToggleButton>
         </ToggleButtonGroup>
       </Box>
 
