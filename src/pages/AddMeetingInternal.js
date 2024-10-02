@@ -37,7 +37,14 @@ const themeColor = {
 const AddMeetingSession = () => {
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [employeeEmails, setEmployeeEmails] = useState([]); // New state for storing employee emails
+  const [employeeEmails, setEmployeeEmails] = useState([
+    'john.doe@connexit.com',
+    'jane.smith@connexit.com',
+    'alice.jones@connexit.com',
+    'bob.brown@connexit.com',
+    'charlie.adams@connexit.com',
+  ]); // Sample email data
+
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -56,8 +63,8 @@ const AddMeetingSession = () => {
     type: 'internalmeeting',
     specialNote: '',
     refreshment: '',
-    id: '', // For storing `id` from local storage
-    orgId: '', // For storing `orgId` from local storage
+    id: '',
+    orgId: '',
   });
 
   const navigate = useNavigate();
@@ -72,7 +79,7 @@ const AddMeetingSession = () => {
     }));
   }, []);
 
-  // Fetch rooms, bookings, and employee data
+  // Fetch rooms and bookings data from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -81,11 +88,6 @@ const AddMeetingSession = () => {
 
         const bookingsResponse = await axios.get('http://192.168.13.150:3001/bookings', { withCredentials: true });
         setBookings(bookingsResponse.data);
-
-        // Fetch employee emails from the API (assuming a similar endpoint)
-        const employeesResponse = await axios.get('http://192.168.13.150:3001/employees', { withCredentials: true });
-        const emailList = employeesResponse.data.map((emp) => emp.email);
-        setEmployeeEmails(emailList);
       } catch (error) {
         console.error('Failed to fetch data:', error);
       }
