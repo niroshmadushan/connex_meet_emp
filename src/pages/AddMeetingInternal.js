@@ -36,6 +36,7 @@ const themeColor = {
 
 const AddMeetingSession = () => {
   const [rooms, setRooms] = useState([]);
+  const [availableRooms,setAvailableRooms] =useState([])
   const [bookings, setBookings] = useState([]);
   const [employeeEmails, setEmployeeEmails] = useState([
     'john.doe@connexit.com',
