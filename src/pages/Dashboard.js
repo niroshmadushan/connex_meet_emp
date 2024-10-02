@@ -54,21 +54,6 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ backgroundColor: '#f7f9fc', minHeight: '80vh', padding: '10px' }}>
-      {/* Top Title */}
-      <Typography
-        variant="h4"
-        sx={{
-          textAlign: 'center',
-          fontWeight: 'bold',
-          color: '#007aff',
-          paddingBottom: '10px',
-          fontFamily: 'Helvetica Neue, Arial, sans-serif',
-          fontSize: '1.5rem',
-        }}
-      >
-        Connex Meet
-      </Typography>
-
       {/* Top Image Carousel */}
       <Box
         sx={{
@@ -115,7 +100,7 @@ const Dashboard = () => {
           <Paper
             sx={{
               textAlign: 'center',
-              padding: '10px',
+              padding: '5px',
               backgroundColor: '#f0f4ff',
               color: '#007aff',
               borderRadius: '10px',
@@ -140,7 +125,7 @@ const Dashboard = () => {
           <Paper
             sx={{
               textAlign: 'center',
-              padding: '10px',
+              padding: '5px',
               backgroundColor: '#e3f2fd',
               color: '#1e88e5',
               borderRadius: '10px',
@@ -165,7 +150,7 @@ const Dashboard = () => {
           <Paper
             sx={{
               textAlign: 'center',
-              padding: '10px',
+              padding: '5px',
               backgroundColor: '#ffebee',
               color: '#ff5252',
               borderRadius: '10px',
@@ -188,42 +173,25 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Donut Chart */}
-      <Paper
-        sx={{
-          height: '20vh',
-          padding: '10px',
-          borderRadius: '10px',
-          marginBottom: '15px',
-          textAlign: 'center',
-        }}
-      >
-        <Typography
-          variant="body1"
-          sx={{ color: '#007aff', fontWeight: 'bold', marginBottom: '5px' }}
+      {/* Meeting Overview */}
+      <Box sx={{ height: '25vh', padding: '5px', borderRadius: '10px' }}>
+        <Paper
+          sx={{
+            height: '25vh',
+            padding: '10px',
+            textAlign: 'center',
+            borderRadius: '10px',
+            backgroundColor: '#f7f9fc',
+            marginBottom: '10px',
+          }}
         >
-          Meeting Overview
-        </Typography>
-        <Doughnut data={donutData} />
-      </Paper>
-
-      {/* Text Box Section */}
-      <Box
-        sx={{
-          height: '15vh',
-          padding: '15px',
-          backgroundColor: '#f0f4ff',
-          borderRadius: '10px',
-          textAlign: 'center',
-          marginBottom: '10px',
-        }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#007aff' }}>
-          What You Can Do in This App
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#333' }}>
-          Book meetings, view details, and check available places with ease.
-        </Typography>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#007aff', marginBottom: '5px' }}>
+            Meeting Overview
+          </Typography>
+          <Box sx={{ height: '20vh' }}>
+            <Doughnut data={donutData} />
+          </Box>
+        </Paper>
       </Box>
 
       {/* Footer */}
