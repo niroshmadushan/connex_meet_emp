@@ -162,7 +162,7 @@ const AddMeetingSession = () => {
   const handleEmailChange = (event, value) => {
     setFormData({
       ...formData,
-      employeeName: value,
+      employeeEmail: value,
     });
   };
 
@@ -170,12 +170,12 @@ const AddMeetingSession = () => {
     if (formData.employeeEmail.trim()) {
       const newParticipant = {
         companyName: formData.companyName,
-        employeeName: formData.employeeEmail,
+        employeeEmail: formData.employeeEmail,
       };
       setFormData((prevData) => ({
         ...prevData,
         participantList: [...prevData.participantList, newParticipant],
-        employeeName: '',
+        employeeEmail: '',
       }));
     }
   };
@@ -217,7 +217,7 @@ const AddMeetingSession = () => {
           startTime: '',
           endTime: '',
           companyName: 'Connex IT',
-          employeeName: '',
+          employeeEmail: '',
           participantList: [],
           type: 'internalmeeting',
           specialNote: '',
