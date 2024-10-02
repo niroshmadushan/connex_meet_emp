@@ -102,7 +102,7 @@ const Dashboard = () => {
               justifyContent: 'center',
               boxShadow: 'none',
               transition: 'transform 0.3s',
-              '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 15px rgba(0,0,0,0.1)' },
+              '&:hover': { transform: 'translateY(-4px)'},
             }}
           >
             <CheckCircle sx={{ marginRight: '4px', fontSize: '20px' }} />
@@ -129,7 +129,7 @@ const Dashboard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'transform 0.3s',
-              '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 15px rgba(0,0,0,0.1)' },
+              '&:hover': { transform: 'translateY(-4px)'},
             }}
           >
             <MeetingRoom sx={{ marginRight: '4px', fontSize: '20px' }} />
@@ -156,7 +156,7 @@ const Dashboard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'transform 0.3s',
-              '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 15px rgba(0,0,0,0.1)' },
+              '&:hover': { transform: 'translateY(-4px)' },
             }}
           >
             <Cancel sx={{ marginRight: '4px', fontSize: '20px' }} />
