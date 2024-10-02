@@ -483,7 +483,6 @@ const AddMeetingSession = () => {
                   <TableHead>
                     <TableRow>
                       <TableCell>#</TableCell>
-                      <TableCell>Company Name</TableCell>
                       <TableCell>Employee Email</TableCell>
                       <TableCell>Action</TableCell>
                     </TableRow>
@@ -492,7 +491,6 @@ const AddMeetingSession = () => {
                     {formData.participantList.map((participant, index) => (
                       <TableRow key={index}>
                         <TableCell>{index + 1}</TableCell>
-                        <TableCell>{participant.companyName}</TableCell>
                         <TableCell>{participant.employeeEmail}</TableCell>
                         <TableCell>
                           <IconButton onClick={() => handleDeleteParticipant(index)}>
