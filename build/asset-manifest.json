@@ -1,24 +1,24 @@
 {
   "files": {
-    "main.css": "/connex_meet_emp/static/css/main.ab1bc322.css",
-    "main.js": "/connex_meet_emp/static/js/main.a0fe98cd.js",
-    "static/js/453.69834fcc.chunk.js": "/connex_meet_emp/static/js/453.69834fcc.chunk.js",
-    "static/media/prof.jpg": "/connex_meet_emp/static/media/prof.aecb59ab1c9a78cdae79.jpg",
-    "static/media/about-us-page-examples-1-61fd8f9784626-sej.webp": "/connex_meet_emp/static/media/about-us-page-examples-1-61fd8f9784626-sej.5ea02c4e966b2c7f2a56.webp",
-    "static/media/find-company-information-image.jpg": "/connex_meet_emp/static/media/find-company-information-image.1e932d3b990583bdf568.jpg",
-    "static/media/Mobile Bank.jpg": "/connex_meet_emp/static/media/Mobile Bank.86de46e96d38d9289797.jpg",
-    "static/media/Microsoft.jpg": "/connex_meet_emp/static/media/Microsoft.2a78b685b8432f151ac7.jpg",
-    "static/media/slick.svg": "/connex_meet_emp/static/media/slick.2630a3e3eab21c607e21.svg",
-    "static/media/slick.eot": "/connex_meet_emp/static/media/slick.a4e97f5a2a64f0ab1323.eot",
-    "static/media/slick.ttf": "/connex_meet_emp/static/media/slick.c94f7671dcc99dce43e2.ttf",
-    "static/media/slick.woff": "/connex_meet_emp/static/media/slick.295183786cd8a1389865.woff",
-    "index.html": "/connex_meet_emp/index.html",
-    "main.ab1bc322.css.map": "/connex_meet_emp/static/css/main.ab1bc322.css.map",
-    "main.a0fe98cd.js.map": "/connex_meet_emp/static/js/main.a0fe98cd.js.map",
-    "453.69834fcc.chunk.js.map": "/connex_meet_emp/static/js/453.69834fcc.chunk.js.map"
+    "main.css": "/connex_meet_app_employee/static/css/main.7e3108be.css",
+    "main.js": "/connex_meet_app_employee/static/js/main.12207e0a.js",
+    "static/js/453.69834fcc.chunk.js": "/connex_meet_app_employee/static/js/453.69834fcc.chunk.js",
+    "static/media/prof.jpg": "/connex_meet_app_employee/static/media/prof.aecb59ab1c9a78cdae79.jpg",
+    "static/media/about-us-page-examples-1-61fd8f9784626-sej.webp": "/connex_meet_app_employee/static/media/about-us-page-examples-1-61fd8f9784626-sej.5ea02c4e966b2c7f2a56.webp",
+    "static/media/find-company-information-image.jpg": "/connex_meet_app_employee/static/media/find-company-information-image.1e932d3b990583bdf568.jpg",
+    "static/media/Mobile Bank.jpg": "/connex_meet_app_employee/static/media/Mobile Bank.86de46e96d38d9289797.jpg",
+    "static/media/Microsoft.jpg": "/connex_meet_app_employee/static/media/Microsoft.2a78b685b8432f151ac7.jpg",
+    "static/media/slick.svg": "/connex_meet_app_employee/static/media/slick.2630a3e3eab21c607e21.svg",
+    "static/media/slick.eot": "/connex_meet_app_employee/static/media/slick.a4e97f5a2a64f0ab1323.eot",
+    "static/media/slick.ttf": "/connex_meet_app_employee/static/media/slick.c94f7671dcc99dce43e2.ttf",
+    "static/media/slick.woff": "/connex_meet_app_employee/static/media/slick.295183786cd8a1389865.woff",
+    "index.html": "/connex_meet_app_employee/index.html",
+    "main.7e3108be.css.map": "/connex_meet_app_employee/static/css/main.7e3108be.css.map",
+    "main.12207e0a.js.map": "/connex_meet_app_employee/static/js/main.12207e0a.js.map",
+    "453.69834fcc.chunk.js.map": "/connex_meet_app_employee/static/js/453.69834fcc.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.ab1bc322.css",
-    "static/js/main.a0fe98cd.js"
+    "static/css/main.7e3108be.css",
+    "static/js/main.12207e0a.js"
   ]
 }
