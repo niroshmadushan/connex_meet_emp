@@ -46,6 +46,25 @@ const getMeetingStatus = (meetingDate, meetingTime) => {
   return 'ongoing';
 };
 
+// Function to sort meetings based on status and time
+const sortMeetings = (meetings) => {
+  return meetings.sort((a, b) => {
+    const statusOrder = { upcoming: 1, ongoing: 2, finished: 3 };
+
+    const statusA = getMeetingStatus(a.date, a.time);
+    const statusB = getMeetingStatus(b.date, b.time);
+
+    if (statusOrder[statusA] !== statusOrder[statusB]) {
+      return statusOrder[statusA] - statusOrder[statusB]; // Sort by status order
+    }
+
+    // Sort by start time if statuses are the same
+    const startTimeA = dayjs(`${a.date} ${a.time.split(' - ')[0]}`);
+    const startTimeB = dayjs(`${b.date} ${b.time.split(' - ')[0]}`);
+    return startTimeA - startTimeB;
+  });
+};
+
 // Styled Card for a more compact look
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: '12px',
@@ -188,7 +207,7 @@ const ScheduledMeetings = () => {
 
       {/* Show Normal or Special Meetings Based on Toggle */}
       <Grid container spacing={3}>
-        {(viewType === 'normal' ? normalMeetings : specialMeetings).map((meeting) => {
+        {sortMeetings(viewType === 'normal' ? normalMeetings : specialMeetings).map((meeting) => {
           const status = getMeetingStatus(meeting.date, meeting.time);
 
           return (
