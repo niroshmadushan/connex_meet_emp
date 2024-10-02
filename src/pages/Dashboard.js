@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Box, Grid, Divider } from '@mui/material';
+import { Box, Typography, Grid, Divider } from '@mui/material';
 import { MeetingRoom, CheckCircle, Cancel, EventAvailable, Info, Book } from '@mui/icons-material';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
