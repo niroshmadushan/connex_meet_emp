@@ -23,14 +23,13 @@ import {
 import { styled } from '@mui/system';
 import axios from 'axios';
 import { format, isSameDay } from 'date-fns';
+import Swal from 'sweetalert2';
 
 // Theme colors
 const themeColor = {
   primary: '#007aff',
   textPrimary: '#333333',
   cardBg: '#ffffff',
-  availableBg: '#e0f7e9',
-  unavailableBg: '#f8d7da',
   lightGray: '#e0e0e0',
 };
 
@@ -79,22 +78,18 @@ const MeetingRooms = () => {
   const [open, setOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
-  // Fetch rooms and all bookings from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch room data from /place endpoint
         const roomsResponse = await axios.get('http://192.168.13.150:3001/place', {
           withCredentials: true,
         });
-        const roomsData = roomsResponse.data;
-        setRooms(roomsData);
+        setRooms(roomsResponse.data);
 
-        // Fetch all bookings at once from /bookings endpoint
         const bookingsResponse = await axios.get('http://192.168.13.150:3001/bookings', {
           withCredentials: true,
         });
-        setBookings(bookingsResponse.data);  // Store all bookings data in state
+        setBookings(bookingsResponse.data);
       } catch (error) {
         console.error('Failed to fetch room and booking data:', error);
       }
@@ -103,17 +98,19 @@ const MeetingRooms = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    // Whenever the selected date changes, update the availability display
-    if (selectedRoom) {
-      setOpen(false);
-      setTimeout(() => {
-        setOpen(true);
-      }, 100);
-    }
-  }, [selectedDate, selectedRoom]);
-
   const handleCardClick = (room) => {
+    const availableSlots = getAvailableTimeSlots(room);
+
+    if (availableSlots.length === 0) {
+      Swal.fire({
+        title: 'Unavailable',
+        text: 'This room has no available time slots for the selected date.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      return;
+    }
+
     setSelectedRoom(room);
     setOpen(true);
   };
@@ -125,10 +122,9 @@ const MeetingRooms = () => {
 
   // Calculate available time slots for the selected room based on the selected date
   const getAvailableTimeSlots = (room) => {
-    const startTime = room.start_time; // Operating start time (e.g., 08:00 AM)
-    const endTime = room.end_time;     // Operating end time (e.g., 05:00 PM)
+    const startTime = room.start_time;
+    const endTime = room.end_time;
 
-    // Convert time to a comparable number for calculations
     const convertTime = (time) => {
       const [timePart, period] = time.split(' ');
       const [hours, minutes] = timePart.split(':').map(Number);
@@ -136,20 +132,17 @@ const MeetingRooms = () => {
       return adjustedHours * 100 + minutes;
     };
 
-    const roomStart = convertTime(startTime);  // Operating start time in "HHMM" format (e.g., 800 for 08:00 AM)
-    const roomEnd = convertTime(endTime);      // Operating end time in "HHMM" format (e.g., 1700 for 05:00 PM)
+    const roomStart = convertTime(startTime);
+    const roomEnd = convertTime(endTime);
 
-    // Filter bookings based on the selected date and the current room ID
-    const roomBookings = bookings.filter((booking) =>
-      booking.place_id === room.id && isSameDay(new Date(booking.date), selectedDate)
+    const roomBookings = bookings.filter(
+      (booking) => booking.place_id === room.id && isSameDay(new Date(booking.date), selectedDate)
     );
 
-    // If no bookings, return the entire operating time as a single free slot
     if (roomBookings.length === 0) {
       return [`${startTime} - ${endTime}`];
     }
 
-    // Convert bookings to sorted time ranges
     const sortedBookings = roomBookings
       .map((booking) => ({
         start: convertTime(booking.start_time),
@@ -160,22 +153,17 @@ const MeetingRooms = () => {
     const freeSlots = [];
     let lastEndTime = roomStart;
 
-    // Calculate free slots based on bookings
     sortedBookings.forEach((booking) => {
       if (lastEndTime < booking.start) {
-        // Free slot before the current booking
         freeSlots.push({ start: lastEndTime, end: booking.start });
       }
-      // Update last end time to the end of the current booking
       lastEndTime = Math.max(lastEndTime, booking.end);
     });
 
-    // Check for free slot after the last booking till the room's closing time
     if (lastEndTime < roomEnd) {
       freeSlots.push({ start: lastEndTime, end: roomEnd });
     }
 
-    // Format the free slots into readable strings (e.g., "08:00 AM - 11:00 AM")
     const formatTime = (time) => {
       const hours = Math.floor(time / 100);
       const minutes = time % 100;
@@ -193,45 +181,49 @@ const MeetingRooms = () => {
       <TextField
         label="Select Date"
         type="date"
-        value={format(selectedDate, 'yyyy-MM-dd')} // Set default date value
+        value={format(selectedDate, 'yyyy-MM-dd')}
         onChange={(e) => setSelectedDate(new Date(e.target.value))}
-        sx={{ mb: 3, width: '200px',mt:3 }}
+        sx={{ mb: 3, width: '200px', mt: 3 }}
         InputLabelProps={{
           shrink: true,
         }}
       />
 
-      {/* Page Title */}
       <Typography variant="h6" sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', color: themeColor.textPrimary }}>
         Meeting Rooms Availability
       </Typography>
 
       {/* Room Cards */}
       <Grid container spacing={2} sx={{ width: '100%', maxWidth: '600px' }}>
-        {rooms.map((room, index) => (
-          <Grid item xs={12} key={index}>
-            <StyledCard available={room.status_id === 4} onClick={() => handleCardClick(room)}>
-              <BlinkingDot available={room.status_id === 4} />
-              <CardContent sx={{ padding: '10px' }}>
-                <Typography variant="subtitle1" sx={{ mb: 0.5, fontSize: '1rem', fontWeight: 'bold' }}>
-                  {room.name}
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem', color: themeColor.textPrimary }}>
-                  {room.address}
-                </Typography>
-                {room.status_id === 4 ? (
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
-                    Available
+        {rooms.map((room, index) => {
+          const availableSlots = getAvailableTimeSlots(room);
+          const isAvailable = availableSlots.length > 0;
+
+          return (
+            <Grid item xs={12} key={index}>
+              <StyledCard available={isAvailable} onClick={() => handleCardClick(room)}>
+                <BlinkingDot available={isAvailable} />
+                <CardContent sx={{ padding: '10px' }}>
+                  <Typography variant="subtitle1" sx={{ mb: 0.5, fontSize: '1rem', fontWeight: 'bold' }}>
+                    {room.name || 'Unavailable'}
                   </Typography>
-                ) : (
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
-                    Not Available
+                  <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem', color: themeColor.textPrimary }}>
+                    {room.address}
                   </Typography>
-                )}
-              </CardContent>
-            </StyledCard>
-          </Grid>
-        ))}
+                  {isAvailable ? (
+                    <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#388e3c' }}>
+                      Available
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#d32f2f' }}>
+                      Not Available
+                    </Typography>
+                  )}
+                </CardContent>
+              </StyledCard>
+            </Grid>
+          );
+        })}
       </Grid>
 
       {/* Popup Dialog for Room Details */}
