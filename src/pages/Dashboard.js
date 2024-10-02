@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid, Button, Divider } from '@mui/material';
+import { Box, Typography, Paper, Grid, Divider } from '@mui/material';
 import { MeetingRoom, CheckCircle, Cancel, EventAvailable, Info, Book } from '@mui/icons-material';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
@@ -100,7 +100,6 @@ const Dashboard = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: 'none',
               transition: 'transform 0.3s',
               '&:hover': { transform: 'translateY(-4px)'},
             }}
@@ -174,7 +173,6 @@ const Dashboard = () => {
 
       {/* Feature Information */}
       <Paper
-        elevation={3}
         sx={{
           textAlign: 'center',
           padding: '15px',
