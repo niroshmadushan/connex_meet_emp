@@ -323,7 +323,7 @@ const AddMeetingSession = () => {
 
     return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
   };
-
+  
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
@@ -381,7 +381,7 @@ const AddMeetingSession = () => {
                 >
                   {rooms.map((room) => (
                     <MenuItem key={room.id} value={room.id}>
-                      {room.name && room.name.trim() !== '' ? room.name : 'Unavailable'}
+                      {room.name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -401,7 +401,7 @@ const AddMeetingSession = () => {
                   >
                     {formData.availableSlots.map((slot, index) => (
                       <MenuItem key={index} value={slot}>
-                        {slot}
+                       {slot && slot.trim() !== '' ? slot : 'Unavailable'}
                       </MenuItem>
                     ))}
                   </Select>
