@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid, Divider } from '@mui/material';
+import { Box, Typography, Box, Grid, Divider } from '@mui/material';
 import { MeetingRoom, CheckCircle, Cancel, EventAvailable, Info, Book } from '@mui/icons-material';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
@@ -89,7 +89,7 @@ const Dashboard = () => {
         }}
       >
         <Grid item xs={4}>
-          <Paper
+          <Box
             sx={{
               textAlign: 'center',
               padding: '10px',
@@ -113,10 +113,10 @@ const Dashboard = () => {
                 <CountUp start={0} end={totalMeetings} duration={2} />
               </Typography>
             </Box>
-          </Paper>
+          </Box>
         </Grid>
         <Grid item xs={4}>
-          <Paper
+          <Box
             sx={{
               textAlign: 'center',
               padding: '10px',
@@ -140,10 +140,10 @@ const Dashboard = () => {
                 <CountUp start={0} end={successfulMeetings} duration={2} />
               </Typography>
             </Box>
-          </Paper>
+          </Box>
         </Grid>
         <Grid item xs={4}>
-          <Paper
+          <Box
             sx={{
               textAlign: 'center',
               padding: '10px',
@@ -167,12 +167,12 @@ const Dashboard = () => {
                 <CountUp start={0} end={canceledMeetings} duration={2} />
               </Typography>
             </Box>
-          </Paper>
+          </Box>
         </Grid>
       </Grid>
 
       {/* Feature Information */}
-      <Paper
+      <Box
         sx={{
           textAlign: 'center',
           padding: '15px',
@@ -196,7 +196,7 @@ const Dashboard = () => {
             <Book sx={{ fontSize: '16px', color: '#ff5252' }} /> Track meeting details and participants.
           </Typography>
         </Box>
-      </Paper>
+      </Box>
 
       {/* Footer */}
       <Box
