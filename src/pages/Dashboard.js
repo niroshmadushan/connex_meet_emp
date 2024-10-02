@@ -42,7 +42,7 @@ const Dashboard = () => {
           textTransform: 'uppercase',
         }}
       >
-        Connex Meet Dashboard
+        Connex Meet
       </Typography>
 
       {/* Image Carousel */}
