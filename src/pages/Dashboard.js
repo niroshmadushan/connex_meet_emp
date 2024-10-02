@@ -128,7 +128,6 @@ const Dashboard = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: 'none',
               transition: 'transform 0.3s',
               '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 15px rgba(0,0,0,0.1)' },
             }}
@@ -156,7 +155,6 @@ const Dashboard = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: 'none',
               transition: 'transform 0.3s',
               '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 15px rgba(0,0,0,0.1)' },
             }}
