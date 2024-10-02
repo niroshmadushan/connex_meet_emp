@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid, Card, CardContent, Button } from '@mui/material';
+import { Box, Typography, Paper, Grid, Button } from '@mui/material';
 import { Bar } from 'react-chartjs-2';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { MeetingRoom, CheckCircle, Cancel } from '@mui/icons-material';
 
 // Import images for the carousel
 import img1 from '../img/about-us-page-examples-1-61fd8f9784626-sej.webp';
@@ -46,11 +47,11 @@ const Dashboard = () => {
       {
         label: 'Meetings',
         data: [totalMeetings, successfulMeetings, canceledMeetings],
-        backgroundColor: ['#007aff', '#00c853', '#ff5252'],
-        borderColor: ['#005bb5', '#009624', '#ff1744'],
+        backgroundColor: '#64b5f6',
+        borderColor: '#1e88e5',
         borderWidth: 2,
-        barThickness: 12, // Thin bars
-        borderRadius: 10,
+        barThickness: 16,
+        borderRadius: 8,
       },
     ],
   };
@@ -98,64 +99,112 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: '#e3f2fd', minHeight: '100vh', padding: '20px', overflow: 'hidden' }}>
+    <Box sx={{ backgroundColor: '#e3f2fd', minHeight: '100vh', padding: '0px', overflow: 'hidden' }}>
       {/* Top Image Carousel */}
-      <Box sx={{ borderRadius: '12px', overflow: 'hidden', marginBottom: '20px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+      <Box sx={{ height: '30vh', borderRadius: '12px', overflow: 'hidden', marginBottom: '10px' }}>
         <Slider {...sliderSettings}>
-          <img src={img1} alt="Image 1" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-          <img src={img2} alt="Image 2" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-          <img src={img3} alt="Image 3" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-          <img src={img4} alt="Image 4" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+          <img src={img1} alt="Image 1" style={{ width: '100%', height: '30vh', objectFit: 'cover' }} />
+          <img src={img2} alt="Image 2" style={{ width: '100%', height: '30vh', objectFit: 'cover' }} />
+          <img src={img3} alt="Image 3" style={{ width: '100%', height: '30vh', objectFit: 'cover' }} />
+          <img src={img4} alt="Image 4" style={{ width: '100%', height: '30vh', objectFit: 'cover' }} />
         </Slider>
       </Box>
 
       {/* Meeting Statistics - Compact Display */}
-      <Grid container spacing={2} sx={{ marginBottom: '20px', justifyContent: 'center' }}>
+      <Grid container spacing={2} sx={{ marginBottom: '10px', justifyContent: 'center' }}>
         <Grid item xs={4}>
-          <Paper elevation={3} sx={{ textAlign: 'center', padding: '10px', backgroundColor: '#007aff', color: '#fff', borderRadius: '8px' }}>
-            <Typography variant="body2" sx={{ fontSize: '14px', fontWeight: 'bold' }}>Total Meetings</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-              <CountUp start={0} end={totalMeetings} duration={2} />
-            </Typography>
+          <Paper
+            elevation={0}
+            sx={{
+              textAlign: 'center',
+              padding: '10px',
+              backgroundColor: '#2196f3',
+              color: '#fff',
+              borderRadius: '8px',
+              height: '100px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <CheckCircle sx={{ marginRight: '5px' }} />
+            <Box>
+              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Total Meetings</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                <CountUp start={0} end={totalMeetings} duration={2} />
+              </Typography>
+            </Box>
           </Paper>
         </Grid>
         <Grid item xs={4}>
-          <Paper elevation={3} sx={{ textAlign: 'center', padding: '10px', backgroundColor: '#00c853', color: '#fff', borderRadius: '8px' }}>
-            <Typography variant="body2" sx={{ fontSize: '14px', fontWeight: 'bold' }}>Successful</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-              <CountUp start={0} end={successfulMeetings} duration={2} />
-            </Typography>
+          <Paper
+            elevation={0}
+            sx={{
+              textAlign: 'center',
+              padding: '10px',
+              backgroundColor: '#64b5f6',
+              color: '#fff',
+              borderRadius: '8px',
+              height: '100px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <MeetingRoom sx={{ marginRight: '5px' }} />
+            <Box>
+              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Successful</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                <CountUp start={0} end={successfulMeetings} duration={2} />
+              </Typography>
+            </Box>
           </Paper>
         </Grid>
         <Grid item xs={4}>
-          <Paper elevation={3} sx={{ textAlign: 'center', padding: '10px', backgroundColor: '#ff5252', color: '#fff', borderRadius: '8px' }}>
-            <Typography variant="body2" sx={{ fontSize: '14px', fontWeight: 'bold' }}>Canceled</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-              <CountUp start={0} end={canceledMeetings} duration={2} />
-            </Typography>
+          <Paper
+            elevation={0}
+            sx={{
+              textAlign: 'center',
+              padding: '10px',
+              backgroundColor: '#ff5252',
+              color: '#fff',
+              borderRadius: '8px',
+              height: '100px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Cancel sx={{ marginRight: '5px' }} />
+            <Box>
+              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Canceled</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                <CountUp start={0} end={canceledMeetings} duration={2} />
+              </Typography>
+            </Box>
           </Paper>
         </Grid>
       </Grid>
 
       {/* Vertical Bar Chart - Animated */}
-      <Paper elevation={3} sx={{ height: '300px', padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
+      <Paper elevation={0} sx={{ height: '20vh', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
         <Typography variant="h6" sx={{ marginBottom: '10px', color: '#007aff', fontWeight: 'bold', textAlign: 'center' }}>
           Meeting Summary
         </Typography>
         <Bar data={barData} options={chartOptions} />
       </Paper>
 
-      {/* App Information */}
-      <Box sx={{ padding: '20px', backgroundColor: '#e3f2fd', marginBottom: '20px', borderRadius: '12px', textAlign: 'center' }}>
+      {/* App Information Section */}
+      <Box sx={{ height: '30vh', padding: '20px', backgroundColor: '#e3f2fd', marginBottom: '10px', borderRadius: '12px', textAlign: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#007aff', marginBottom: '10px' }}>What You Can Do in This App</Typography>
-        <Typography variant="body1" sx={{ color: '#333' }}>
-          You can book meetings, view meeting details, check available places, and manage your scheduled events with ease.
+        <Typography variant="body1" sx={{ color: '#333', marginBottom: '10px' }}>
+          Book meetings, view meeting details, check available places, and manage your scheduled events with ease.
         </Typography>
-        <Button variant="contained" sx={{ backgroundColor: '#007aff', color: '#fff', mt: 2 }}>Explore Features</Button>
+        <Button variant="contained" sx={{ backgroundColor: '#007aff', color: '#fff' }}>Explore Features</Button>
       </Box>
 
       {/* Footer */}
-      <Box sx={{ textAlign: 'center', padding: '10px', backgroundColor: '#1e88e5', color: '#fff', borderRadius: '8px' }}>
+      <Box sx={{ height: '10vh', textAlign: 'center', padding: '10px', backgroundColor: '#1e88e5', color: '#fff', borderRadius: '8px' }}>
         <Typography variant="body2">© 2024 Meeting Management App. All rights reserved.</Typography>
       </Box>
     </Box>
