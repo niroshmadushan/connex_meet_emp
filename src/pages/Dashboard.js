@@ -1,20 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, Button, CircularProgress, Avatar, IconButton } from '@mui/material';
-import { Bar, Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import CountUp from 'react-countup';
+import React from 'react';
+import { Box, Typography, Grid, Paper } from '@mui/material';
+import { Bar, Pie, Line, Radar } from 'react-chartjs-2';
 import Slider from 'react-slick';
-import PlaceIcon from '@mui/icons-material/Place';
-import EventIcon from '@mui/icons-material/Event';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CloseIcon from '@mui/icons-material/Close';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  BarElement,
+  LineElement,
+  RadarController,
+  PointElement,
+  RadialLinearScale,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import CountUp from 'react-countup';
 
-ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+// Image imports for the top slider
+import img1 from '../img/about-us-page-examples-1-61fd8f9784626-sej.webp';
+import img2 from '../img/find-company-information-image.jpg';
+import img3 from '../img/Mobile Bank.jpg';
+import img4 from '../img/Microsoft.jpg';
 
+// Register Chart.js components
+ChartJS.register(
+  ArcElement,
+  BarElement,
+  LineElement,
+  RadarController,
+  PointElement,
+  RadialLinearScale,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
+
+// Slider settings for the image carousel
 const sliderSettings = {
   dots: true,
   infinite: true,
@@ -25,131 +48,167 @@ const sliderSettings = {
   autoplaySpeed: 3000,
 };
 
-const DashboardMeetingApp = () => {
-  // Example state for meeting data
-  const [availableRooms, setAvailableRooms] = useState([
-    { id: 1, name: 'Conference Room A', status: 'Available', location: 'Building 1', capacity: 15 },
-    { id: 2, name: 'Board Room B', status: 'Booked', location: 'Building 3', capacity: 10 },
-    { id: 3, name: 'Meeting Room C', status: 'Available', location: 'Building 2', capacity: 8 },
-  ]);
+// Main dashboard component for meetings
+const Dashboard = () => {
+  // Sample meeting data
+  const totalMeetings = 100;
+  const successfulMeetings = 75;
+  const canceledMeetings = 25;
+  const starRatingMeetings = 4.5;
 
-  const [upcomingMeetings, setUpcomingMeetings] = useState([
-    { id: 1, title: 'Project Review', date: '10/04/2024', time: '2:00 PM - 3:30 PM', place: 'Conference Room A' },
-    { id: 2, title: 'Client Presentation', date: '10/04/2024', time: '4:00 PM - 5:00 PM', place: 'Meeting Room C' },
-  ]);
-
-  const totalAvailable = availableRooms.filter((room) => room.status === 'Available').length;
-
-  // Chart data for room usage
+  // Data for bar, pie, line, and radar charts
   const barData = {
-    labels: availableRooms.map((room) => room.name),
+    labels: ['Meetings'],
     datasets: [
       {
-        label: 'Room Capacity',
-        data: availableRooms.map((room) => room.capacity),
+        label: 'Successful',
+        data: [successfulMeetings],
         backgroundColor: '#007aff',
-        borderColor: '#005bb5',
-        borderWidth: 2,
-        borderRadius: 5,
+      },
+      {
+        label: 'Canceled',
+        data: [canceledMeetings],
+        backgroundColor: '#f44336',
       },
     ],
   };
 
-  // Chart data for upcoming meetings
-  const doughnutData = {
-    labels: upcomingMeetings.map((meeting) => meeting.title),
+  const pieData = {
+    labels: ['Successful', 'Canceled'],
     datasets: [
       {
-        label: 'Upcoming Meetings',
-        data: upcomingMeetings.map((_, index) => (index + 1) * 20), // Mock data for display
-        backgroundColor: ['#007aff', '#1e88e5', '#29b6f6', '#4fc3f7'],
-        borderWidth: 1,
+        data: [successfulMeetings, canceledMeetings],
+        backgroundColor: ['#007aff', '#f44336'],
+      },
+    ],
+  };
+
+  const lineData = {
+    labels: ['Meetings'],
+    datasets: [
+      {
+        label: 'Average Rating',
+        data: [starRatingMeetings],
+        fill: false,
+        borderColor: '#ffeb3b',
+      },
+    ],
+  };
+
+  const radarData = {
+    labels: ['Feedback Ratings'],
+    datasets: [
+      {
+        label: 'Ratings',
+        data: [starRatingMeetings],
+        backgroundColor: 'rgba(0, 122, 255, 0.2)',
+        borderColor: '#007aff',
       },
     ],
   };
 
   return (
-    <Box sx={{ padding: '20px' }}>
-      {/* Header Section */}
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#007aff' }}>
-          Meeting Booking Dashboard
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#666' }}>
-          Manage and track your meetings efficiently
-        </Typography>
+    <Box
+      sx={{
+        padding: '15px',
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gridTemplateRows: 'auto',
+        gap: '10px',
+      }}
+    >
+      {/* Image Carousel at the Top */}
+      <Box sx={{ width: '100%' }}>
+        <Slider {...sliderSettings}>
+          <div>
+            <img src={img1} alt="Event 1" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+          </div>
+          <div>
+            <img src={img2} alt="Event 2" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+          </div>
+          <div>
+            <img src={img3} alt="Event 3" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+          </div>
+          <div>
+            <img src={img4} alt="Event 4" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+          </div>
+        </Slider>
       </Box>
 
-      {/* Room Availability Section */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#007aff', mb: 2 }}>
-          Available Rooms ({totalAvailable})
-        </Typography>
-        <Grid container spacing={2}>
-          {availableRooms.map((room) => (
-            <Grid item xs={12} sm={4} key={room.id}>
-              <Paper elevation={0} sx={{ padding: '10px', border: `2px solid ${room.status === 'Available' ? '#4caf50' : '#f44336'}`, borderRadius: '8px' }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: room.status === 'Available' ? '#4caf50' : '#f44336' }}>
-                  {room.name}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#666' }}>
-                  <PlaceIcon fontSize="small" sx={{ mr: 1 }} />
-                  {room.location}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#666' }}>
-                  <MeetingRoomIcon fontSize="small" sx={{ mr: 1 }} />
-                  Capacity: {room.capacity}
-                </Typography>
-                <Button variant="outlined" sx={{ mt: 1 }} startIcon={room.status === 'Available' ? <CheckCircleIcon /> : <CloseIcon />}>
-                  {room.status}
-                </Button>
-              </Paper>
-            </Grid>
-          ))}
+      {/* Meeting Analytics Title */}
+      <Typography
+        variant="h6"
+        sx={{ fontWeight: 'bold', marginBottom: '10px', textAlign: 'center', color: '#007aff', fontFamily: 'Roboto, sans-serif' }}
+      >
+        Meeting Analytics
+      </Typography>
+
+      {/* Overview of Total Meetings */}
+      <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+        <Grid item xs={12} sm={4}>
+          <Paper elevation={0} sx={{ padding: '15px', backgroundColor: '#e3f2fd', color: '#007aff', borderRadius: '10px' }}>
+            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
+              Total Meetings
+            </Typography>
+            <Typography variant="h5">
+              <CountUp start={0} end={totalMeetings} duration={2} separator="," />
+            </Typography>
+          </Paper>
         </Grid>
-      </Box>
-
-      {/* Upcoming Meetings Section */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#007aff', mb: 2 }}>
-          Upcoming Meetings
-        </Typography>
-        <Grid container spacing={2}>
-          {upcomingMeetings.map((meeting) => (
-            <Grid item xs={12} sm={6} key={meeting.id}>
-              <Paper elevation={0} sx={{ padding: '10px', border: '1px solid #e0e0e0', borderRadius: '8px' }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
-                  {meeting.title}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
-                  <CalendarMonthIcon fontSize="small" sx={{ mr: 1 }} />
-                  {meeting.date}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
-                  <AccessTimeIcon fontSize="small" sx={{ mr: 1 }} />
-                  {meeting.time}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#007aff' }}>
-                  <MeetingRoomIcon fontSize="small" sx={{ mr: 1 }} />
-                  {meeting.place}
-                </Typography>
-              </Paper>
-            </Grid>
-          ))}
+        <Grid item xs={12} sm={4}>
+          <Paper elevation={0} sx={{ padding: '15px', backgroundColor: '#d1c4e9', color: '#6a1b9a', borderRadius: '10px' }}>
+            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
+              Successful Meetings
+            </Typography>
+            <Typography variant="h5">
+              <CountUp start={0} end={successfulMeetings} duration={2} separator="," />
+            </Typography>
+          </Paper>
         </Grid>
-      </Box>
+        <Grid item xs={12} sm={4}>
+          <Paper elevation={0} sx={{ padding: '15px', backgroundColor: '#ffcdd2', color: '#f44336', borderRadius: '10px' }}>
+            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
+              Canceled Meetings
+            </Typography>
+            <Typography variant="h5">
+              <CountUp start={0} end={canceledMeetings} duration={2} separator="," />
+            </Typography>
+          </Paper>
+        </Grid>
+      </Grid>
 
-      {/* Bar Chart for Room Capacity */}
-      <Box sx={{ height: '200px', mb: 3 }}>
-        <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false }} />
-      </Box>
+      {/* Charts for Meeting Data */}
+      <Grid container spacing={2}>
+        {/* Bar Chart for Success vs Cancellations */}
+        <Grid item xs={12} sm={6}>
+          <Paper elevation={0} sx={{ padding: '10px', height: '200px', borderRadius: '10px' }}>
+            <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false }} />
+          </Paper>
+        </Grid>
 
-      {/* Doughnut Chart for Upcoming Meetings */}
-      <Box sx={{ height: '200px' }}>
-        <Doughnut data={doughnutData} options={{ responsive: true, maintainAspectRatio: false }} />
-      </Box>
+        {/* Pie Chart for Meeting Distribution */}
+        <Grid item xs={12} sm={6}>
+          <Paper elevation={0} sx={{ padding: '10px', height: '200px', borderRadius: '10px' }}>
+            <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false }} />
+          </Paper>
+        </Grid>
+
+        {/* Line Chart for Ratings */}
+        <Grid item xs={12} sm={6}>
+          <Paper elevation={0} sx={{ padding: '10px', height: '200px', borderRadius: '10px' }}>
+            <Line data={lineData} options={{ responsive: true, maintainAspectRatio: false }} />
+          </Paper>
+        </Grid>
+
+        {/* Radar Chart for Feedback Ratings */}
+        <Grid item xs={12} sm={6}>
+          <Paper elevation={0} sx={{ padding: '10px', height: '200px', borderRadius: '10px' }}>
+            <Radar data={radarData} options={{ responsive: true, maintainAspectRatio: false }} />
+          </Paper>
+        </Grid>
+      </Grid>
     </Box>
   );
 };
 
-export default DashboardMeetingApp;
+export default Dashboard;
