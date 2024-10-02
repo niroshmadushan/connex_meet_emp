@@ -99,7 +99,12 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: '#e3f2fd', minHeight: '100vh', padding: '0px', overflow: 'hidden' }}>
+    <Box sx={{ backgroundColor: '#f0f4f8', minHeight: '100vh', padding: '0px', overflow: 'hidden' }}>
+      {/* Top Title */}
+      <Typography variant="h4" sx={{ textAlign: 'center', fontWeight: 'bold', color: '#007aff', padding: '10px 0' }}>
+        Connex Meet
+      </Typography>
+
       {/* Top Image Carousel */}
       <Box sx={{ height: '30vh', borderRadius: '12px', overflow: 'hidden', marginBottom: '10px' }}>
         <Slider {...sliderSettings}>
