@@ -166,7 +166,6 @@ const ScheduledMeetings = () => {
     );
   };
 
-  // Count both upcoming and ongoing meetings
   const countActiveMeetings = (meetings) => {
     return meetings.filter(
       (meeting) => ['upcoming', 'ongoing'].includes(getMeetingStatus(meeting.date, meeting.time))
@@ -201,6 +200,24 @@ const ScheduledMeetings = () => {
             <Grid item xs={12} md={6} key={meeting.id}>
               <StyledCard onClick={() => handleOpen(meeting)}>
                 <CardContent>
+                  {/* Show label for special meetings */}
+                  {viewType === 'special' && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        backgroundColor: '#f5f5f5',
+                        padding: '5px 10px',
+                        borderRadius: '5px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        color: '#007aff',
+                      }}
+                    >
+                      Special Meeting
+                    </Box>
+                  )}
                   <Chip
                     icon={<BlinkingDot color={statusColors[status]} />}
                     label={status.charAt(0).toUpperCase() + status.slice(1)}
