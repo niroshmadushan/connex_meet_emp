@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Box,
   Card,
@@ -70,53 +71,47 @@ const BlinkingDot = styled(CircleIcon)(({ color }) => ({
 }));
 
 const ScheduledMeetings = () => {
-  const [normalMeetings, setNormalMeetings] = useState([
-    {
-      id: 1,
-      title: 'Team Sync',
-      date: dayjs().add(1, 'day').format('YYYY-MM-DD'),
-      time: '10:00 AM - 11:30 AM',
-      room: 'Room 1',
-      participants: [
-        { companyName: 'Company A', employeeName: 'John Doe' },
-        { companyName: 'Company B', employeeName: 'Jane Smith' },
-      ],
-      specialNote: 'Discuss the Q3 strategy',
-      refreshment: 'Tea and Snacks',
-    },
-    {
-      id: 2,
-      title: 'Review Meeting',
-      date: dayjs().subtract(2, 'days').format('YYYY-MM-DD'),
-      time: '09:00 AM - 10:00 AM',
-      room: 'Room 3',
-      participants: [
-        { companyName: 'Company D', employeeName: 'Charlie Green' },
-      ],
-      specialNote: 'Annual performance review',
-      refreshment: 'Water',
-    },
-  ]);
-
-  const [specialMeetings, setSpecialMeetings] = useState([
-    {
-      id: 3,
-      title: 'Client Presentation',
-      date: dayjs().format('YYYY-MM-DD'),
-      time: dayjs().subtract(1, 'hour').format('hh:mm A') + ' - ' + dayjs().add(1, 'hour').format('hh:mm A'),
-      room: 'Room 2',
-      participants: [
-        { companyName: 'Company C', employeeName: 'Alice Brown' },
-      ],
-      specialNote: 'Present new product features',
-      refreshment: 'Coffee',
-      approved: false,
-    },
-  ]);
-
+  const [normalMeetings, setNormalMeetings] = useState([]);
+  const [specialMeetings, setSpecialMeetings] = useState([]);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [open, setOpen] = useState(false);
   const [viewType, setViewType] = useState('normal'); // Toggle view state
+
+  // Fetch meetings data from the backend
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      const empID = localStorage.getItem('id'); // Get employee ID from local storage
+      if (!empID) return;
+
+      try {
+        // Fetch data from the API
+        const response = await axios.get(`http://192.168.13.150:3001/get-schedule-meeting/${empID}`, {
+          withCredentials: true, // Required for the API's credential verification
+        });
+
+        // Format the response data to match the existing meeting structure
+        const formattedMeetings = response.data.map((meeting) => ({
+          id: meeting.bookingDetails.id,
+          title: meeting.bookingDetails.title,
+          date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'), // Convert to correct format
+          time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
+          room: `Room ${meeting.bookingDetails.place_id}`,
+          participants: meeting.participants.map((participant) => ({
+            companyName: participant.company_name || 'Unknown Company',
+            employeeName: participant.full_name || 'Unknown Employee',
+          })),
+          specialNote: meeting.bookingDetails.note,
+          refreshment: meeting.bookingDetails.refreshment,
+        }));
+
+        setNormalMeetings(formattedMeetings); // Update normal meetings state
+      } catch (error) {
+        console.error('Error fetching meetings:', error);
+      }
+    };
+
+    fetchMeetings();
+  }, []);
 
   const handleOpen = (meeting) => {
     setSelectedMeeting(meeting);
@@ -200,7 +195,6 @@ const ScheduledMeetings = () => {
             <Grid item xs={12} md={6} key={meeting.id}>
               <StyledCard onClick={() => handleOpen(meeting)}>
                 <CardContent>
-                  {/* Show label for special meetings */}
                   {viewType === 'special' && (
                     <Box
                       sx={{
