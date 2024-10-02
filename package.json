@@ -1,7 +1,7 @@
 {
   "name": "connex_meet",
   "version": "0.1.0",
-  "homepage": "https://niroshmadushan.github.io/connex_meet_emp/",
+  "homepage": "https://niroshmadushan.github.io/connex_meet_app_employee/",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.3",
