@@ -43,7 +43,7 @@ const AddMeetingSession = () => {
     'alice.jones@connexit.com',
     'bob.brown@connexit.com',
     'charlie.adams@connexit.com',
-  ]); // Sample email data
+  ]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -58,7 +58,7 @@ const AddMeetingSession = () => {
     startTimeOptions: [],
     endTimeOptions: [],
     companyName: 'Connex IT', // Fixed company name
-    employeeEmail: '', // Changed employee name to employee email
+    employeeEmail: '',
     participantList: [],
     type: 'internalmeeting',
     specialNote: '',
@@ -79,7 +79,6 @@ const AddMeetingSession = () => {
     }));
   }, []);
 
-  // Fetch rooms and bookings data from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -95,6 +94,94 @@ const AddMeetingSession = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (formData.date) {
+      const filteredRooms = rooms.map((room) => room.name);
+      setFormData((prevData) => ({
+        ...prevData,
+        availableRooms: filteredRooms || [],
+        selectedRoom: '',
+        availableSlots: [],
+        selectedSlot: '',
+        startTime: '',
+        endTime: '',
+        startTimeOptions: [],
+        endTimeOptions: [],
+      }));
+    }
+  }, [formData.date, rooms]);
+
+  useEffect(() => {
+    if (formData.selectedRoomId) {
+      const selectedRoom = rooms.find((room) => room.id === formData.selectedRoomId);
+      if (selectedRoom) {
+        const availableTimeSlots = getAvailableTimeSlots(selectedRoom);
+        setFormData((prevData) => ({
+          ...prevData,
+          availableSlots: availableTimeSlots,
+          selectedSlot: '',
+          startTime: '',
+          endTime: '',
+          startTimeOptions: [],
+          endTimeOptions: [],
+        }));
+      }
+    }
+  }, [formData.selectedRoomId, formData.date]);
+
+  const getAvailableTimeSlots = (room) => {
+    const startTime = room.start_time;
+    const endTime = room.end_time;
+
+    const convertTime = (time) => {
+      const [timePart, period] = time.split(' ');
+      const [hours, minutes] = timePart.split(':').map(Number);
+      const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
+      return adjustedHours * 100 + minutes;
+    };
+
+    const roomStart = convertTime(startTime);
+    const roomEnd = convertTime(endTime);
+
+    const roomBookings = bookings.filter(
+      (booking) => booking.place_id === room.id && new Date(booking.date).toDateString() === new Date(formData.date).toDateString()
+    );
+
+    if (roomBookings.length === 0) {
+      return [`${startTime} - ${endTime}`];
+    }
+
+    const sortedBookings = roomBookings
+      .map((booking) => ({
+        start: convertTime(booking.start_time),
+        end: convertTime(booking.end_time),
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    const freeSlots = [];
+    let lastEndTime = roomStart;
+
+    sortedBookings.forEach((booking) => {
+      if (lastEndTime < booking.start) {
+        freeSlots.push({ start: lastEndTime, end: booking.start });
+      }
+      lastEndTime = Math.max(lastEndTime, booking.end);
+    });
+
+    if (lastEndTime < roomEnd) {
+      freeSlots.push({ start: lastEndTime, end: roomEnd });
+    }
+
+    const formatTime = (time) => {
+      const hours = Math.floor(time / 100);
+      const minutes = time % 100;
+      const period = hours >= 12 ? 'PM' : 'AM';
+      return `${hours % 12 || 12}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
+
+    return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -150,15 +237,8 @@ const AddMeetingSession = () => {
     };
 
     try {
-      await axios.post('http://192.168.13.150:3001/add-booking', bookingData, {
-        withCredentials: true,
-      });
-      Swal.fire({
-        title: 'Success!',
-        text: 'The meeting/session has been added successfully.',
-        icon: 'success',
-        confirmButtonText: 'OK',
-      }).then(() => {
+      await axios.post('http://192.168.13.150:3001/add-booking', bookingData, { withCredentials: true });
+      Swal.fire('Success!', 'The meeting/session has been added successfully.', 'success').then(() => {
         setFormData({
           title: '',
           date: '',
@@ -181,12 +261,7 @@ const AddMeetingSession = () => {
         navigate('/home-dashboard');
       });
     } catch (error) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'There was a problem adding the meeting. Please try again.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-      });
+      Swal.fire('Error!', 'There was a problem adding the meeting. Please try again.', 'error');
       console.error('Error adding booking:', error);
     }
   };
@@ -257,6 +332,63 @@ const AddMeetingSession = () => {
               </FormControl>
             </Grid>
 
+            {formData.availableSlots.length > 0 && (
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel>Select Time Slot</InputLabel>
+                  <Select
+                    label="Select Time Slot"
+                    name="selectedSlot"
+                    value={formData.selectedSlot}
+                    onChange={handleChange}
+                    required
+                  >
+                    {formData.availableSlots.map((slot, index) => (
+                      <MenuItem key={index} value={slot}>
+                        {slot}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                select
+                label="Start Time"
+                name="startTime"
+                value={formData.startTime}
+                onChange={handleChange}
+                required
+              >
+                {formData.startTimeOptions.map((option, index) => (
+                  <MenuItem key={index} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                select
+                label="End Time"
+                name="endTime"
+                value={formData.endTime}
+                onChange={handleChange}
+                required
+              >
+                {formData.endTimeOptions.map((option, index) => (
+                  <MenuItem key={index} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
             <Grid item xs={12}>
               <Autocomplete
                 options={employeeEmails}
@@ -323,6 +455,46 @@ const AddMeetingSession = () => {
                 </Table>
               </Grid>
             )}
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Special Note"
+                name="specialNote"
+                value={formData.specialNote}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                placeholder="Enter any special notes regarding the event"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <NotesIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Refreshment"
+                name="refreshment"
+                value={formData.refreshment}
+                onChange={handleChange}
+                multiline
+                rows={2}
+                placeholder="Enter refreshment details if any"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <RefreshIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
 
             <Grid item xs={12}>
               <Button
