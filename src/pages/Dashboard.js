@@ -1,13 +1,11 @@
 import React from 'react';
 import { Box, Typography, Paper, Grid, Button } from '@mui/material';
-import { Bar } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
 import {
   Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
+  ArcElement,
   Tooltip,
   Legend,
 } from 'chart.js';
@@ -20,7 +18,7 @@ import img3 from '../img/Mobile Bank.jpg';
 import img4 from '../img/Microsoft.jpg';
 
 // Register Chart.js components
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Carousel settings
 const sliderSettings = {
@@ -40,102 +38,58 @@ const Dashboard = () => {
   const successfulMeetings = 150;
   const canceledMeetings = 50;
 
-  // Bar chart data
-  const barData = {
-    labels: ['Total', 'Successful', 'Canceled'],
+  // Donut chart data
+  const donutData = {
+    labels: ['Total Meetings', 'Successful Meetings', 'Canceled Meetings'],
     datasets: [
       {
-        label: 'Meetings',
         data: [totalMeetings, successfulMeetings, canceledMeetings],
-        backgroundColor: '#64b5f6',
-        borderColor: '#1e88e5',
-        borderWidth: 2,
-        barThickness: 16,
-        borderRadius: 8,
+        backgroundColor: ['#64b5f6', '#2196f3', '#ff5252'],
+        hoverBackgroundColor: ['#42a5f5', '#1e88e5', '#ff1744'],
+        borderWidth: 4,
+        cutout: '70%',
       },
     ],
   };
 
-  // Bar chart options with animation
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    animation: {
-      duration: 2000,
-      easing: 'easeOutBounce',
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: '#333',
-          font: {
-            size: 14,
-            weight: 'bold',
-          },
-        },
-      },
-      y: {
-        grid: {
-          display: true,
-          color: '#e0e0e0',
-        },
-        ticks: {
-          beginAtZero: true,
-          color: '#333',
-          font: {
-            size: 12,
-          },
-        },
-      },
-    },
-  };
-
   return (
-    <Box sx={{ backgroundColor: '#f0f4f8', minHeight: '100vh', padding: '0px', overflow: 'hidden' }}>
+    <Box sx={{ backgroundColor: '#f7f9fc', minHeight: '100vh', padding: '20px' }}>
       {/* Top Title */}
-      <Typography variant="h4" sx={{ textAlign: 'center', fontWeight: 'bold', color: '#007aff', padding: '10px 0' }}>
+      <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', color: '#007aff', paddingBottom: '20px', fontFamily: 'Helvetica Neue, Arial, sans-serif' }}>
         Connex Meet
       </Typography>
 
       {/* Top Image Carousel */}
-      <Box sx={{ height: '30vh', borderRadius: '12px', overflow: 'hidden', marginBottom: '10px' }}>
+      <Box sx={{ height: '30vh', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
         <Slider {...sliderSettings}>
-          <img src={img1} alt="Image 1" style={{ width: '100%', height: '30vh', objectFit: 'cover' }} />
-          <img src={img2} alt="Image 2" style={{ width: '100%', height: '30vh', objectFit: 'cover' }} />
-          <img src={img3} alt="Image 3" style={{ width: '100%', height: '30vh', objectFit: 'cover' }} />
-          <img src={img4} alt="Image 4" style={{ width: '100%', height: '30vh', objectFit: 'cover' }} />
+          <img src={img1} alt="Image 1" style={{ width: '100%', height: '30vh', objectFit: 'cover', borderRadius: '12px' }} />
+          <img src={img2} alt="Image 2" style={{ width: '100%', height: '30vh', objectFit: 'cover', borderRadius: '12px' }} />
+          <img src={img3} alt="Image 3" style={{ width: '100%', height: '30vh', objectFit: 'cover', borderRadius: '12px' }} />
+          <img src={img4} alt="Image 4" style={{ width: '100%', height: '30vh', objectFit: 'cover', borderRadius: '12px' }} />
         </Slider>
       </Box>
 
       {/* Meeting Statistics - Compact Display */}
-      <Grid container spacing={2} sx={{ marginBottom: '10px', justifyContent: 'center' }}>
+      <Grid container spacing={3} sx={{ marginBottom: '30px', justifyContent: 'center' }}>
         <Grid item xs={4}>
           <Paper
-            elevation={0}
+            elevation={3}
             sx={{
               textAlign: 'center',
-              padding: '10px',
-              backgroundColor: '#2196f3',
-              color: '#fff',
-              borderRadius: '8px',
-              height: '100px',
+              padding: '15px',
+              backgroundColor: '#f0f4ff',
+              color: '#007aff',
+              borderRadius: '12px',
+              height: '120px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <CheckCircle sx={{ marginRight: '5px' }} />
+            <CheckCircle sx={{ marginRight: '5px', fontSize: '30px' }} />
             <Box>
-              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Total Meetings</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="body2" sx={{ fontSize: '14px', fontWeight: 'bold' }}>Total Meetings</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 <CountUp start={0} end={totalMeetings} duration={2} />
               </Typography>
             </Box>
@@ -143,23 +97,23 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={4}>
           <Paper
-            elevation={0}
+            elevation={3}
             sx={{
               textAlign: 'center',
-              padding: '10px',
-              backgroundColor: '#64b5f6',
-              color: '#fff',
-              borderRadius: '8px',
-              height: '100px',
+              padding: '15px',
+              backgroundColor: '#e3f2fd',
+              color: '#1e88e5',
+              borderRadius: '12px',
+              height: '120px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <MeetingRoom sx={{ marginRight: '5px' }} />
+            <MeetingRoom sx={{ marginRight: '5px', fontSize: '30px' }} />
             <Box>
-              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Successful</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="body2" sx={{ fontSize: '14px', fontWeight: 'bold' }}>Successful Meetings</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 <CountUp start={0} end={successfulMeetings} duration={2} />
               </Typography>
             </Box>
@@ -167,23 +121,23 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={4}>
           <Paper
-            elevation={0}
+            elevation={3}
             sx={{
               textAlign: 'center',
-              padding: '10px',
-              backgroundColor: '#ff5252',
-              color: '#fff',
-              borderRadius: '8px',
-              height: '100px',
+              padding: '15px',
+              backgroundColor: '#ffebee',
+              color: '#ff5252',
+              borderRadius: '12px',
+              height: '120px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <Cancel sx={{ marginRight: '5px' }} />
+            <Cancel sx={{ marginRight: '5px', fontSize: '30px' }} />
             <Box>
-              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Canceled</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="body2" sx={{ fontSize: '14px', fontWeight: 'bold' }}>Canceled Meetings</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 <CountUp start={0} end={canceledMeetings} duration={2} />
               </Typography>
             </Box>
@@ -191,26 +145,25 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Vertical Bar Chart - Animated */}
-      <Paper elevation={0} sx={{ height: '20vh', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
-        <Typography variant="h6" sx={{ marginBottom: '10px', color: '#007aff', fontWeight: 'bold', textAlign: 'center' }}>
-          Meeting Summary
+      {/* Donut Chart */}
+      <Paper elevation={3} sx={{ height: '30vh', padding: '20px', borderRadius: '12px', marginBottom: '30px' }}>
+        <Typography variant="h6" sx={{ marginBottom: '20px', color: '#007aff', fontWeight: 'bold', textAlign: 'center' }}>
+          Meeting Overview
         </Typography>
-        <Bar data={barData} options={chartOptions} />
+        <Doughnut data={donutData} />
       </Paper>
 
       {/* App Information Section */}
-      <Box sx={{ height: '30vh', padding: '20px', backgroundColor: '#e3f2fd', marginBottom: '10px', borderRadius: '12px', textAlign: 'center' }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#007aff', marginBottom: '10px' }}>What You Can Do in This App</Typography>
+      <Box sx={{ height: '20vh', padding: '30px', backgroundColor: '#f0f4ff', marginBottom: '20px', borderRadius: '12px', textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#007aff', marginBottom: '20px' }}>What You Can Do in This App</Typography>
         <Typography variant="body1" sx={{ color: '#333', marginBottom: '10px' }}>
           Book meetings, view meeting details, check available places, and manage your scheduled events with ease.
         </Typography>
-        <Button variant="contained" sx={{ backgroundColor: '#007aff', color: '#fff' }}>Explore Features</Button>
       </Box>
 
       {/* Footer */}
-      <Box sx={{ height: '10vh', textAlign: 'center', padding: '10px', backgroundColor: '#1e88e5', color: '#fff', borderRadius: '8px' }}>
-        <Typography variant="body2">© 2024 Meeting Management App. All rights reserved.</Typography>
+      <Box sx={{ height: '8vh', textAlign: 'center', padding: '20px', backgroundColor: '#e3f2fd', color: '#007aff', borderRadius: '12px' }}>
+        <Typography variant="body2">© 2024 Connex Meet App. All rights reserved.</Typography>
       </Box>
     </Box>
   );
