@@ -1,183 +1,202 @@
 import React from 'react';
-import { Box, Typography, Grid, Card, CardContent, Paper, Divider, Avatar } from '@mui/material';
-import { Bar, Pie, Line, Radar } from 'react-chartjs-2';
+import { Box, Typography, Paper, Grid, Card, CardContent, Button } from '@mui/material';
+import { Bar } from 'react-chartjs-2';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
 import {
   Chart as ChartJS,
-  ArcElement,
   BarElement,
-  LineElement,
-  RadarController,
-  PointElement,
-  RadialLinearScale,
   CategoryScale,
   LinearScale,
   Tooltip,
   Legend,
 } from 'chart.js';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
-import PeopleIcon from '@mui/icons-material/People';
-import EventNoteIcon from '@mui/icons-material/EventNote';
-import CancelIcon from '@mui/icons-material/Cancel';
-import StarRateIcon from '@mui/icons-material/StarRate';
 
-// Register chart components
-ChartJS.register(ArcElement, BarElement, LineElement, RadarController, PointElement, RadialLinearScale, CategoryScale, LinearScale, Tooltip, Legend);
+// Register Chart.js components
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+
+// Dummy images for the carousel
+import img1 from '../img/about-us-page-examples-1-61fd8f9784626-sej.webp';
+import img2 from '../img/find-company-information-image.jpg';
+import img3 from '../img/Mobile Bank.jpg';
+import img4 from '../img/Microsoft.jpg';
 
 // Carousel settings
 const sliderSettings = {
-  dots: false,
+  dots: true,
   infinite: true,
   speed: 500,
   slidesToShow: 1,
   slidesToScroll: 1,
   autoplay: true,
   autoplaySpeed: 3000,
+  arrows: false,
 };
 
-// Dummy data images for the carousel
-import img1 from '../img/about-us-page-examples-1-61fd8f9784626-sej.webp';
-import img2 from '../img/find-company-information-image.jpg';
-import img3 from '../img/Mobile Bank.jpg';
-import img4 from '../img/Microsoft.jpg';
-
-// Dashboard Component
 const Dashboard = () => {
-  // Data for meetings
-  const totalMeetings = 150;
-  const successfulMeetings = 100;
+  // Meeting statistics
+  const totalMeetings = 200;
+  const successfulMeetings = 150;
   const canceledMeetings = 50;
-  const averageRating = 4.5;
 
-  // Chart Data
+  // Bar chart data
   const barData = {
-    labels: ['Meetings'],
-    datasets: [
-      { label: 'Successful', data: [successfulMeetings], backgroundColor: '#2196f3' },
-      { label: 'Canceled', data: [canceledMeetings], backgroundColor: '#f44336' },
-    ],
-  };
-
-  const pieData = {
-    labels: ['Successful', 'Canceled'],
-    datasets: [{ data: [successfulMeetings, canceledMeetings], backgroundColor: ['#42a5f5', '#ef5350'] }],
-  };
-
-  const lineData = {
-    labels: ['Meetings'],
+    labels: ['Total Meetings', 'Successful Meetings', 'Canceled Meetings'],
     datasets: [
       {
-        label: 'Average Rating',
-        data: [averageRating],
-        borderColor: '#ffeb3b',
-        backgroundColor: 'rgba(255, 235, 59, 0.3)',
-        fill: true,
+        label: 'Meetings Count',
+        data: [totalMeetings, successfulMeetings, canceledMeetings],
+        backgroundColor: ['#007aff', '#00c853', '#ff5252'],
+        borderColor: ['#005bb5', '#009624', '#ff1744'],
+        borderWidth: 2,
       },
     ],
   };
 
-  const radarData = {
-    labels: ['Ratings'],
-    datasets: [
-      {
-        label: 'Feedback Ratings',
-        data: [averageRating],
-        backgroundColor: 'rgba(33, 150, 243, 0.2)',
-        borderColor: '#2196f3',
-      },
-    ],
-  };
-
-  // Chart options
+  // Bar chart options
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false },
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => ` ${context.raw} Meetings`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          color: '#333',
+          font: {
+            size: 14,
+            weight: 'bold',
+          },
+        },
+      },
+      y: {
+        grid: {
+          display: true,
+          color: '#e0e0e0',
+        },
+        ticks: {
+          beginAtZero: true,
+          color: '#333',
+          font: {
+            size: 12,
+          },
+        },
+      },
     },
   };
 
   return (
     <Box sx={{ backgroundColor: '#e3f2fd', minHeight: '100vh', padding: '20px' }}>
-      {/* Image Carousel */}
-      <Box sx={{ marginBottom: '20px', borderRadius: '15px', overflow: 'hidden' }}>
+      {/* Top Image Carousel */}
+      <Box sx={{ borderRadius: '12px', overflow: 'hidden', marginBottom: '30px' }}>
         <Slider {...sliderSettings}>
-          <img src={img1} alt="Carousel 1" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-          <img src={img2} alt="Carousel 2" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-          <img src={img3} alt="Carousel 3" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-          <img src={img4} alt="Carousel 4" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+          <img src={img1} alt="Image 1" style={{ width: '100%', height: '250px', objectFit: 'cover' }} />
+          <img src={img2} alt="Image 2" style={{ width: '100%', height: '250px', objectFit: 'cover' }} />
+          <img src={img3} alt="Image 3" style={{ width: '100%', height: '250px', objectFit: 'cover' }} />
+          <img src={img4} alt="Image 4" style={{ width: '100%', height: '250px', objectFit: 'cover' }} />
         </Slider>
       </Box>
 
-      {/* Header */}
-      <Typography variant="h5" sx={{ textAlign: 'center', color: '#1e88e5', fontWeight: 'bold', marginBottom: '20px' }}>
-        Meeting Analytics Dashboard
-      </Typography>
-
-      {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ marginBottom: '20px' }}>
-        <Grid item xs={6}>
-          <Paper elevation={3} sx={{ textAlign: 'center', backgroundColor: '#2196f3', color: '#fff', borderRadius: '8px', padding: '20px' }}>
-            <MeetingRoomIcon fontSize="large" sx={{ mb: 1 }} />
-            <Typography variant="body2">Total Meetings</Typography>
-            <Typography variant="h5">
-              <CountUp start={0} end={totalMeetings} duration={2.5} />
+      {/* Meeting Statistics and Bar Chart */}
+      <Grid container spacing={2} sx={{ marginBottom: '20px' }}>
+        <Grid item xs={12} md={4}>
+          <Card sx={{ textAlign: 'center', backgroundColor: '#fff', borderRadius: '8px', padding: '20px' }}>
+            <Typography variant="h6" sx={{ color: '#007aff', fontWeight: 'bold' }}>
+              Total Meetings
             </Typography>
-          </Paper>
+            <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#333' }}>
+              <CountUp start={0} end={totalMeetings} duration={2} />
+            </Typography>
+          </Card>
         </Grid>
-        <Grid item xs={6}>
-          <Paper elevation={3} sx={{ textAlign: 'center', backgroundColor: '#1e88e5', color: '#fff', borderRadius: '8px', padding: '20px' }}>
-            <EventNoteIcon fontSize="large" sx={{ mb: 1 }} />
-            <Typography variant="body2">Successful</Typography>
-            <Typography variant="h5">
-              <CountUp start={0} end={successfulMeetings} duration={2.5} />
+        <Grid item xs={12} md={4}>
+          <Card sx={{ textAlign: 'center', backgroundColor: '#fff', borderRadius: '8px', padding: '20px' }}>
+            <Typography variant="h6" sx={{ color: '#00c853', fontWeight: 'bold' }}>
+              Successful Meetings
             </Typography>
-          </Paper>
+            <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#333' }}>
+              <CountUp start={0} end={successfulMeetings} duration={2} />
+            </Typography>
+          </Card>
         </Grid>
-        <Grid item xs={6}>
-          <Paper elevation={3} sx={{ textAlign: 'center', backgroundColor: '#e53935', color: '#fff', borderRadius: '8px', padding: '20px' }}>
-            <CancelIcon fontSize="large" sx={{ mb: 1 }} />
-            <Typography variant="body2">Canceled</Typography>
-            <Typography variant="h5">
-              <CountUp start={0} end={canceledMeetings} duration={2.5} />
+        <Grid item xs={12} md={4}>
+          <Card sx={{ textAlign: 'center', backgroundColor: '#fff', borderRadius: '8px', padding: '20px' }}>
+            <Typography variant="h6" sx={{ color: '#ff5252', fontWeight: 'bold' }}>
+              Canceled Meetings
             </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={6}>
-          <Paper elevation={3} sx={{ textAlign: 'center', backgroundColor: '#ffeb3b', color: '#000', borderRadius: '8px', padding: '20px' }}>
-            <StarRateIcon fontSize="large" sx={{ mb: 1 }} />
-            <Typography variant="body2">Average Rating</Typography>
-            <Typography variant="h5">
-              <CountUp start={0} end={averageRating} decimals={1} duration={2.5} />
+            <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#333' }}>
+              <CountUp start={0} end={canceledMeetings} duration={2} />
             </Typography>
-          </Paper>
+          </Card>
         </Grid>
       </Grid>
 
-      {/* Analytics Charts */}
-      <Grid container spacing={2}>
-        <Grid item xs={6}>
-          <Paper sx={{ height: '180px', padding: '10px', borderRadius: '8px' }}>
-            <Bar data={barData} options={chartOptions} />
-          </Paper>
+      {/* Vertical Bar Chart */}
+      <Paper sx={{ height: '300px', padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
+        <Typography variant="h6" sx={{ marginBottom: '10px', color: '#333', fontWeight: 'bold' }}>
+          Meeting Summary
+        </Typography>
+        <Bar data={barData} options={chartOptions} />
+      </Paper>
+
+      {/* Actions Section */}
+      <Grid container spacing={2} sx={{ marginBottom: '20px' }}>
+        <Grid item xs={12} md={4}>
+          <CardContent sx={{ backgroundColor: '#42a5f5', borderRadius: '8px', padding: '20px', color: '#fff' }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
+              Book a Meeting
+            </Typography>
+            <Typography variant="body2" sx={{ marginBottom: '15px' }}>
+              Schedule a new meeting with your colleagues or clients.
+            </Typography>
+            <Button variant="contained" sx={{ backgroundColor: '#1e88e5' }}>
+              Book Now
+            </Button>
+          </CardContent>
         </Grid>
-        <Grid item xs={6}>
-          <Paper sx={{ height: '180px', padding: '10px', borderRadius: '8px' }}>
-            <Pie data={pieData} options={chartOptions} />
-          </Paper>
+        <Grid item xs={12} md={4}>
+          <CardContent sx={{ backgroundColor: '#66bb6a', borderRadius: '8px', padding: '20px', color: '#fff' }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
+              View Meetings
+            </Typography>
+            <Typography variant="body2" sx={{ marginBottom: '15px' }}>
+              Check out the details of your upcoming and past meetings.
+            </Typography>
+            <Button variant="contained" sx={{ backgroundColor: '#43a047' }}>
+              View Details
+            </Button>
+          </CardContent>
         </Grid>
-        <Grid item xs={6}>
-          <Paper sx={{ height: '180px', padding: '10px', borderRadius: '8px' }}>
-            <Line data={lineData} options={chartOptions} />
-          </Paper>
-        </Grid>
-        <Grid item xs={6}>
-          <Paper sx={{ height: '180px', padding: '10px', borderRadius: '8px' }}>
-            <Radar data={radarData} options={chartOptions} />
-          </Paper>
+        <Grid item xs={12} md={4}>
+          <CardContent sx={{ backgroundColor: '#ffa726', borderRadius: '8px', padding: '20px', color: '#fff' }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
+              Check Availability
+            </Typography>
+            <Typography variant="body2" sx={{ marginBottom: '15px' }}>
+              Find available meeting rooms based on time and place.
+            </Typography>
+            <Button variant="contained" sx={{ backgroundColor: '#fb8c00' }}>
+              Check Now
+            </Button>
+          </CardContent>
         </Grid>
       </Grid>
+
+      {/* Footer */}
+      <Box sx={{ textAlign: 'center', padding: '10px', backgroundColor: '#1e88e5', color: '#fff', borderRadius: '8px' }}>
+        <Typography variant="body2">© 2024 Meeting Management App. All rights reserved.</Typography>
+      </Box>
     </Box>
   );
 };
