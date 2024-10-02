@@ -206,7 +206,7 @@ const AddMeetingSession = () => {
     };
 
     try {
-      await axios.post('http://192.168.13.150:3001/add-booking', bookingData, { withCredentials: true });
+      await axios.post('http://192.168.13.150:3001/add-booking-int', bookingData, { withCredentials: true });
       Swal.fire('Success!', 'The meeting/session has been added successfully.', 'success').then(() => {
         setFormData({
           title: '',
