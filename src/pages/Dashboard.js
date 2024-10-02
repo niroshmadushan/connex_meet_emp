@@ -1,15 +1,8 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid, Divider } from '@mui/material';
-import { Doughnut } from 'react-chartjs-2';
+import { Box, Typography, Paper, Grid, Button, Divider } from '@mui/material';
+import { MeetingRoom, CheckCircle, Cancel, EventAvailable, Info, Book } from '@mui/icons-material';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
-import { MeetingRoom, CheckCircle, Cancel, Info, Book, EventAvailable } from '@mui/icons-material';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
 
 // Import images for the carousel
 import img1 from '../img/about-us-page-examples-1-61fd8f9784626-sej.webp';
@@ -17,10 +10,7 @@ import img2 from '../img/find-company-information-image.jpg';
 import img3 from '../img/Mobile Bank.jpg';
 import img4 from '../img/Microsoft.jpg';
 
-// Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend);
-
-// Carousel settings for smooth transitions
+// Slider settings for smooth transitions
 const sliderSettings = {
   dots: false,
   infinite: true,
@@ -38,23 +28,24 @@ const Dashboard = () => {
   const successfulMeetings = 150;
   const canceledMeetings = 50;
 
-  // Donut chart data
-  const donutData = {
-    labels: ['Total Meetings', 'Successful Meetings', 'Canceled Meetings'],
-    datasets: [
-      {
-        data: [totalMeetings, successfulMeetings, canceledMeetings],
-        backgroundColor: ['#64b5f6', '#2196f3', '#ff5252'],
-        hoverBackgroundColor: ['#42a5f5', '#1e88e5', '#ff1744'],
-        borderWidth: 3,
-        cutout: '70%',
-      },
-    ],
-  };
-
   return (
-    <Box sx={{ backgroundColor: '#f7f9fc', minHeight: '80vh', padding: '10px' }}>
-      {/* Top Image Carousel */}
+    <Box sx={{ backgroundColor: '#f7f9fc', minHeight: '80vh', padding: '10px', fontFamily: 'Roboto, sans-serif' }}>
+      {/* Page Title */}
+      <Typography
+        variant="h5"
+        sx={{
+          textAlign: 'center',
+          marginBottom: '10px',
+          fontWeight: 'bold',
+          color: '#007aff',
+          letterSpacing: '1px',
+          textTransform: 'uppercase',
+        }}
+      >
+        Connex Meet Dashboard
+      </Typography>
+
+      {/* Image Carousel */}
       <Box
         sx={{
           height: '25vh',
@@ -87,27 +78,31 @@ const Dashboard = () => {
         </Slider>
       </Box>
 
-      {/* Meeting Statistics - Compact Display */}
+      {/* Meeting Statistics Section */}
       <Grid
         container
         spacing={1}
         sx={{
           marginBottom: '15px',
           justifyContent: 'space-between',
+          padding: '10px',
         }}
       >
         <Grid item xs={4}>
           <Paper
             sx={{
               textAlign: 'center',
-              padding: '5px',
-              backgroundColor: '#f0f4ff',
+              padding: '10px',
+              backgroundColor: '#e3f2fd',
               color: '#007aff',
               borderRadius: '10px',
               height: '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: 'none',
+              transition: 'transform 0.3s',
+              '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 15px rgba(0,0,0,0.1)' },
             }}
           >
             <CheckCircle sx={{ marginRight: '4px', fontSize: '20px' }} />
@@ -125,14 +120,17 @@ const Dashboard = () => {
           <Paper
             sx={{
               textAlign: 'center',
-              padding: '5px',
-              backgroundColor: '#e3f2fd',
+              padding: '10px',
+              backgroundColor: '#cce4ff',
               color: '#1e88e5',
               borderRadius: '10px',
               height: '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: 'none',
+              transition: 'transform 0.3s',
+              '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 15px rgba(0,0,0,0.1)' },
             }}
           >
             <MeetingRoom sx={{ marginRight: '4px', fontSize: '20px' }} />
@@ -150,14 +148,17 @@ const Dashboard = () => {
           <Paper
             sx={{
               textAlign: 'center',
-              padding: '5px',
-              backgroundColor: '#ffebee',
+              padding: '10px',
+              backgroundColor: '#ffcdd2',
               color: '#ff5252',
               borderRadius: '10px',
               height: '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: 'none',
+              transition: 'transform 0.3s',
+              '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 15px rgba(0,0,0,0.1)' },
             }}
           >
             <Cancel sx={{ marginRight: '4px', fontSize: '20px' }} />
@@ -173,72 +174,26 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Meeting Overview */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          height: '20vh',
-          marginBottom: '15px',
-        }}
-      >
-        {/* Information Section */}
-        <Box
-          sx={{
-            width: '30%',
-            padding: '10px',
-            backgroundColor: '#e3f2fd',
-            borderRadius: '10px',
-          }}
-        >
-          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#007aff' }}>
-            Meeting Overview:
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#007aff', fontWeight: 'bold' }}>
-            Total: {totalMeetings}
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#1e88e5' }}>
-            Successful: {successfulMeetings}
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#ff5252' }}>
-            Canceled: {canceledMeetings}
-          </Typography>
-        </Box>
-
-        {/* Donut Chart */}
-        <Box
-          sx={{
-            width: '70%',
-            backgroundColor: '#f7f9fc',
-            padding: '10px',
-            borderRadius: '10px',
-          }}
-        >
-          <Doughnut data={donutData} />
-        </Box>
-      </Box>
-
       {/* Feature Information */}
       <Paper
         elevation={3}
         sx={{
           textAlign: 'center',
-          padding: '10px',
+          padding: '15px',
           backgroundColor: '#f0f4ff',
           color: '#007aff',
           borderRadius: '10px',
           marginBottom: '15px',
-          height: '20vh',
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '5px' }}>
           What You Can Do In This App
         </Typography>
         <Box sx={{ textAlign: 'left' }}>
-          <Typography variant="body2" sx={{ marginBottom: '4px' }}>
+          <Typography variant="body2" sx={{ marginBottom: '8px' }}>
             <EventAvailable sx={{ fontSize: '16px', color: '#2196f3' }} /> Book and manage meetings.
           </Typography>
-          <Typography variant="body2" sx={{ marginBottom: '4px' }}>
+          <Typography variant="body2" sx={{ marginBottom: '8px' }}>
             <Info sx={{ fontSize: '16px', color: '#64b5f6' }} /> View available rooms and schedules.
           </Typography>
           <Typography variant="body2">
