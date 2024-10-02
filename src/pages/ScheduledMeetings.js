@@ -284,6 +284,76 @@ const ScheduledMeetings = () => {
           );
         })}
       </Grid>
+
+      {/* Modal for displaying meeting details */}
+      <Modal
+        open={open}
+        onClose={handleClose}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={open}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 400,
+              bgcolor: 'background.paper',
+              borderRadius: '12px',
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            {selectedMeeting && (
+              <>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                  {selectedMeeting.title}
+                </Typography>
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <EventIcon sx={{ marginRight: '8px' }} />
+                  {selectedMeeting.date}
+                </Typography>
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <AccessTimeIcon sx={{ marginRight: '8px' }} />
+                  {selectedMeeting.time}
+                </Typography>
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <RoomIcon sx={{ marginRight: '8px' }} />
+                  {selectedMeeting.room}
+                </Typography>
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <GroupIcon sx={{ marginRight: '8px' }} />
+                  Participants:
+                </Typography>
+                <ul>
+                  {selectedMeeting.participants.map((participant, index) => (
+                    <li key={index}>
+                      {participant.companyName} - {participant.employeeName}
+                    </li>
+                  ))}
+                </ul>
+                {selectedMeeting.specialNote && (
+                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <NotesIcon sx={{ marginRight: '8px' }} />
+                    {selectedMeeting.specialNote}
+                  </Typography>
+                )}
+                {selectedMeeting.refreshment && (
+                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <RefreshIcon sx={{ marginRight: '8px' }} />
+                    Refreshment: {selectedMeeting.refreshment}
+                  </Typography>
+                )}
+              </>
+            )}
+          </Box>
+        </Fade>
+      </Modal>
     </Box>
   );
 };
