@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import {
   Box,
   TextField,
@@ -49,7 +49,6 @@ const AddMeetingSession = () => {
     title: '',
     date: '',
     availableRooms: [],
-    selectedRoom: '',
     selectedRoomId: '',
     availableSlots: [],
     selectedSlot: '',
@@ -57,7 +56,7 @@ const AddMeetingSession = () => {
     endTime: '',
     startTimeOptions: [],
     endTimeOptions: [],
-    companyName: 'Connex IT', // Fixed company name
+    companyName: 'Connex IT',
     employeeEmail: '',
     participantList: [],
     type: 'internalmeeting',
@@ -97,17 +96,14 @@ const AddMeetingSession = () => {
 
   useEffect(() => {
     if (formData.date) {
-      const filteredRooms = rooms.map((room) => room.name);
       setFormData((prevData) => ({
         ...prevData,
-        availableRooms: filteredRooms || [],
-        selectedRoom: '',
+        selectedRoomId: '',
         availableSlots: [],
-        selectedSlot: '',
-        startTime: '',
-        endTime: '',
         startTimeOptions: [],
         endTimeOptions: [],
+        startTime: '',
+        endTime: '',
       }));
     }
   }, [formData.date, rooms]);
@@ -121,67 +117,40 @@ const AddMeetingSession = () => {
           ...prevData,
           availableSlots: availableTimeSlots,
           selectedSlot: '',
-          startTime: '',
-          endTime: '',
           startTimeOptions: [],
           endTimeOptions: [],
+          startTime: '',
+          endTime: '',
         }));
       }
     }
   }, [formData.selectedRoomId, formData.date]);
 
-  const getAvailableTimeSlots = (room) => {
-    const startTime = room.start_time;
-    const endTime = room.end_time;
-
-    const convertTime = (time) => {
-      const [timePart, period] = time.split(' ');
-      const [hours, minutes] = timePart.split(':').map(Number);
-      const adjustedHours = period === 'PM' && hours !== 12 ? hours + 12 : hours;
-      return adjustedHours * 100 + minutes;
-    };
-
-    const roomStart = convertTime(startTime);
-    const roomEnd = convertTime(endTime);
-
-    const roomBookings = bookings.filter(
-      (booking) => booking.place_id === room.id && new Date(booking.date).toDateString() === new Date(formData.date).toDateString()
-    );
-
-    if (roomBookings.length === 0) {
-      return [`${startTime} - ${endTime}`];
+  useEffect(() => {
+    if (formData.selectedSlot) {
+      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
+      const timeOptions = generateTimeOptions(slotStart, slotEnd);
+      setFormData((prevData) => ({
+        ...prevData,
+        startTimeOptions: timeOptions,
+        endTimeOptions: timeOptions,
+        startTime: '',
+        endTime: '',
+      }));
     }
+  }, [formData.selectedSlot]);
 
-    const sortedBookings = roomBookings
-      .map((booking) => ({
-        start: convertTime(booking.start_time),
-        end: convertTime(booking.end_time),
-      }))
-      .sort((a, b) => a.start - b.start);
-
-    const freeSlots = [];
-    let lastEndTime = roomStart;
-
-    sortedBookings.forEach((booking) => {
-      if (lastEndTime < booking.start) {
-        freeSlots.push({ start: lastEndTime, end: booking.start });
-      }
-      lastEndTime = Math.max(lastEndTime, booking.end);
-    });
-
-    if (lastEndTime < roomEnd) {
-      freeSlots.push({ start: lastEndTime, end: roomEnd });
+  useEffect(() => {
+    if (formData.startTime) {
+      const [slotStart, slotEnd] = formData.selectedSlot.split(' - ');
+      const endOptions = generateTimeOptions(formData.startTime, slotEnd);
+      setFormData((prevData) => ({
+        ...prevData,
+        endTimeOptions: endOptions.slice(1),
+        endTime: '',
+      }));
     }
-
-    const formatTime = (time) => {
-      const hours = Math.floor(time / 100);
-      const minutes = time % 100;
-      const period = hours >= 12 ? 'PM' : 'AM';
-      return `${hours % 12 || 12}:${minutes.toString().padStart(2, '0')} ${period}`;
-    };
-
-    return freeSlots.map((slot) => `${formatTime(slot.start)} - ${formatTime(slot.end)}`);
-  };
+  }, [formData.startTime]);
 
   const handleChange = (e) => {
     setFormData({
@@ -242,10 +211,8 @@ const AddMeetingSession = () => {
         setFormData({
           title: '',
           date: '',
-          availableRooms: [],
-          selectedRoom: '',
-          selectedRoomId: '',
           availableSlots: [],
+          selectedRoomId: '',
           selectedSlot: '',
           startTime: '',
           endTime: '',
@@ -299,9 +266,7 @@ const AddMeetingSession = () => {
                 type="date"
                 value={formData.date}
                 onChange={handleChange}
-                InputLabelProps={{
-                  shrink: true,
-                }}
+                InputLabelProps={{ shrink: true }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -415,13 +380,7 @@ const AddMeetingSession = () => {
               <Button
                 variant="contained"
                 onClick={handleAddParticipant}
-                sx={{
-                  backgroundColor: themeColor.primary,
-                  color: '#fff',
-                  ':hover': {
-                    backgroundColor: themeColor.primaryDark,
-                  },
-                }}
+                sx={{ backgroundColor: themeColor.primary, color: '#fff', ':hover': { backgroundColor: themeColor.primaryDark } }}
               >
                 Add Participant
               </Button>
@@ -500,13 +459,7 @@ const AddMeetingSession = () => {
               <Button
                 type="submit"
                 variant="contained"
-                sx={{
-                  backgroundColor: themeColor.primary,
-                  color: '#fff',
-                  ':hover': {
-                    backgroundColor: themeColor.primaryDark,
-                  },
-                }}
+                sx={{ backgroundColor: themeColor.primary, color: '#fff', ':hover': { backgroundColor: themeColor.primaryDark } }}
                 fullWidth
               >
                 Add Meeting
