@@ -108,7 +108,7 @@ const Dashboard = () => {
             <CheckCircle sx={{ marginRight: '4px', fontSize: '20px' }} />
             <Box>
               <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
-                Total Meetings
+                Meetings
               </Typography>
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 <CountUp start={0} end={totalMeetings} duration={2} />
