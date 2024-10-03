@@ -238,7 +238,7 @@ const AddMeetingSession = () => {
           id: '',
           orgId: '',
         });
-        navigate('/home-dashboard');
+        navigate('/connex_meet_emp/home-dashboard');
       });
     } catch (error) {
       Swal.fire('Error!', 'There was a problem adding the meeting. Please try again.', 'error');

@@ -347,7 +347,7 @@ const AddMeetingSession = () => {
           id: '',
           orgId: '',
         });
-        navigate('/home-dashboard');
+        navigate('/connex_meet_emp/home-dashboard');
       });
     } catch (error) {
       // Handle the error if the POST request fails
@@ -365,7 +365,7 @@ const AddMeetingSession = () => {
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
-        Add a New internal Meeting
+        Add a New External Meeting
       </Typography>
       <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleSubmit}>
