@@ -133,7 +133,8 @@ const ScheduledMeetings = () => {
 
         const formattedSpecialMeetings = specialResponse.data.map((meeting) => ({
           id: meeting.bookingDetails.id,
-          title: `${meeting.bookingDetails.title} (Booked by: ${meeting.bookingDetails.bookedby})`,
+          title: meeting.bookingDetails.title, 
+          Bookedby:meeting.bookingDetails.bookedby,
           date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
           time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
           room: `Room ${meeting.bookingDetails.place_id}`,
@@ -251,7 +252,7 @@ const ScheduledMeetings = () => {
                         color: '#007aff',
                       }}
                     >
-                      Special Meeting
+                      {meeting.Bookedby}
                     </Box>
                   )}
                   <Chip
