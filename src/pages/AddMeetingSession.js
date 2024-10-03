@@ -347,7 +347,7 @@ const AddMeetingSession = () => {
           id: '',
           orgId: '',
         });
-        navigate('/connex_meet_emp/home-dashboard');
+        navigate('/connex_meet_emp/addmeeting');
       });
     } catch (error) {
       // Handle the error if the POST request fails
