@@ -169,7 +169,7 @@ const Register = () => {
           confirmButtonColor: themeColor.primary,
         }).then(() => {
           // Redirect to login page after successful registration
-          navigate('/login');  // Redirect to the login page
+          navigate('/connex_meet_emp/');  // Redirect to the login page
         });
 
         // Clear the form
