@@ -297,7 +297,20 @@ const AddMeetingSession = () => {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Check if the participant list is empty before proceeding
+    if (formData.participantList.length === 0) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please add at least one participant before submitting the meeting.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      return; // Prevent form submission if no participants
+    }
+  
     const formattedDate = formData.date ? format(new Date(formData.date), 'MM/dd/yyyy') : '';
+  
     // Prepare the data for the API request
     const bookingData = {
       title: formData.title,
