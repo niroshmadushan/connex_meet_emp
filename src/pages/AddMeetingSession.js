@@ -170,7 +170,7 @@ const AddMeetingSession = () => {
       }
     }
   }, [formData.selectedRoomId, formData.date]);
-  
+
   const generateTimeOptions = (start, end, step = 15) => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
@@ -294,10 +294,10 @@ const AddMeetingSession = () => {
       participantList: updatedList,
     });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Check if the participant list is empty before proceeding
     if (formData.participantList.length === 0) {
       Swal.fire({
@@ -308,9 +308,9 @@ const AddMeetingSession = () => {
       });
       return; // Prevent form submission if no participants
     }
-  
+
     const formattedDate = formData.date ? format(new Date(formData.date), 'MM/dd/yyyy') : '';
-  
+
     // Prepare the data for the API request
     const bookingData = {
       title: formData.title,
@@ -327,13 +327,13 @@ const AddMeetingSession = () => {
       id: formData.id, // ID from local storage
       orgId: formData.orgId, // Org ID from local storage
     };
-  
+
     try {
       // Send the booking data to the API endpoint
       await axios.post('http://192.168.13.150:3001/add-booking', bookingData, {
         withCredentials: true,
       });
-  
+
       // Show success message and reset the form
       Swal.fire({
         title: 'Success!',
@@ -373,7 +373,7 @@ const AddMeetingSession = () => {
       console.error('Error adding booking:', error);
     }
   };
-  
+
 
   return (
     <Box sx={{ padding: '20px' }}>
@@ -409,15 +409,16 @@ const AddMeetingSession = () => {
                 type="date"
                 value={formData.date}
                 onChange={handleChange}
-                InputLabelProps={{
-                  shrink: true,
-                }}
+                InputLabelProps={{ shrink: true }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <EventIcon color="primary" />
                     </InputAdornment>
                   ),
+                  inputProps: {
+                    min: format(new Date(), 'yyyy-MM-dd'), // Set the minimum date to today's date
+                  },
                 }}
                 required
               />

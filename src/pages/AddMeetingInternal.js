@@ -401,6 +401,9 @@ const AddMeetingSession = () => {
                       <EventIcon color="primary" />
                     </InputAdornment>
                   ),
+                  inputProps: {
+                    min: format(new Date(), 'yyyy-MM-dd'), // Set the minimum date to today's date
+                  },
                 }}
                 required
               />
