@@ -134,7 +134,7 @@ console.log(specialResponse.data);
         const formattedSpecialMeetings = specialResponse.data.map((meeting) => ({
           id: meeting.bookingDetails.id,
           title: meeting.bookingDetails.title, 
-          Bookedby:meeting.bookingDetails.bookedby,
+          Bookedby:meeting.bookingDetails.bookedBy,
           date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
           time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
           room: `Room ${meeting.bookingDetails.place_id}`,
