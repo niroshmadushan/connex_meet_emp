@@ -535,6 +535,7 @@ const AddMeetingSession = () => {
                   </InputAdornment>
                 ),
               }}
+              required
             />
           </Grid>
 
@@ -555,6 +556,7 @@ const AddMeetingSession = () => {
                   </InputAdornment>
                 ),
               }}
+              required
             />
           </Grid>
 
