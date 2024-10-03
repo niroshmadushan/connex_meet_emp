@@ -130,7 +130,7 @@ const ScheduledMeetings = () => {
         const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
           withCredentials: true,
         });
-console.log(specialResponse);
+console.log(specialResponse.data);
         const formattedSpecialMeetings = specialResponse.data.map((meeting) => ({
           id: meeting.bookingDetails.id,
           title: meeting.bookingDetails.title, 
