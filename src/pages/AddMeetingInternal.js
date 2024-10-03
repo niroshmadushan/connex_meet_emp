@@ -74,19 +74,21 @@ const AddMeetingSession = () => {
   }, []);
   useEffect(() => {
     const empId = localStorage.getItem('id'); // Retrieve 'id' from local storage
-  
+
     if (empId) {
       axios
         .get(`http://192.168.13.150:3001/email/${empId}`, { withCredentials: true })
         .then((response) => {
-          setEmployeeEmails(response.data); // Set the fetched emails to employeeEmails state
+          // Extract the email values from the response and set the employeeEmails state
+          const emails = response.data.map((item) => item.email);
+          setEmployeeEmails(emails);
         })
         .catch((error) => {
           console.error('Failed to fetch employee emails:', error);
         });
     }
   }, []);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
