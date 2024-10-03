@@ -38,13 +38,7 @@ const AddMeetingSession = () => {
   const [rooms, setRooms] = useState([]);
   const [availableRooms, setAvailableRooms] = useState([])
   const [bookings, setBookings] = useState([]);
-  const [employeeEmails, setEmployeeEmails] = useState([
-    'john.doe@connexit.com',
-    'jane.smith@connexit.com',
-    'alice.jones@connexit.com',
-    'bob.brown@connexit.com',
-    'charlie.adams@connexit.com',
-  ]);
+  const [employeeEmails, setEmployeeEmails] = useState([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -78,7 +72,21 @@ const AddMeetingSession = () => {
       orgId: userOrgId,
     }));
   }, []);
-
+  useEffect(() => {
+    const empId = localStorage.getItem('id'); // Retrieve 'id' from local storage
+  
+    if (empId) {
+      axios
+        .get(`http://192.168.13.150:3001/email/${empId}`, { withCredentials: true })
+        .then((response) => {
+          setEmployeeEmails(response.data); // Set the fetched emails to employeeEmails state
+        })
+        .catch((error) => {
+          console.error('Failed to fetch employee emails:', error);
+        });
+    }
+  }, []);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
