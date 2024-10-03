@@ -28,7 +28,6 @@ import Swal from 'sweetalert2';
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
-// Custom colors for meeting status
 const statusColors = {
   upcoming: 'orange',
   ongoing: 'green',
@@ -50,15 +49,13 @@ const getMeetingStatus = (meetingDate, meetingTime) => {
 const sortMeetings = (meetings) => {
   return meetings.sort((a, b) => {
     const statusOrder = { upcoming: 1, ongoing: 2, finished: 3 };
-
     const statusA = getMeetingStatus(a.date, a.time);
     const statusB = getMeetingStatus(b.date, b.time);
 
     if (statusOrder[statusA] !== statusOrder[statusB]) {
-      return statusOrder[statusA] - statusOrder[statusB]; // Sort by status order
+      return statusOrder[statusA] - statusOrder[statusB];
     }
 
-    // Sort by start time if statuses are the same
     const startTimeA = dayjs(`${a.date} ${a.time.split(' - ')[0]}`);
     const startTimeB = dayjs(`${b.date} ${b.time.split(' - ')[0]}`);
     return startTimeA - startTimeB;
@@ -98,21 +95,20 @@ const ScheduledMeetings = () => {
 
   // Fetch meetings data from the backend
   useEffect(() => {
-    const fetchMeetings = async () => {
-      const empID = localStorage.getItem('id'); // Get employee ID from local storage
-      if (!empID) return;
+    const empID = localStorage.getItem('id'); // Get employee ID from local storage
+    if (!empID) return;
 
+    const fetchMeetings = async () => {
       try {
-        // Fetch data from the API
+        // Fetch normal meetings data
         const response = await axios.get(`http://192.168.13.150:3001/get-schedule-meeting/${empID}`, {
-          withCredentials: true, // Required for the API's credential verification
+          withCredentials: true,
         });
 
-        // Format the response data to match the existing meeting structure
         const formattedMeetings = response.data.map((meeting) => ({
           id: meeting.bookingDetails.id,
           title: meeting.bookingDetails.title,
-          date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'), // Convert to correct format
+          date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
           time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
           room: `Room ${meeting.bookingDetails.place_id}`,
           participants: meeting.participants.map((participant) => ({
@@ -123,13 +119,41 @@ const ScheduledMeetings = () => {
           refreshment: meeting.bookingDetails.refreshment,
         }));
 
-        setNormalMeetings(formattedMeetings); // Update normal meetings state
+        setNormalMeetings(formattedMeetings);
       } catch (error) {
         console.error('Error fetching meetings:', error);
       }
     };
 
+    const fetchSpecialMeetings = async () => {
+      try {
+        const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
+          withCredentials: true,
+        });
+
+        const formattedSpecialMeetings = specialResponse.data.map((meeting) => ({
+          id: meeting.bookingDetails.id,
+          title: `${meeting.bookingDetails.title} (Booked by: ${meeting.bookingDetails.booked_by})`,
+          date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+          time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
+          room: `Room ${meeting.bookingDetails.place_id}`,
+          participants: meeting.participants.map((participant) => ({
+            companyName: participant.company_name || 'Unknown Company',
+            employeeName: participant.full_name || 'Unknown Employee',
+          })),
+          specialNote: meeting.bookingDetails.note,
+          refreshment: meeting.bookingDetails.refreshment,
+          approved: false,
+        }));
+
+        setSpecialMeetings(formattedSpecialMeetings);
+      } catch (error) {
+        console.error('Error fetching special meetings:', error);
+      }
+    };
+
     fetchMeetings();
+    fetchSpecialMeetings();
   }, []);
 
   const handleOpen = (meeting) => {
@@ -159,8 +183,6 @@ const ScheduledMeetings = () => {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        const reason = result.value;
-
         if (isSpecial) {
           setSpecialMeetings(specialMeetings.filter((meeting) => meeting.id !== id));
         } else {
@@ -284,76 +306,6 @@ const ScheduledMeetings = () => {
           );
         })}
       </Grid>
-
-      {/* Modal for displaying meeting details */}
-      <Modal
-        open={open}
-        onClose={handleClose}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
-      >
-        <Fade in={open}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 400,
-              bgcolor: 'background.paper',
-              borderRadius: '12px',
-              boxShadow: 24,
-              p: 4,
-            }}
-          >
-            {selectedMeeting && (
-              <>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                  {selectedMeeting.title}
-                </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                  <EventIcon sx={{ marginRight: '8px' }} />
-                  {selectedMeeting.date}
-                </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                  <AccessTimeIcon sx={{ marginRight: '8px' }} />
-                  {selectedMeeting.time}
-                </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                  <RoomIcon sx={{ marginRight: '8px' }} />
-                  {selectedMeeting.room}
-                </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                  <GroupIcon sx={{ marginRight: '8px' }} />
-                  Participants:
-                </Typography>
-                <ul>
-                  {selectedMeeting.participants.map((participant, index) => (
-                    <li key={index}>
-                      {participant.companyName} - {participant.employeeName}
-                    </li>
-                  ))}
-                </ul>
-                {selectedMeeting.specialNote && (
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <NotesIcon sx={{ marginRight: '8px' }} />
-                    {selectedMeeting.specialNote}
-                  </Typography>
-                )}
-                {selectedMeeting.refreshment && (
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <RefreshIcon sx={{ marginRight: '8px' }} />
-                    Refreshment: {selectedMeeting.refreshment}
-                  </Typography>
-                )}
-              </>
-            )}
-          </Box>
-        </Fade>
-      </Modal>
     </Box>
   );
 };
