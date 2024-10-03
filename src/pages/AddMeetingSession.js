@@ -337,7 +337,7 @@ const AddMeetingSession = () => {
       // Show success message and reset the form
       Swal.fire({
         title: 'Success!',
-        text: 'The meeting/session has been added successfully.',
+        text: 'The meeting has been added successfully.',
         icon: 'success',
         confirmButtonText: 'OK',
       }).then(() => {

@@ -36,7 +36,7 @@ const themeColor = {
 
 const AddMeetingSession = () => {
   const [rooms, setRooms] = useState([]);
-  const [availableRooms,setAvailableRooms] =useState([])
+  const [availableRooms, setAvailableRooms] = useState([])
   const [bookings, setBookings] = useState([]);
   const [employeeEmails, setEmployeeEmails] = useState([
     'john.doe@connexit.com',
@@ -203,7 +203,20 @@ const AddMeetingSession = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check if the participant list is empty before proceeding
+    if (formData.participantList.length === 0) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please add at least one participant before submitting the meeting.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      return; // Prevent form submission if no participants are present
+    }
+
     const formattedDate = formData.date ? format(new Date(formData.date), 'MM/dd/yyyy') : '';
+
     const bookingData = {
       title: formData.title,
       date: formattedDate,
@@ -220,7 +233,7 @@ const AddMeetingSession = () => {
 
     try {
       await axios.post('http://192.168.13.150:3001/add-booking-int', bookingData, { withCredentials: true });
-      Swal.fire('Success!', 'The meeting/session has been added successfully.', 'success').then(() => {
+      Swal.fire('Success!', 'The meeting has been added successfully.', 'success').then(() => {
         setFormData({
           title: '',
           date: '',
@@ -245,6 +258,7 @@ const AddMeetingSession = () => {
       console.error('Error adding booking:', error);
     }
   };
+
   const generateTimeOptions = (start, end, step = 15) => {
     const startTime = new Date(`1970-01-01T${convertTo24Hour(start)}:00`);
     const endTime = new Date(`1970-01-01T${convertTo24Hour(end)}:00`);
@@ -399,180 +413,180 @@ const AddMeetingSession = () => {
                   ))}
                 </Select>
               </FormControl>
-            
-          </Grid>
 
-          {formData.availableSlots.length > 0 && (
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel>Select Time Slot</InputLabel>
-                <Select
-                  label="Select Time Slot"
-                  name="selectedSlot"
-                  value={formData.selectedSlot}
-                  onChange={handleChange}
-                  required
-                >
-                  {formData.availableSlots.map((slot, index) => (
-                    <MenuItem key={index} value={slot}>
-                      {slot}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </Grid>
-          )}
 
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              select
-              label="Start Time"
-              name="startTime"
-              value={formData.startTime}
-              onChange={handleChange}
-              required
-            >
-              {formData.startTimeOptions.map((option, index) => (
-                <MenuItem key={index} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
+            {formData.availableSlots.length > 0 && (
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel>Select Time Slot</InputLabel>
+                  <Select
+                    label="Select Time Slot"
+                    name="selectedSlot"
+                    value={formData.selectedSlot}
+                    onChange={handleChange}
+                    required
+                  >
+                    {formData.availableSlots.map((slot, index) => (
+                      <MenuItem key={index} value={slot}>
+                        {slot}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
 
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              select
-              label="End Time"
-              name="endTime"
-              value={formData.endTime}
-              onChange={handleChange}
-              required
-            >
-              {formData.endTimeOptions.map((option, index) => (
-                <MenuItem key={index} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                select
+                label="Start Time"
+                name="startTime"
+                value={formData.startTime}
+                onChange={handleChange}
+                required
+              >
+                {formData.startTimeOptions.map((option, index) => (
+                  <MenuItem key={index} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
 
-          <Grid item xs={12}>
-            <Autocomplete
-              options={employeeEmails}
-              value={formData.employeeEmail}
-              onChange={handleEmailChange}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Employee Email"
-                  InputProps={{
-                    ...params.InputProps,
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EventIcon color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              )}
-            />
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                select
+                label="End Time"
+                name="endTime"
+                value={formData.endTime}
+                onChange={handleChange}
+                required
+              >
+                {formData.endTimeOptions.map((option, index) => (
+                  <MenuItem key={index} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
 
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              onClick={handleAddParticipant}
-              sx={{ backgroundColor: themeColor.primary, color: '#fff', ':hover': { backgroundColor: themeColor.primaryDark } }}
-            >
-              Add Participant
-            </Button>
-          </Grid>
-
-          {formData.participantList.length > 0 && (
             <Grid item xs={12}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>#</TableCell>
-                    <TableCell>Employee Email</TableCell>
-                    <TableCell>Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {formData.participantList.map((participant, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{participant.employeeEmail}</TableCell>
-                      <TableCell>
-                        <IconButton onClick={() => handleDeleteParticipant(index)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
+              <Autocomplete
+                options={employeeEmails}
+                value={formData.employeeEmail}
+                onChange={handleEmailChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Employee Email"
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EventIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                onClick={handleAddParticipant}
+                sx={{ backgroundColor: themeColor.primary, color: '#fff', ':hover': { backgroundColor: themeColor.primaryDark } }}
+              >
+                Add Participant
+              </Button>
+            </Grid>
+
+            {formData.participantList.length > 0 && (
+              <Grid item xs={12}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>#</TableCell>
+                      <TableCell>Employee Email</TableCell>
+                      <TableCell>Action</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHead>
+                  <TableBody>
+                    {formData.participantList.map((participant, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{participant.employeeEmail}</TableCell>
+                        <TableCell>
+                          <IconButton onClick={() => handleDeleteParticipant(index)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Grid>
+            )}
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Special Note"
+                name="specialNote"
+                value={formData.specialNote}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                placeholder="Enter any special notes regarding the event"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <NotesIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+                required
+              />
             </Grid>
-          )}
 
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Special Note"
-              name="specialNote"
-              value={formData.specialNote}
-              onChange={handleChange}
-              multiline
-              rows={4}
-              placeholder="Enter any special notes regarding the event"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <NotesIcon color="primary" />
-                  </InputAdornment>
-                ),
-              }}
-              required
-            />
-          </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Refreshment"
+                name="refreshment"
+                value={formData.refreshment}
+                onChange={handleChange}
+                multiline
+                rows={2}
+                placeholder="Enter refreshment details if any"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <RefreshIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+                required
+              />
+            </Grid>
 
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Refreshment"
-              name="refreshment"
-              value={formData.refreshment}
-              onChange={handleChange}
-              multiline
-              rows={2}
-              placeholder="Enter refreshment details if any"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <RefreshIcon color="primary" />
-                  </InputAdornment>
-                ),
-              }}
-              required
-            />
+            <Grid item xs={12}>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{ backgroundColor: themeColor.primary, color: '#fff', ':hover': { backgroundColor: themeColor.primaryDark } }}
+                fullWidth
+              >
+                Add Meeting
+              </Button>
+            </Grid>
           </Grid>
-
-          <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{ backgroundColor: themeColor.primary, color: '#fff', ':hover': { backgroundColor: themeColor.primaryDark } }}
-              fullWidth
-            >
-              Add Meeting
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
-    </Paper>
+        </form>
+      </Paper>
     </Box >
   );
 };
