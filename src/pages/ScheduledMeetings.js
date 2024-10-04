@@ -117,6 +117,7 @@ const ScheduledMeetings = () => {
           })),
           specialNote: meeting.bookingDetails.note,
           refreshment: meeting.bookingDetails.refreshment,
+          status: meeting.bookingDetails.status, // Track meeting status for Special Meetings
         }));
 
         setNormalMeetings(formattedMeetings);
@@ -131,31 +132,22 @@ const ScheduledMeetings = () => {
           withCredentials: true,
         });
 
-        const formattedSpecialMeetings = await Promise.all(
-          specialResponse.data.map(async (meeting) => {
-            // Check approval status for each special meeting using `checkapprove` API
-            const statusResponse = await axios.get(
-              `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
-              { withCredentials: true }
-            );
-
-            return {
-              id: meeting.bookingDetails.id,
-              title: meeting.bookingDetails.title,
-              Bookedby: meeting.bookingDetails.bookedBy,
-              date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
-              time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
-              room: `Room ${meeting.bookingDetails.place_id}`,
-              participants: meeting.participants.map((participant) => ({
-                companyName: participant.company_name || 'Unknown Company',
-                employeeName: participant.full_name || 'Unknown Employee',
-              })),
-              specialNote: meeting.bookingDetails.note,
-              refreshment: meeting.bookingDetails.refreshment,
-              status: statusResponse.data.status, // Check and store approval status
-            };
-          })
-        );
+        const formattedSpecialMeetings = specialResponse.data.map((meeting) => ({
+          id: meeting.bookingDetails.id,
+          title: meeting.bookingDetails.title,
+          Bookedby: meeting.bookingDetails.bookedBy,
+          date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+          time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
+          room: `Room ${meeting.bookingDetails.place_id}`,
+          participants: meeting.participants.map((participant) => ({
+            companyName: participant.company_name || 'Unknown Company',
+            employeeName: participant.full_name || 'Unknown Employee',
+          })),
+          specialNote: meeting.bookingDetails.note,
+          refreshment: meeting.bookingDetails.refreshment,
+          approved: meeting.bookingDetails.status === 2, // Use status field for approval check
+          status: meeting.bookingDetails.status, // Track meeting status for Special Meetings
+        }));
 
         setSpecialMeetings(formattedSpecialMeetings);
       } catch (error) {
@@ -167,38 +159,14 @@ const ScheduledMeetings = () => {
     fetchSpecialMeetings();
   }, []);
 
-  const handleApprove = async (id) => {
-    const empID = localStorage.getItem('id'); // Retrieve employee ID
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to approve this meeting?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, approve it!',
-    });
+  const handleOpen = (meeting) => {
+    setSelectedMeeting(meeting);
+    setOpen(true);
+  };
 
-    if (result.isConfirmed) {
-      try {
-        await axios.put(
-          `http://192.168.13.150:3001/updatemeetingstatus/${id}`,
-          { empID },
-          {
-            withCredentials: true,
-          }
-        );
-
-        setSpecialMeetings(
-          specialMeetings.map((meeting) =>
-            meeting.id === id ? { ...meeting, status: 'approved' } : meeting
-          )
-        );
-
-        Swal.fire('Approved!', 'The meeting has been approved.', 'success');
-      } catch (error) {
-        console.error('Error approving meeting:', error);
-        Swal.fire('Error!', 'There was an issue approving the meeting.', 'error');
-      }
-    }
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedMeeting(null);
   };
 
   const handleDelete = (id, isSpecial = false) => {
@@ -228,6 +196,46 @@ const ScheduledMeetings = () => {
       }
     });
   };
+
+  const handleApprove = async (id) => {
+    // Retrieve employee ID from local storage
+    const empID = localStorage.getItem('id');
+  
+    // Show confirmation alert before approval
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to approve this meeting?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, approve it!',
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        // Send PUT request to update meeting status with `empID` in the body
+        await axios.put(
+          `http://192.168.13.150:3001/updatemeetingstatus/${id}`,
+          { empid:empID }, // Send `empID` in the request body
+          {
+            withCredentials: true,
+          }
+        );
+  
+        // Update meeting status locally after successful approval
+        setSpecialMeetings(
+          specialMeetings.map((meeting) =>
+            meeting.id === id ? { ...meeting, approved: true, status: 2 } : meeting
+          )
+        );
+  
+        Swal.fire('Approved!', 'The meeting has been approved.', 'success');
+      } catch (error) {
+        console.error('Error approving meeting:', error);
+        Swal.fire('Error!', 'There was an issue approving the meeting.', 'error');
+      }
+    }
+  };
+  
 
   const countActiveMeetings = (meetings) => {
     return meetings.filter(
@@ -315,7 +323,7 @@ const ScheduledMeetings = () => {
                 <CardActions sx={{ justifyContent: 'space-between' }}>
                   {/* Show Delete Button for Special or Normal Meetings with "upcoming" or "ongoing" Status */}
                   {viewType === 'special'
-                    ? ['upcoming', 'ongoing'].includes(status) && meeting.status !== 'canceled' && (
+                    ? ['upcoming', 'ongoing'].includes(status) && (
                         <IconButton
                           onClick={(e) => {
                             e.stopPropagation();
@@ -337,7 +345,7 @@ const ScheduledMeetings = () => {
                       )}
 
                   {/* Show Approve Button for Special Meetings if Not Approved and Not "Finished" */}
-                  {viewType === 'special' && meeting.status !== 'approved' && meeting.status !== 'canceled' ? (
+                  {viewType === 'special' && meeting.status !== 2 && status !== 'finished' ? (
                     <Button
                       variant="contained"
                       color="primary"
@@ -349,7 +357,7 @@ const ScheduledMeetings = () => {
                       Approve
                     </Button>
                   ) : (
-                    meeting.status === 'approved' && (
+                    meeting.status === 2 && (
                       <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
                     )
                   )}
