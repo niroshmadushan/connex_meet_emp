@@ -32,9 +32,12 @@ const statusColors = {
   upcoming: 'orange',
   ongoing: 'green',
   finished: 'red',
+  approved: 'green',
+  canceled: 'gray',
+  empty: 'blue',
 };
 
-// Function to calculate meeting status
+// Function to calculate meeting status based on time and date
 const getMeetingStatus = (meetingDate, meetingTime) => {
   const now = dayjs();
   const startTime = dayjs(`${meetingDate} ${meetingTime.split(' - ')[0]}`);
@@ -93,14 +96,12 @@ const ScheduledMeetings = () => {
   const [open, setOpen] = useState(false);
   const [viewType, setViewType] = useState('normal'); // Toggle view state
 
-  // Fetch meetings data from the backend
   useEffect(() => {
     const empID = localStorage.getItem('id'); // Get employee ID from local storage
     if (!empID) return;
 
     const fetchMeetings = async () => {
       try {
-        // Fetch normal meetings data
         const response = await axios.get(`http://192.168.13.150:3001/get-schedule-meeting/${empID}`, {
           withCredentials: true,
         });
@@ -126,23 +127,19 @@ const ScheduledMeetings = () => {
     };
 
     const fetchSpecialMeetings = async () => {
-      const emp = localStorage.getItem('id');
-
       try {
         const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
           withCredentials: true,
         });
 
-        // Step 2: Iterate through each meeting and call the `checkapprove` API to get approval status
         const formattedSpecialMeetings = await Promise.all(
           specialResponse.data.map(async (meeting) => {
             const statusResponse = await axios.post(
               `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
-              { empid: emp }, // Send empID in the request body
+              { empid: empID },
               { withCredentials: true }
             );
 
-            // Step 3: Construct and return the formatted meeting object with the approval status
             return {
               id: meeting.bookingDetails.id,
               title: meeting.bookingDetails.title,
@@ -161,7 +158,6 @@ const ScheduledMeetings = () => {
           })
         );
 
-        // Step 4: Update the state with the formatted special meetings data
         setSpecialMeetings(formattedSpecialMeetings);
       } catch (error) {
         console.error('Error fetching special meetings:', error);
@@ -183,7 +179,7 @@ const ScheduledMeetings = () => {
   };
 
   const handleApprove = async (id) => {
-    const empID = localStorage.getItem('id'); // Retrieve employee ID
+    const empID = localStorage.getItem('id');
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'Do you want to approve this meeting?',
@@ -219,6 +215,7 @@ const ScheduledMeetings = () => {
       <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
         Scheduled Meetings
       </Typography>
+
       {/* Toggle Button for Normal and Special Meetings */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
         <ToggleButtonGroup
@@ -313,6 +310,8 @@ const ScheduledMeetings = () => {
           );
         })}
       </Grid>
+
+      {/* Meeting Details Modal */}
       <Modal
         open={open}
         onClose={handleClose}
