@@ -38,6 +38,7 @@ const Dashboard = () => {
       .then((response) => {
         const total = response.data[0]?.totalbookings || 0;
         setTotalMeetings(total);
+        setSuccessfulMeetings(total);
       })
       .catch((error) => {
         console.error("Error fetching total meetings:", error);
@@ -50,7 +51,7 @@ const Dashboard = () => {
         setCanceledMeetings(canceled);
 
         // Calculate successful meetings
-        setSuccessfulMeetings(totalMeetings - canceledMeetings);
+        setSuccessfulMeetings(successfulMeetings-canceled);
       })
       .catch((error) => {
         console.error("Error fetching canceled meetings:", error);
