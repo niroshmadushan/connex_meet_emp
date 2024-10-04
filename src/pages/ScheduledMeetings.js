@@ -131,23 +131,35 @@ const ScheduledMeetings = () => {
           withCredentials: true,
         });
 
-        const formattedSpecialMeetings = specialResponse.data.map((meeting) => ({
-          id: meeting.bookingDetails.id,
-          title: meeting.bookingDetails.title,
-          Bookedby: meeting.bookingDetails.bookedBy,
-          date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
-          time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
-          room: `Room ${meeting.bookingDetails.place_id}`,
-          participants: meeting.participants.map((participant) => ({
-            companyName: participant.company_name || 'Unknown Company',
-            employeeName: participant.full_name || 'Unknown Employee',
-          })),
-          specialNote: meeting.bookingDetails.note,
-          refreshment: meeting.bookingDetails.refreshment,
-          approved: meeting.bookingDetails.status === 2,
-          status: meeting.bookingDetails.status,
-        }));
+        // Step 2: Iterate through each meeting and call the `checkapprove` API to get approval status
+        const formattedSpecialMeetings = await Promise.all(
+          specialResponse.data.map(async (meeting) => {
+            const statusResponse = await axios.post(
+              `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
+              { empid: empID }, // Send empID in the request body
+              { withCredentials: true }
+            );
 
+            // Step 3: Construct and return the formatted meeting object with the approval status
+            return {
+              id: meeting.bookingDetails.id,
+              title: meeting.bookingDetails.title,
+              Bookedby: meeting.bookingDetails.bookedBy,
+              date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+              time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
+              room: `Room ${meeting.bookingDetails.place_id}`,
+              participants: meeting.participants.map((participant) => ({
+                companyName: participant.company_name || 'Unknown Company',
+                employeeName: participant.full_name || 'Unknown Employee',
+              })),
+              specialNote: meeting.bookingDetails.note,
+              refreshment: meeting.bookingDetails.refreshment,
+              status: statusResponse.data.status,
+            };
+          })
+        );
+
+        // Step 4: Update the state with the formatted special meetings data
         setSpecialMeetings(formattedSpecialMeetings);
       } catch (error) {
         console.error('Error fetching special meetings:', error);
@@ -188,7 +200,7 @@ const ScheduledMeetings = () => {
 
         setSpecialMeetings(
           specialMeetings.map((meeting) =>
-            meeting.id === id ? { ...meeting, approved: true, status: 2 } : meeting
+            meeting.id === id ? { ...meeting, status: 'approved' } : meeting
           )
         );
 
@@ -200,46 +212,11 @@ const ScheduledMeetings = () => {
     }
   };
 
-  const handleDelete = (id, isSpecial = false) => {
-    Swal.fire({
-      title: 'Are you sure you want to cancel this meeting?',
-      text: 'Please provide a reason for canceling this meeting:',
-      input: 'text',
-      inputPlaceholder: 'Enter the reason for cancelation',
-      showCancelButton: true,
-      confirmButtonText: 'Cancel Meeting',
-      preConfirm: (reason) => {
-        if (!reason) {
-          Swal.showValidationMessage('You need to enter a reason!');
-        } else {
-          return reason;
-        }
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        if (isSpecial) {
-          setSpecialMeetings(specialMeetings.filter((meeting) => meeting.id !== id));
-        } else {
-          setNormalMeetings(normalMeetings.filter((meeting) => meeting.id !== id));
-        }
-
-        Swal.fire('Canceled!', 'The meeting has been canceled.', 'success');
-      }
-    });
-  };
-
-  const countActiveMeetings = (meetings) => {
-    return meetings.filter(
-      (meeting) => ['upcoming', 'ongoing'].includes(getMeetingStatus(meeting.date, meeting.time))
-    ).length;
-  };
-
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
         Scheduled Meetings
       </Typography>
-
       {/* Toggle Button for Normal and Special Meetings */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
         <ToggleButtonGroup
@@ -251,10 +228,10 @@ const ScheduledMeetings = () => {
           aria-label="meeting type"
         >
           <ToggleButton value="normal" disabled={viewType === 'normal'}>
-            Normal Meetings ({countActiveMeetings(normalMeetings)})
+            Normal Meetings ({normalMeetings.length})
           </ToggleButton>
           <ToggleButton value="special" disabled={viewType === 'special'}>
-            Special Meetings ({countActiveMeetings(specialMeetings)})
+            Special Meetings ({specialMeetings.length})
           </ToggleButton>
         </ToggleButtonGroup>
       </Box>
@@ -312,31 +289,7 @@ const ScheduledMeetings = () => {
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-between' }}>
-                  {/* Show Delete Button for Special or Normal Meetings with "upcoming" or "ongoing" Status */}
-                  {viewType === 'special'
-                    ? ['upcoming', 'ongoing'].includes(status) && (
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(meeting.id, viewType === 'special');
-                          }}
-                        >
-                          <DeleteIcon sx={{ color: 'red' }} />
-                        </IconButton>
-                      )
-                    : status === 'upcoming' && (
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(meeting.id, viewType === 'special');
-                          }}
-                        >
-                          <DeleteIcon sx={{ color: 'red' }} />
-                        </IconButton>
-                      )}
-
-                  {/* Show Approve Button for Special Meetings if Not Approved and Not "Finished" */}
-                  {viewType === 'special' && meeting.status !== 2 && status !== 'finished' ? (
+                  {viewType === 'special' && meeting.status !== 'approved' && status !== 'finished' ? (
                     <Button
                       variant="contained"
                       color="primary"
@@ -348,7 +301,7 @@ const ScheduledMeetings = () => {
                       Approve
                     </Button>
                   ) : (
-                    meeting.status === 2 && (
+                    meeting.status === 'approved' && (
                       <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
                     )
                   )}
@@ -363,25 +316,10 @@ const ScheduledMeetings = () => {
         onClose={handleClose}
         closeAfterTransition
         BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
+        BackdropProps={{ timeout: 500 }}
       >
         <Fade in={open}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 400,
-              bgcolor: 'background.paper',
-              borderRadius: '12px',
-              boxShadow: 24,
-              p: 4,
-            }}
-          >
-            {/* Ensure selectedMeeting is defined before rendering */}
+          <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', borderRadius: '12px', boxShadow: 24, p: 4 }}>
             {selectedMeeting ? (
               <>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
@@ -424,9 +362,7 @@ const ScheduledMeetings = () => {
                 )}
               </>
             ) : (
-              <Typography variant="body1" sx={{ textAlign: 'center' }}>
-                Loading details...
-              </Typography>
+              <Typography variant="body1" sx={{ textAlign: 'center' }}>Loading details...</Typography>
             )}
           </Box>
         </Fade>
