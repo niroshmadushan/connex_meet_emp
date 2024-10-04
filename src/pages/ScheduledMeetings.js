@@ -179,6 +179,38 @@ const ScheduledMeetings = () => {
     setOpen(false);
     setSelectedMeeting(null);
   };
+  const handleDelete = async (id, isSpecial = false) => {
+    const result = await Swal.fire({
+      title: 'Are you sure you want to cancel this meeting?',
+      text: 'Please provide a reason for canceling this meeting:',
+      input: 'text',
+      inputPlaceholder: 'Enter the reason for cancelation',
+      showCancelButton: true,
+      confirmButtonText: 'Cancel Meeting',
+      preConfirm: (reason) => {
+        if (!reason) {
+          Swal.showValidationMessage('You need to enter a reason!');
+        } else {
+          return reason;
+        }
+      },
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        if (isSpecial) {
+          setSpecialMeetings(specialMeetings.filter((meeting) => meeting.id !== id));
+        } else {
+          setNormalMeetings(normalMeetings.filter((meeting) => meeting.id !== id));
+        }
+        Swal.fire('Canceled!', 'The meeting has been canceled.', 'success');
+      } catch (error) {
+        console.error('Error canceling meeting:', error);
+        Swal.fire('Error!', 'There was an issue canceling the meeting.', 'error');
+      }
+    }
+  };
+  
 
   const handleApprove = async (id) => {
     const empID = localStorage.getItem('id');
