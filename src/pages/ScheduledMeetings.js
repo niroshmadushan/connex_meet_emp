@@ -103,7 +103,6 @@ const ScheduledMeetings = () => {
   const [open, setOpen] = useState(false);
   const [viewType, setViewType] = useState('normal'); // Toggle view state
 
-  // Fetch meetings data from the backend
   useEffect(() => {
     const empID = localStorage.getItem('id');
     if (!empID) return;
@@ -253,12 +252,43 @@ const ScheduledMeetings = () => {
     }
   };
 
+  const handleApprove = async (id) => {
+    const empID = localStorage.getItem('id');
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to approve this meeting?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, approve it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.put(
+          `http://192.168.13.150:3001/updatemeetingstatus/${id}`,
+          { empid: empID },
+          { withCredentials: true }
+        );
+
+        setSpecialMeetings(
+          specialMeetings.map((meeting) =>
+            meeting.id === id ? { ...meeting, status: 'approved' } : meeting
+          )
+        );
+
+        Swal.fire('Approved!', 'The meeting has been approved.', 'success');
+      } catch (error) {
+        console.error('Error approving meeting:', error);
+        Swal.fire('Error!', 'There was an issue approving the meeting.', 'error');
+      }
+    }
+  };
+
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
         Scheduled Meetings
       </Typography>
-
       {/* Toggle Button for Normal and Special Meetings */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
         <ToggleButtonGroup
@@ -287,6 +317,7 @@ const ScheduledMeetings = () => {
             <Grid item xs={12} md={6} key={meeting.id}>
               <StyledCard onClick={() => handleOpen(meeting)}>
                 <CardContent>
+                  {/* Special Meeting Information */}
                   {viewType === 'special' && (
                     <Box
                       sx={{
@@ -304,6 +335,8 @@ const ScheduledMeetings = () => {
                       {meeting.Bookedby}
                     </Box>
                   )}
+
+                  {/* Meeting Status Indicator */}
                   <Chip
                     icon={<BlinkingDot color={statusColors[status]} />}
                     label={status.charAt(0).toUpperCase() + status.slice(1)}
@@ -314,6 +347,8 @@ const ScheduledMeetings = () => {
                       marginBottom: '10px',
                     }}
                   />
+
+                  {/* Meeting Details */}
                   <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
                     {meeting.title}
                   </Typography>
@@ -330,35 +365,43 @@ const ScheduledMeetings = () => {
                     {meeting.room}
                   </Typography>
                 </CardContent>
+                
+                {/* Action Buttons: Approve, Delete or Canceled Status */}
                 <CardActions sx={{ justifyContent: 'space-between' }}>
                   {/* Show Approved/Canceled Text for Special Meetings */}
                   {viewType === 'special' && meeting.status === 'approved' && (
                     <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
                   )}
                   {viewType === 'special' && meeting.status === 'canceled' && (
-                    <Typography sx={{ color: 'red', fontWeight: 'bold' }}>Canceled </Typography>
+                    <Typography sx={{ color: 'red', fontWeight: 'bold' }}>Canceled</Typography>
                   )}
+
                   {/* Show Delete and Approve Buttons based on Meeting Status */}
-                  {viewType === 'normal' && status === 'upcoming' && (
+                  {viewType === 'normal' && status === 'upcoming' && meeting.status !== 'canceled' && (
                     <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(meeting.id, false);
+                        handleDeleteNormal(meeting.id);
                       }}
                     >
                       <DeleteIcon sx={{ color: 'red' }} />
                     </IconButton>
                   )}
-                  {viewType === 'special' && ['upcoming', 'ongoing'].includes(status) && meeting.status !== 'approved' && meeting.status !== 'canceled' && (
-                    <IconButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(meeting.id, true);
-                      }}
-                    >
-                      <DeleteIcon sx={{ color: 'red' }} />
-                    </IconButton>
-                  )}
+
+                  {viewType === 'special' &&
+                    ['upcoming', 'ongoing'].includes(status) &&
+                    meeting.status !== 'approved' &&
+                    meeting.status !== 'canceled' && (
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSpecial(meeting.id);
+                        }}
+                      >
+                        <DeleteIcon sx={{ color: 'red' }} />
+                      </IconButton>
+                    )}
+
                   {viewType === 'special' && meeting.status !== 'approved' && status !== 'finished' && meeting.status !== 'canceled' && (
                     <Button
                       variant="contained"
