@@ -127,6 +127,7 @@ const ScheduledMeetings = () => {
 
     const fetchSpecialMeetings = async () => {
       const emp = localStorage.getItem('id');
+
       try {
         const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
           withCredentials: true,
@@ -135,7 +136,7 @@ const ScheduledMeetings = () => {
         // Step 2: Iterate through each meeting and call the `checkapprove` API to get approval status
         const formattedSpecialMeetings = await Promise.all(
           specialResponse.data.map(async (meeting) => {
-            const statusResponse = await axios.get(
+            const statusResponse = await axios.post(
               `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
               { empid: emp }, // Send empID in the request body
               { withCredentials: true }
