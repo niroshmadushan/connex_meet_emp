@@ -38,7 +38,7 @@ const Dashboard = () => {
       .then((response) => {
         const total = response.data[0]?.totalbookings || 0;
         setTotalMeetings(total);
-        setSuccessfulMeetings(total);
+        
       })
       .catch((error) => {
         console.error("Error fetching total meetings:", error);
@@ -51,10 +51,22 @@ const Dashboard = () => {
         setCanceledMeetings(canceled);
 
         // Calculate successful meetings
-        setSuccessfulMeetings(successfulMeetings-canceled);
+        
       })
       .catch((error) => {
         console.error("Error fetching canceled meetings:", error);
+      });
+
+      axios.get(`http://192.168.13.150:3001/getsuccessfulbookingcount/${empId}`, { withCredentials: true })
+      .then((response) => {
+        const total = response.data[0]?.totalsuccessfulbookings || 0;
+        setSuccessfulMeetings(total);
+
+        // Calculate successful meetings
+        
+      })
+      .catch((error) => {
+        console.error("Error fetching Successfull meetings:", error);
       });
   }, []);
 
