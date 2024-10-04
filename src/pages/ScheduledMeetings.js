@@ -37,6 +37,13 @@ const statusColors = {
 // Function to calculate meeting status
 const getMeetingStatus = (meetingDate, meetingTime) => {
   const now = dayjs();
+
+  // Check for missing or malformed time
+  if (!meetingTime || typeof meetingTime !== 'string' || !meetingTime.includes(' - ')) {
+    console.warn(`Invalid meeting time: "${meetingTime}" for date: "${meetingDate}"`);
+    return 'unknown'; // Return a default status for invalid times
+  }
+
   const startTime = dayjs(`${meetingDate} ${meetingTime.split(' - ')[0]}`);
   const endTime = dayjs(`${meetingDate} ${meetingTime.split(' - ')[1]}`);
 
@@ -44,6 +51,7 @@ const getMeetingStatus = (meetingDate, meetingTime) => {
   if (now.isAfter(endTime)) return 'finished';
   return 'ongoing';
 };
+
 
 // Function to sort meetings based on status and time
 const sortMeetings = (meetings) => {
