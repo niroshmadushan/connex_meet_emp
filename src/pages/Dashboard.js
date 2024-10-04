@@ -44,7 +44,7 @@ const Dashboard = () => {
       });
 
     // Fetch canceled meetings
-    axios.get(`http://192.168.13.150:3001/getcancelbookingcount/${empId}`, { withCredentials: true })
+    axios.get(`http://192.168.13.150:3001/getcancelbookingcount/19`, { withCredentials: true })
       .then((response) => {
         const canceled = response.data[0]?.totalcanceldbookings || 0;
         setCanceledMeetings(canceled);
