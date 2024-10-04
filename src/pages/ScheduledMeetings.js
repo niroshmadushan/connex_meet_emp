@@ -49,7 +49,7 @@ const getMeetingStatus = (meetingDate, meetingTime) => {
   return 'ongoing';
 };
 
-// Count only "upcoming" and "ongoing" meetings for the ToggleButton counts
+// Function to count active meetings for display in the toggle buttons
 const countActiveMeetings = (meetings) => {
   return meetings.filter(
     (meeting) => ['upcoming', 'ongoing'].includes(getMeetingStatus(meeting.date, meeting.time))
@@ -104,7 +104,6 @@ const ScheduledMeetings = () => {
   const [open, setOpen] = useState(false);
   const [viewType, setViewType] = useState('normal');
 
-  // Fetch meetings data on component mount
   useEffect(() => {
     const empID = localStorage.getItem('id');
     if (!empID) return;
@@ -292,6 +291,7 @@ const ScheduledMeetings = () => {
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-between' }}>
+                  {/* Show Approve Button for Special Meetings */}
                   {viewType === 'special' && meeting.status !== 'approved' && status !== 'finished' ? (
                     <Button
                       variant="contained"
