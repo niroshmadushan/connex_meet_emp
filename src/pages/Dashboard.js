@@ -50,7 +50,7 @@ const Dashboard = () => {
         setCanceledMeetings(canceled);
 
         // Calculate successful meetings
-        setSuccessfulMeetings((prevTotalMeetings) => prevTotalMeetings - canceled);
+        setSuccessfulMeetings(totalMeetings - canceledMeetings);
       })
       .catch((error) => {
         console.error("Error fetching canceled meetings:", error);
