@@ -28,6 +28,7 @@ import Swal from 'sweetalert2';
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
+// Define colors for different meeting statuses
 const statusColors = {
   upcoming: 'orange',
   ongoing: 'green',
@@ -37,7 +38,7 @@ const statusColors = {
   empty: 'blue',
 };
 
-// Function to calculate meeting status based on time and date
+// Function to calculate meeting status based on date and time
 const getMeetingStatus = (meetingDate, meetingTime) => {
   const now = dayjs();
   const startTime = dayjs(`${meetingDate} ${meetingTime.split(' - ')[0]}`);
@@ -72,7 +73,7 @@ const sortMeetings = (meetings) => {
   });
 };
 
-// Styled Card component for a cleaner UI
+// Styled Card component
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: '12px',
   boxShadow: '0 6px 15px rgba(0,0,0,0.15)',
@@ -88,7 +89,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 // Blinking animation for the status dot
 const BlinkingDot = styled(CircleIcon)(({ color }) => ({
   '@keyframes blink': {
-    '0%': { opacity: 1},
+    '0%': { opacity: 1 },
     '50%': { opacity: 0.3 },
     '100%': { opacity: 1 },
   },
@@ -101,10 +102,10 @@ const ScheduledMeetings = () => {
   const [specialMeetings, setSpecialMeetings] = useState([]);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [open, setOpen] = useState(false);
-  const [viewType, setViewType] = useState('normal'); // Toggle view state
+  const [viewType, setViewType] = useState('normal');
 
   useEffect(() => {
-    const empID = localStorage.getItem('id'); // Get employee ID from local storage
+    const empID = localStorage.getItem('id');
     if (!empID) return;
 
     const fetchMeetings = async () => {
