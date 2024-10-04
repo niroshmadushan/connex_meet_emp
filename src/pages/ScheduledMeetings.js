@@ -210,8 +210,8 @@ const ScheduledMeetings = () => {
     if (result.isConfirmed) {
       try {
         await axios.put(
-          `http://192.168.13.150:3001/cancelstatus/${id}`,
-          { empid: empID, reason: result.value },
+          `http://192.168.13.150:3001/updatemeetingstatusnormal/${id}`,
+          { reason: result.value },
           { withCredentials: true }
         );
         setNormalMeetings(normalMeetings.map((meeting) => (meeting.id === id ? { ...meeting, status: 'canceled' } : meeting)));
