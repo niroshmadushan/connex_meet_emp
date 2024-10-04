@@ -28,37 +28,13 @@ import Swal from 'sweetalert2';
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
-// Status colors mapping
 const statusColors = {
   upcoming: 'orange',
   ongoing: 'green',
   finished: 'red',
 };
 
-// Styled Components
-const StyledCard = styled(Card)(({ theme }) => ({
-  borderRadius: '12px',
-  boxShadow: '0 6px 15px rgba(0,0,0,0.15)',
-  padding: '15px',
-  height: 'auto',
-  transition: 'transform 0.2s ease-in-out',
-  position: 'relative',
-  '&:hover': {
-    transform: 'scale(1.03)',
-  },
-}));
-
-const BlinkingDot = styled(CircleIcon)(({ color }) => ({
-  '@keyframes blink': {
-    '0%': { opacity: 1 },
-    '50%': { opacity: 0.3 },
-    '100%': { opacity: 1 },
-  },
-  color: color,
-  animation: 'blink 1s infinite',
-}));
-
-// Helper functions for meeting status and sorting
+// Function to calculate meeting status
 const getMeetingStatus = (meetingDate, meetingTime) => {
   const now = dayjs();
   const startTime = dayjs(`${meetingDate} ${meetingTime.split(' - ')[0]}`);
@@ -69,6 +45,7 @@ const getMeetingStatus = (meetingDate, meetingTime) => {
   return 'ongoing';
 };
 
+// Function to sort meetings based on status and time
 const sortMeetings = (meetings) => {
   return meetings.sort((a, b) => {
     const statusOrder = { upcoming: 1, ongoing: 2, finished: 3 };
@@ -85,23 +62,49 @@ const sortMeetings = (meetings) => {
   });
 };
 
+// Styled Card for a more compact look
+const StyledCard = styled(Card)(({ theme }) => ({
+  borderRadius: '12px',
+  boxShadow: '0 6px 15px rgba(0,0,0,0.15)',
+  padding: '15px',
+  height: 'auto',
+  transition: 'transform 0.2s ease-in-out',
+  position: 'relative',
+  '&:hover': {
+    transform: 'scale(1.03)',
+  },
+}));
+
+// Blinking animation for the status dot
+const BlinkingDot = styled(CircleIcon)(({ color }) => ({
+  '@keyframes blink': {
+    '0%': { opacity: 1 },
+    '50%': { opacity: 0.3 },
+    '100%': { opacity: 1 },
+  },
+  color: color,
+  animation: 'blink 1s infinite',
+}));
+
 const ScheduledMeetings = () => {
   const [normalMeetings, setNormalMeetings] = useState([]);
   const [specialMeetings, setSpecialMeetings] = useState([]);
-  const [filteredMeetings, setFilteredMeetings] = useState([]);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [open, setOpen] = useState(false);
-  const [viewType, setViewType] = useState('normal');
+  const [viewType, setViewType] = useState('normal'); // Toggle view state
 
+  // Fetch meetings data from the backend
   useEffect(() => {
-    const empID = localStorage.getItem('id');
+    const empID = localStorage.getItem('id'); // Get employee ID from local storage
     if (!empID) return;
 
     const fetchMeetings = async () => {
       try {
+        // Fetch normal meetings data
         const response = await axios.get(`http://192.168.13.150:3001/get-schedule-meeting/${empID}`, {
           withCredentials: true,
         });
+
         const formattedMeetings = response.data.map((meeting) => ({
           id: meeting.bookingDetails.id,
           title: meeting.bookingDetails.title,
@@ -115,8 +118,8 @@ const ScheduledMeetings = () => {
           specialNote: meeting.bookingDetails.note,
           refreshment: meeting.bookingDetails.refreshment,
         }));
+
         setNormalMeetings(formattedMeetings);
-        setFilteredMeetings(formattedMeetings); // Default to normal meetings
       } catch (error) {
         console.error('Error fetching meetings:', error);
       }
@@ -127,6 +130,7 @@ const ScheduledMeetings = () => {
         const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
           withCredentials: true,
         });
+
         const formattedSpecialMeetings = specialResponse.data.map((meeting) => ({
           id: meeting.bookingDetails.id,
           title: meeting.bookingDetails.title,
@@ -142,6 +146,7 @@ const ScheduledMeetings = () => {
           refreshment: meeting.bookingDetails.refreshment,
           approved: false,
         }));
+
         setSpecialMeetings(formattedSpecialMeetings);
       } catch (error) {
         console.error('Error fetching special meetings:', error);
@@ -152,10 +157,58 @@ const ScheduledMeetings = () => {
     fetchSpecialMeetings();
   }, []);
 
-  useEffect(() => {
-    // Filter meetings based on the selected view type
-    setFilteredMeetings(viewType === 'normal' ? normalMeetings : specialMeetings);
-  }, [viewType, normalMeetings, specialMeetings]);
+  const handleOpen = (meeting) => {
+    setSelectedMeeting(meeting);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedMeeting(null);
+  };
+
+  const handleDelete = (id, isSpecial = false) => {
+    Swal.fire({
+      title: 'Are you sure you want to cancel this meeting?',
+      text: 'Please provide a reason for canceling this meeting:',
+      input: 'text',
+      inputPlaceholder: 'Enter the reason for cancelation',
+      showCancelButton: true,
+      confirmButtonText: 'Cancel Meeting',
+      preConfirm: (reason) => {
+        if (!reason) {
+          Swal.showValidationMessage('You need to enter a reason!');
+        } else {
+          return reason;
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (isSpecial) {
+          setSpecialMeetings(specialMeetings.filter((meeting) => meeting.id !== id));
+        } else {
+          setNormalMeetings(normalMeetings.filter((meeting) => meeting.id !== id));
+        }
+
+        Swal.fire('Canceled!', 'The meeting has been canceled.', 'success');
+      }
+    });
+  };
+
+  const handleApprove = (id) => {
+    setSpecialMeetings(
+      specialMeetings.map((meeting) =>
+        meeting.id === id ? { ...meeting, approved: true } : meeting
+      )
+    );
+  };
+
+
+  const countActiveMeetings = (meetings) => {
+    return meetings.filter(
+      (meeting) => ['upcoming', 'ongoing'].includes(getMeetingStatus(meeting.date, meeting.time))
+    ).length;
+  };
 
   return (
     <Box sx={{ padding: '20px' }}>
@@ -163,63 +216,117 @@ const ScheduledMeetings = () => {
         Scheduled Meetings
       </Typography>
 
+      {/* Toggle Button for Normal and Special Meetings */}
+      {/* Toggle Button for Normal and Special Meetings */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
         <ToggleButtonGroup
           value={viewType}
           exclusive
-          onChange={(e, newValue) => setViewType(newValue)}
+          onChange={(e, newValue) => {
+            if (newValue) setViewType(newValue);
+          }}
           aria-label="meeting type"
         >
-          <ToggleButton value="normal">Normal Meetings ({normalMeetings.length})</ToggleButton>
-          <ToggleButton value="special">Special Meetings ({specialMeetings.length})</ToggleButton>
+          {/* Normal Meetings Button: Locked when `viewType` is 'normal' */}
+          <ToggleButton value="normal" disabled={viewType === 'normal'}>
+            Normal Meetings ({countActiveMeetings(normalMeetings)})
+          </ToggleButton>
+
+          {/* Special Meetings Button: Locked when `viewType` is 'special' */}
+          <ToggleButton value="special" disabled={viewType === 'special'}>
+            Special Meetings ({countActiveMeetings(specialMeetings)})
+          </ToggleButton>
         </ToggleButtonGroup>
       </Box>
 
-      {/* Meeting List */}
-      {filteredMeetings.length === 0 ? (
-        <Typography variant="body1" sx={{ textAlign: 'center' }}>
-          No Meetings Scheduled
-        </Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {sortMeetings(filteredMeetings).map((meeting) => {
-            const status = getMeetingStatus(meeting.date, meeting.time);
 
-            return (
-              <Grid item xs={12} md={6} key={meeting.id}>
-                <StyledCard onClick={() => setSelectedMeeting(meeting)}>
-                  <CardContent>
-                    <Chip
-                      icon={<BlinkingDot color={statusColors[status]} />}
-                      label={status.charAt(0).toUpperCase() + status.slice(1)}
+      {/* Show Normal or Special Meetings Based on Toggle */}
+      <Grid container spacing={3}>
+        {sortMeetings(viewType === 'normal' ? normalMeetings : specialMeetings).map((meeting) => {
+          const status = getMeetingStatus(meeting.date, meeting.time);
+
+          return (
+            <Grid item xs={12} md={6} key={meeting.id}>
+              <StyledCard onClick={() => handleOpen(meeting)}>
+                <CardContent>
+                  {viewType === 'special' && (
+                    <Box
                       sx={{
-                        backgroundColor: statusColors[status] + '22',
-                        color: statusColors[status],
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        backgroundColor: '#f5f5f5',
+                        padding: '5px 10px',
+                        borderRadius: '5px',
                         fontWeight: 'bold',
-                        marginBottom: '10px',
+                        fontSize: '0.85rem',
+                        color: '#007aff',
                       }}
-                    />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                      {meeting.title}
-                    </Typography>
-                    <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                      <EventIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
-                      {meeting.date}
-                    </Typography>
-                  </CardContent>
-                </StyledCard>
-              </Grid>
-            );
-          })}
-        </Grid>
-      )}
-
+                    >
+                      {meeting.Bookedby}
+                    </Box>
+                  )}
+                  <Chip
+                    icon={<BlinkingDot color={statusColors[status]} />}
+                    label={status.charAt(0).toUpperCase() + status.slice(1)}
+                    sx={{
+                      backgroundColor: statusColors[status] + '22',
+                      color: statusColors[status],
+                      fontWeight: 'bold',
+                      marginBottom: '10px',
+                    }}
+                  />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {meeting.title}
+                  </Typography>
+                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <EventIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
+                    {meeting.date}
+                  </Typography>
+                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <AccessTimeIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
+                    {meeting.time}
+                  </Typography>
+                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <RoomIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
+                    {meeting.room}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: 'space-between' }}>
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(meeting.id, viewType === 'special');
+                    }}
+                  >
+                    <DeleteIcon sx={{ color: 'red' }} />
+                  </IconButton>
+                  {viewType === 'special' && meeting.approved === false && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleApprove(meeting.id);
+                      }}
+                    >
+                      Approve
+                    </Button>
+                  )}
+                </CardActions>
+              </StyledCard>
+            </Grid>
+          );
+        })}
+      </Grid>
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={handleClose}
         closeAfterTransition
         BackdropComponent={Backdrop}
-        BackdropProps={{ timeout: 500 }}
+        BackdropProps={{
+          timeout: 500,
+        }}
       >
         <Fade in={open}>
           <Box
@@ -235,20 +342,47 @@ const ScheduledMeetings = () => {
               p: 4,
             }}
           >
+            {/* Ensure selectedMeeting is defined before rendering */}
             {selectedMeeting ? (
               <>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
                   {selectedMeeting.title}
                 </Typography>
-                <Typography variant="body1" sx={{ marginBottom: '5px' }}>
-                  Date: {selectedMeeting.date}
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <EventIcon sx={{ marginRight: '8px' }} />
+                  {selectedMeeting.date}
                 </Typography>
-                <Typography variant="body1" sx={{ marginBottom: '5px' }}>
-                  Time: {selectedMeeting.time}
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <AccessTimeIcon sx={{ marginRight: '8px' }} />
+                  {selectedMeeting.time}
                 </Typography>
-                <Typography variant="body1" sx={{ marginBottom: '5px' }}>
-                  Room: {selectedMeeting.room}
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <RoomIcon sx={{ marginRight: '8px' }} />
+                  {selectedMeeting.room}
                 </Typography>
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <GroupIcon sx={{ marginRight: '8px' }} />
+                  Participants:
+                </Typography>
+                <ul>
+                  {selectedMeeting.participants.map((participant, index) => (
+                    <li key={index}>
+                      {participant.companyName} - {participant.employeeName}
+                    </li>
+                  ))}
+                </ul>
+                {selectedMeeting.specialNote && (
+                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <NotesIcon sx={{ marginRight: '8px' }} />
+                    {selectedMeeting.specialNote}
+                  </Typography>
+                )}
+                {selectedMeeting.refreshment && (
+                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <RefreshIcon sx={{ marginRight: '8px' }} />
+                    Refreshment: {selectedMeeting.refreshment}
+                  </Typography>
+                )}
               </>
             ) : (
               <Typography variant="body1" sx={{ textAlign: 'center' }}>
@@ -258,6 +392,7 @@ const ScheduledMeetings = () => {
           </Box>
         </Fade>
       </Modal>
+
     </Box>
   );
 };
