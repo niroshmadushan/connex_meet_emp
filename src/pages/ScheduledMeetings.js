@@ -180,6 +180,9 @@ const ScheduledMeetings = () => {
     setSelectedMeeting(null);
   };
   const handleDelete = async (id, isSpecial = false) => {
+    const empID = localStorage.getItem('id'); // Retrieve employee ID from local storage
+  
+    // Display Swal prompt to get the cancellation reason
     const result = await Swal.fire({
       title: 'Are you sure you want to cancel this meeting?',
       text: 'Please provide a reason for canceling this meeting:',
@@ -198,11 +201,25 @@ const ScheduledMeetings = () => {
   
     if (result.isConfirmed) {
       try {
+        // API call to cancel the meeting
+        await axios.put(
+          `http://192.168.13.150:3001/cancelstatus/${id}`, // Use booking ID in the URL
+          { empid: empID, reason: result.value }, // Send empid and reason in the request body
+          { withCredentials: true } // Ensure credentials are included
+        );
+  
+        // Update the state to reflect the canceled meeting locally
         if (isSpecial) {
-          setSpecialMeetings(specialMeetings.filter((meeting) => meeting.id !== id));
+          setSpecialMeetings(specialMeetings.map((meeting) => 
+            meeting.id === id ? { ...meeting, status: 'canceled' } : meeting
+          ));
         } else {
-          setNormalMeetings(normalMeetings.filter((meeting) => meeting.id !== id));
+          setNormalMeetings(normalMeetings.map((meeting) => 
+            meeting.id === id ? { ...meeting, status: 'canceled' } : meeting
+          ));
         }
+  
+        // Show success message after cancellation
         Swal.fire('Canceled!', 'The meeting has been canceled.', 'success');
       } catch (error) {
         console.error('Error canceling meeting:', error);
@@ -210,6 +227,7 @@ const ScheduledMeetings = () => {
       }
     }
   };
+  
   
 
   const handleApprove = async (id) => {
