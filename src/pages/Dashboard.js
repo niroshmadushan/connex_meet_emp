@@ -38,10 +38,11 @@ const Dashboard = () => {
       .then((response) => {
         setTotalMeetings(response.data.totalbookings || 0);
       })
+      
       .catch((error) => {
         console.error("Error fetching total meetings:", error);
       });
-
+console.log(totalMeetings);
     // Fetch canceled meetings
     axios.get(`http://192.168.13.150:3001/getcancelbookingcount/${empId}`, { withCredentials: true })
       .then((response) => {
