@@ -138,7 +138,7 @@ const ScheduledMeetings = () => {
             // Check approval status for each special meeting using `checkapprove` API
             const statusResponse = await axios.get(
               `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
-              { empID }, // Send empID in the request body
+              { empid:empID }, // Send empID in the request body
               { withCredentials: true }
             );
     
