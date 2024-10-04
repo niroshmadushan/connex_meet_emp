@@ -219,6 +219,10 @@ const ScheduledMeetings = () => {
       }
     }
   };
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedMeeting(null);
+  };
 
   return (
     <Box sx={{ padding: '20px' }}>
