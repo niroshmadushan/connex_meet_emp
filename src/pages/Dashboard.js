@@ -32,30 +32,30 @@ const Dashboard = () => {
   useEffect(() => {
     // Retrieve empId from local storage
     const empId = localStorage.getItem('id');
-    
+
     // Fetch total meetings
-    axios.get(`http://192.168.13.150:3001/getbookingcount/${empId}`, { withCredentials: true })
+    axios.get(`http://192.168.13.150:3001/gettotalbookingcount/${empId}`, { withCredentials: true })
       .then((response) => {
-        setTotalMeetings(response.data.totalbookings || 0);
+        const total = response.data[0]?.totalbookings || 0;
+        setTotalMeetings(total);
       })
-      
       .catch((error) => {
         console.error("Error fetching total meetings:", error);
       });
-console.log(totalMeetings);
+
     // Fetch canceled meetings
-    axios.get(`http://192.168.13.150:3001/getcancelbookingcount/${empId}`, { withCredentials: true })
+    axios.get(`http://192.168.13.150:3001/getcanselbooking/${empId}`, { withCredentials: true })
       .then((response) => {
-        const canceledCount = response.data.totalcanseldbookings || 0;
-        setCanceledMeetings(canceledCount);
+        const canceled = response.data[0]?.totalcanceldbookings || 0;
+        setCanceledMeetings(canceled);
 
         // Calculate successful meetings
-        setSuccessfulMeetings(totalMeetings - canceledCount);
+        setSuccessfulMeetings((prevTotalMeetings) => prevTotalMeetings - canceled);
       })
       .catch((error) => {
         console.error("Error fetching canceled meetings:", error);
       });
-  }, [totalMeetings]);
+  }, []);
 
   return (
     <Box sx={{ backgroundColor: '#f7f9fc', minHeight: '80vh', padding: '10px', fontFamily: 'Roboto, sans-serif' }}>
