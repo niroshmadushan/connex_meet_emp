@@ -345,7 +345,7 @@ const ScheduledMeetings = () => {
                     <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
                   )}
                   {viewType === 'special' && meeting.status === 'canceled' && (
-                    <Typography sx={{ color: 'red', fontWeight: 'bold' }}>Canceled</Typography>
+                    <Typography sx={{ color: 'red', fontWeight: 'bold' }}>Canceled {meeting.reason}</Typography>
                   )}
                   {/* Show Delete and Approve Buttons based on Meeting Status */}
                   {viewType === 'normal' && status === 'upcoming' && (
