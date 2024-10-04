@@ -28,6 +28,7 @@ import Swal from 'sweetalert2';
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
+// Meeting status colors
 const statusColors = {
   upcoming: 'orange',
   ongoing: 'green',
@@ -37,7 +38,7 @@ const statusColors = {
   empty: 'blue',
 };
 
-// Function to calculate meeting status based on time and date
+// Calculate meeting status based on time and date
 const getMeetingStatus = (meetingDate, meetingTime) => {
   const now = dayjs();
   const startTime = dayjs(`${meetingDate} ${meetingTime.split(' - ')[0]}`);
@@ -48,7 +49,7 @@ const getMeetingStatus = (meetingDate, meetingTime) => {
   return 'ongoing';
 };
 
-// Function to sort meetings based on status and time
+// Sort meetings based on status and time
 const sortMeetings = (meetings) => {
   return meetings.sort((a, b) => {
     const statusOrder = { upcoming: 1, ongoing: 2, finished: 3 };
@@ -94,7 +95,7 @@ const ScheduledMeetings = () => {
   const [specialMeetings, setSpecialMeetings] = useState([]);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [open, setOpen] = useState(false);
-  const [viewType, setViewType] = useState('normal'); // Toggle view state
+  const [viewType, setViewType] = useState('normal');
 
   useEffect(() => {
     const empID = localStorage.getItem('id'); // Get employee ID from local storage
@@ -168,14 +169,23 @@ const ScheduledMeetings = () => {
     fetchSpecialMeetings();
   }, []);
 
-  const handleOpen = (meeting) => {
-    setSelectedMeeting(meeting);
-    setOpen(true);
-  };
+  const handleDelete = async (id, isSpecial = false) => {
+    Swal.fire({
+      title: 'Are you sure you want to delete this meeting?',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      icon: 'warning',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (isSpecial) {
+          setSpecialMeetings(specialMeetings.filter((meeting) => meeting.id !== id));
+        } else {
+          setNormalMeetings(normalMeetings.filter((meeting) => meeting.id !== id));
+        }
 
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedMeeting(null);
+        Swal.fire('Deleted!', 'The meeting has been deleted.', 'success');
+      }
+    });
   };
 
   const handleApprove = async (id) => {
@@ -215,7 +225,8 @@ const ScheduledMeetings = () => {
       <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
         Scheduled Meetings
       </Typography>
-
+      
+      {/* UI, toggle buttons, and rest of the components */}
       {/* Toggle Button for Normal and Special Meetings */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
         <ToggleButtonGroup
@@ -242,7 +253,7 @@ const ScheduledMeetings = () => {
 
           return (
             <Grid item xs={12} md={6} key={meeting.id}>
-              <StyledCard onClick={() => handleOpen(meeting)}>
+              <StyledCard>
                 <CardContent>
                   {viewType === 'special' && (
                     <Box
@@ -288,21 +299,32 @@ const ScheduledMeetings = () => {
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-between' }}>
-                  {viewType === 'special' && meeting.status !== 'approved' && status !== 'finished' ? (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleApprove(meeting.id);
-                      }}
-                    >
-                      Approve
-                    </Button>
+                  {viewType === 'special' &&
+                  meeting.status !== 'approved' &&
+                  ['upcoming', 'ongoing'].includes(status) ? (
+                    <>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleApprove(meeting.id)}
+                      >
+                        Approve
+                      </Button>
+                      <IconButton onClick={() => handleDelete(meeting.id, true)}>
+                        <DeleteIcon sx={{ color: 'red' }} />
+                      </IconButton>
+                    </>
                   ) : (
                     meeting.status === 'approved' && (
                       <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
                     )
+                  )}
+
+                  {/* Show Delete Button for Normal Meetings with "upcoming" Status */}
+                  {viewType === 'normal' && status === 'upcoming' && (
+                    <IconButton onClick={() => handleDelete(meeting.id, false)}>
+                      <DeleteIcon sx={{ color: 'red' }} />
+                    </IconButton>
                   )}
                 </CardActions>
               </StyledCard>
@@ -320,7 +342,19 @@ const ScheduledMeetings = () => {
         BackdropProps={{ timeout: 500 }}
       >
         <Fade in={open}>
-          <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', borderRadius: '12px', boxShadow: 24, p: 4 }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 400,
+              bgcolor: 'background.paper',
+              borderRadius: '12px',
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
             {selectedMeeting ? (
               <>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
