@@ -1,5 +1,6 @@
-import React from 'react';
-import { Box, Typography, Grid, Divider } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Box, Typography, Grid } from '@mui/material';
 import { MeetingRoom, CheckCircle, Cancel, EventAvailable, Info, Book } from '@mui/icons-material';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
@@ -23,10 +24,37 @@ const sliderSettings = {
 };
 
 const Dashboard = () => {
-  // Meeting statistics
-  const totalMeetings = 200;
-  const successfulMeetings = 150;
-  const canceledMeetings = 50;
+  // State variables to hold meeting statistics
+  const [totalMeetings, setTotalMeetings] = useState(0);
+  const [canceledMeetings, setCanceledMeetings] = useState(0);
+  const [successfulMeetings, setSuccessfulMeetings] = useState(0);
+
+  useEffect(() => {
+    // Retrieve empId from local storage
+    const empId = localStorage.getItem('id');
+    
+    // Fetch total meetings
+    axios.get(`http://192.168.13.150:3001/getbookingcount/${empId}`, { withCredentials: true })
+      .then((response) => {
+        setTotalMeetings(response.data.count || 0);
+      })
+      .catch((error) => {
+        console.error("Error fetching total meetings:", error);
+      });
+
+    // Fetch canceled meetings
+    axios.get(`http://192.168.13.150:3001/getcancelbookingcount/${empId}`, { withCredentials: true })
+      .then((response) => {
+        const canceledCount = response.data.count || 0;
+        setCanceledMeetings(canceledCount);
+
+        // Calculate successful meetings
+        setSuccessfulMeetings(totalMeetings - canceledCount);
+      })
+      .catch((error) => {
+        console.error("Error fetching canceled meetings:", error);
+      });
+  }, [totalMeetings]);
 
   return (
     <Box sx={{ backgroundColor: '#f7f9fc', minHeight: '80vh', padding: '10px', fontFamily: 'Roboto, sans-serif' }}>
@@ -55,26 +83,10 @@ const Dashboard = () => {
         }}
       >
         <Slider {...sliderSettings}>
-          <img
-            src={img1}
-            alt="Image 1"
-            style={{ width: '100%', height: '25vh', objectFit: 'cover' }}
-          />
-          <img
-            src={img2}
-            alt="Image 2"
-            style={{ width: '100%', height: '25vh', objectFit: 'cover' }}
-          />
-          <img
-            src={img3}
-            alt="Image 3"
-            style={{ width: '100%', height: '25vh', objectFit: 'cover' }}
-          />
-          <img
-            src={img4}
-            alt="Image 4"
-            style={{ width: '100%', height: '25vh', objectFit: 'cover' }}
-          />
+          <img src={img1} alt="Image 1" style={{ width: '100%', height: '25vh', objectFit: 'cover' }} />
+          <img src={img2} alt="Image 2" style={{ width: '100%', height: '25vh', objectFit: 'cover' }} />
+          <img src={img3} alt="Image 3" style={{ width: '100%', height: '25vh', objectFit: 'cover' }} />
+          <img src={img4} alt="Image 4" style={{ width: '100%', height: '25vh', objectFit: 'cover' }} />
         </Slider>
       </Box>
 
@@ -101,14 +113,12 @@ const Dashboard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'transform 0.3s',
-              '&:hover': { transform: 'translateY(-4px)'},
+              '&:hover': { transform: 'translateY(-4px)' },
             }}
           >
             <CheckCircle sx={{ marginRight: '4px', fontSize: '20px' }} />
             <Box>
-              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
-                Meetings
-              </Typography>
+              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Meetings</Typography>
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 <CountUp start={0} end={totalMeetings} duration={2} />
               </Typography>
@@ -128,14 +138,12 @@ const Dashboard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'transform 0.3s',
-              '&:hover': { transform: 'translateY(-4px)'},
+              '&:hover': { transform: 'translateY(-4px)' },
             }}
           >
             <MeetingRoom sx={{ marginRight: '4px', fontSize: '20px' }} />
             <Box>
-              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
-                Successful
-              </Typography>
+              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Successful</Typography>
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 <CountUp start={0} end={successfulMeetings} duration={2} />
               </Typography>
@@ -160,9 +168,7 @@ const Dashboard = () => {
           >
             <Cancel sx={{ marginRight: '4px', fontSize: '20px' }} />
             <Box>
-              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
-                Canceled
-              </Typography>
+              <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 'bold' }}>Canceled</Typography>
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 <CountUp start={0} end={canceledMeetings} duration={2} />
               </Typography>
@@ -182,9 +188,7 @@ const Dashboard = () => {
           marginBottom: '15px',
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '5px' }}>
-          What You Can Do In This App
-        </Typography>
+        <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '5px' }}>What You Can Do In This App</Typography>
         <Box sx={{ textAlign: 'left' }}>
           <Typography variant="body2" sx={{ marginBottom: '8px' }}>
             <EventAvailable sx={{ fontSize: '16px', color: '#2196f3' }} /> Book and manage meetings.
