@@ -215,7 +215,7 @@ const ScheduledMeetings = () => {
         // Send PUT request to update meeting status with `empID` in the body
         await axios.put(
           `http://192.168.13.150:3001/updatemeetingstatus/${id}`,
-          { empiid:empID }, // Send `empID` in the request body
+          { empid:empID }, // Send `empID` in the request body
           {
             withCredentials: true,
           }
