@@ -28,7 +28,6 @@ import Swal from 'sweetalert2';
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
-// Define colors for different meeting statuses
 const statusColors = {
   upcoming: 'orange',
   ongoing: 'green',
@@ -38,7 +37,7 @@ const statusColors = {
   empty: 'blue',
 };
 
-// Function to calculate meeting status based on date and time
+// Function to calculate meeting status based on time and date
 const getMeetingStatus = (meetingDate, meetingTime) => {
   const now = dayjs();
   const startTime = dayjs(`${meetingDate} ${meetingTime.split(' - ')[0]}`);
@@ -73,7 +72,7 @@ const sortMeetings = (meetings) => {
   });
 };
 
-// Styled Card component
+// Styled Card component for a cleaner UI
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: '12px',
   boxShadow: '0 6px 15px rgba(0,0,0,0.15)',
@@ -89,7 +88,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 // Blinking animation for the status dot
 const BlinkingDot = styled(CircleIcon)(({ color }) => ({
   '@keyframes blink': {
-    '0%': { opacity: 1 },
+    '0%': { opacity: 1},
     '50%': { opacity: 0.3 },
     '100%': { opacity: 1 },
   },
@@ -102,10 +101,10 @@ const ScheduledMeetings = () => {
   const [specialMeetings, setSpecialMeetings] = useState([]);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [open, setOpen] = useState(false);
-  const [viewType, setViewType] = useState('normal');
+  const [viewType, setViewType] = useState('normal'); // Toggle view state
 
   useEffect(() => {
-    const empID = localStorage.getItem('id');
+    const empID = localStorage.getItem('id'); // Get employee ID from local storage
     if (!empID) return;
 
     const fetchMeetings = async () => {
@@ -213,6 +212,38 @@ const ScheduledMeetings = () => {
     }
   };
 
+  const handleDelete = async (id, isSpecial = false) => {
+    const result = await Swal.fire({
+      title: 'Are you sure you want to cancel this meeting?',
+      text: 'Please provide a reason for canceling this meeting:',
+      input: 'text',
+      inputPlaceholder: 'Enter the reason for cancelation',
+      showCancelButton: true,
+      confirmButtonText: 'Cancel Meeting',
+      preConfirm: (reason) => {
+        if (!reason) {
+          Swal.showValidationMessage('You need to enter a reason!');
+        } else {
+          return reason;
+        }
+      },
+    });
+
+    if (result.isConfirmed) {
+      try {
+        if (isSpecial) {
+          setSpecialMeetings(specialMeetings.filter((meeting) => meeting.id !== id));
+        } else {
+          setNormalMeetings(normalMeetings.filter((meeting) => meeting.id !== id));
+        }
+        Swal.fire('Canceled!', 'The meeting has been canceled.', 'success');
+      } catch (error) {
+        console.error('Error canceling meeting:', error);
+        Swal.fire('Error!', 'There was an issue canceling the meeting.', 'error');
+      }
+    }
+  };
+
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
@@ -291,8 +322,29 @@ const ScheduledMeetings = () => {
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-between' }}>
+                  {/* Show Delete Button Logic */}
+                  {viewType === 'normal' && status === 'upcoming' && (
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(meeting.id, false);
+                      }}
+                    >
+                      <DeleteIcon sx={{ color: 'red' }} />
+                    </IconButton>
+                  )}
+                  {viewType === 'special' && ['upcoming', 'ongoing'].includes(status) && meeting.status !== 'approved' && meeting.status !== 'canceled' && (
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(meeting.id, true);
+                      }}
+                    >
+                      <DeleteIcon sx={{ color: 'red' }} />
+                    </IconButton>
+                  )}
                   {/* Show Approve Button for Special Meetings */}
-                  {viewType === 'special' && meeting.status !== 'approved' && status !== 'finished' ? (
+                  {viewType === 'special' && meeting.status !== 'approved' && status !== 'finished' && (
                     <Button
                       variant="contained"
                       color="primary"
@@ -303,10 +355,6 @@ const ScheduledMeetings = () => {
                     >
                       Approve
                     </Button>
-                  ) : (
-                    meeting.status === 'approved' && (
-                      <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
-                    )
                   )}
                 </CardActions>
               </StyledCard>
@@ -377,3 +425,4 @@ const ScheduledMeetings = () => {
 };
 
 export default ScheduledMeetings;
+
