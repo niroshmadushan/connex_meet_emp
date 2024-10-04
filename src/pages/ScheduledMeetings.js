@@ -115,7 +115,7 @@ const ScheduledMeetings = () => {
         const formattedMeetings = await Promise.all(
           response.data.map(async (meeting) => {
             const statusResponse = await axios.get(
-              `http://192.168.13.150:3001/checkstatusnormametting/${meeting.bookingDetails.id}`,
+              `http://192.168.13.150:3001/getdeletednormalmeet/${meeting.bookingDetails.id}`,
               { withCredentials: true }
             );
             return {
