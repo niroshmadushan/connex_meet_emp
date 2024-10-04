@@ -36,7 +36,7 @@ const Dashboard = () => {
     // Fetch total meetings
     axios.get(`http://192.168.13.150:3001/getbookingcount/${empId}`, { withCredentials: true })
       .then((response) => {
-        setTotalMeetings(response.data.count || 0);
+        setTotalMeetings(response.data.totalbookings || 0);
       })
       .catch((error) => {
         console.error("Error fetching total meetings:", error);
@@ -45,7 +45,7 @@ const Dashboard = () => {
     // Fetch canceled meetings
     axios.get(`http://192.168.13.150:3001/getcancelbookingcount/${empId}`, { withCredentials: true })
       .then((response) => {
-        const canceledCount = response.data.count || 0;
+        const canceledCount = response.data.totalcanseldbookings || 0;
         setCanceledMeetings(canceledCount);
 
         // Calculate successful meetings
