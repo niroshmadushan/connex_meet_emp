@@ -134,7 +134,7 @@ const ScheduledMeetings = () => {
         // Step 2: Iterate through each meeting and call the `checkapprove` API to get approval status
         const formattedSpecialMeetings = await Promise.all(
           specialResponse.data.map(async (meeting) => {
-            const statusResponse = await axios.post(
+            const statusResponse = await axios.get(
               `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
               { empid: empID }, // Send empID in the request body
               { withCredentials: true }
