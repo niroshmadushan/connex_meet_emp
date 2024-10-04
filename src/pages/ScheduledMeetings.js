@@ -203,7 +203,6 @@ const ScheduledMeetings = () => {
     );
   };
 
-
   const countActiveMeetings = (meetings) => {
     return meetings.filter(
       (meeting) => ['upcoming', 'ongoing'].includes(getMeetingStatus(meeting.date, meeting.time))
@@ -217,7 +216,6 @@ const ScheduledMeetings = () => {
       </Typography>
 
       {/* Toggle Button for Normal and Special Meetings */}
-      {/* Toggle Button for Normal and Special Meetings */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
         <ToggleButtonGroup
           value={viewType}
@@ -227,18 +225,14 @@ const ScheduledMeetings = () => {
           }}
           aria-label="meeting type"
         >
-          {/* Normal Meetings Button: Locked when `viewType` is 'normal' */}
           <ToggleButton value="normal" disabled={viewType === 'normal'}>
             Normal Meetings ({countActiveMeetings(normalMeetings)})
           </ToggleButton>
-
-          {/* Special Meetings Button: Locked when `viewType` is 'special' */}
           <ToggleButton value="special" disabled={viewType === 'special'}>
             Special Meetings ({countActiveMeetings(specialMeetings)})
           </ToggleButton>
         </ToggleButtonGroup>
       </Box>
-
 
       {/* Show Normal or Special Meetings Based on Toggle */}
       <Grid container spacing={3}>
@@ -293,14 +287,21 @@ const ScheduledMeetings = () => {
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-between' }}>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(meeting.id, viewType === 'special');
-                    }}
-                  >
-                    <DeleteIcon sx={{ color: 'red' }} />
-                  </IconButton>
+                  {/* Show Delete Button for Special Meetings or Normal Meetings with "upcoming" Status */}
+                  {viewType === 'special' || status === 'upcoming' ? (
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(meeting.id, viewType === 'special');
+                      }}
+                    >
+                      <DeleteIcon sx={{ color: 'red' }} />
+                    </IconButton>
+                  ) : (
+                    <span />
+                  )}
+
+                  {/* Show Approve Button for Special Meetings if Not Approved */}
                   {viewType === 'special' && meeting.approved === false && (
                     <Button
                       variant="contained"
@@ -392,7 +393,6 @@ const ScheduledMeetings = () => {
           </Box>
         </Fade>
       </Modal>
-
     </Box>
   );
 };
