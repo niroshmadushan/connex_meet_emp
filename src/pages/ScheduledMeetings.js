@@ -126,46 +126,54 @@ const ScheduledMeetings = () => {
     };
 
     const fetchSpecialMeetings = async () => {
-      const empID = localStorage.getItem('id');
+      const empID = localStorage.getItem('id'); // Retrieve empID from local storage
       try {
+        // Step 1: Fetch special meetings based on the employee ID
         const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
-          withCredentials: true,
+          withCredentials: true, // Include credentials for authentication
         });
     
-        // Use `Promise.all` to wait for all status checks to complete
+        // Step 2: Iterate through each meeting and call the `checkapprove` API to get approval status
         const formattedSpecialMeetings = await Promise.all(
           specialResponse.data.map(async (meeting) => {
-            // Check approval status for each special meeting using `checkapprove` API
-            const statusResponse = await axios.get(
-              `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
-              { empid:empID }, // Send empID in the request body
-              { withCredentials: true }
-            );
+            try {
+              // Check approval status for each special meeting using `checkapprove` API with a POST request
+              const statusResponse = await axios.post(
+                `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
+                { empid: empID }, // Send empID in the request body as { empid: empID }
+                { withCredentials: true } // Ensure credentials are sent along with the request
+              );
     
-            return {
-              id: meeting.bookingDetails.id,
-              title: meeting.bookingDetails.title,
-              Bookedby: meeting.bookingDetails.bookedBy,
-              date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
-              time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
-              room: `Room ${meeting.bookingDetails.place_id}`,
-              participants: meeting.participants.map((participant) => ({
-                companyName: participant.company_name || 'Unknown Company',
-                employeeName: participant.full_name || 'Unknown Employee',
-              })),
-              specialNote: meeting.bookingDetails.note,
-              refreshment: meeting.bookingDetails.refreshment,
-              status: statusResponse.data.status, // Check and store approval status
-            };
+              // Step 3: Construct and return the formatted meeting object with the approval status
+              return {
+                id: meeting.bookingDetails.id,
+                title: meeting.bookingDetails.title,
+                Bookedby: meeting.bookingDetails.bookedBy,
+                date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
+                room: `Room ${meeting.bookingDetails.place_id}`,
+                participants: meeting.participants.map((participant) => ({
+                  companyName: participant.company_name || 'Unknown Company',
+                  employeeName: participant.full_name || 'Unknown Employee',
+                })),
+                specialNote: meeting.bookingDetails.note,
+                refreshment: meeting.bookingDetails.refreshment,
+                status: statusResponse.data.status, // Use the status from the `checkapprove` API
+              };
+            } catch (error) {
+              console.error(`Error fetching status for meeting ID ${meeting.bookingDetails.id}:`, error);
+              return { ...meeting, status: 'error' }; // Return meeting with an error status if the check fails
+            }
           })
         );
     
-        // Set the state with the formatted special meetings data
+        // Step 4: Update the state with the formatted special meetings data
         setSpecialMeetings(formattedSpecialMeetings);
       } catch (error) {
         console.error('Error fetching special meetings:', error);
       }
     };
+    
     
 
     fetchMeetings();
