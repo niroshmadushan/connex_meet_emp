@@ -126,6 +126,7 @@ const ScheduledMeetings = () => {
     };
 
     const fetchSpecialMeetings = async () => {
+      const emp = localStorage.getItem('id');
       try {
         const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
           withCredentials: true,
@@ -136,7 +137,7 @@ const ScheduledMeetings = () => {
           specialResponse.data.map(async (meeting) => {
             const statusResponse = await axios.get(
               `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
-              { empid: empID }, // Send empID in the request body
+              { empid: emp }, // Send empID in the request body
               { withCredentials: true }
             );
 
