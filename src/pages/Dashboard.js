@@ -34,7 +34,7 @@ const Dashboard = () => {
     const empId = localStorage.getItem('id');
 
     // Fetch total meetings
-    axios.get(`http://192.168.13.150:3001/gettotalbookingcount/${empId}`, { withCredentials: true })
+    axios.get(`http://192.168.13.150:3001/getbookingcount/${empId}`, { withCredentials: true })
       .then((response) => {
         const total = response.data[0]?.totalbookings || 0;
         setTotalMeetings(total);
