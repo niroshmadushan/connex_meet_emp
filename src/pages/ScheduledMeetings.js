@@ -167,6 +167,16 @@ const ScheduledMeetings = () => {
     fetchSpecialMeetings();
   }, []);
 
+  const handleOpen = (meeting) => {
+    setSelectedMeeting(meeting);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedMeeting(null);
+  };
+
   const handleApprove = async (id) => {
     const empID = localStorage.getItem('id'); // Retrieve employee ID
     const result = await Swal.fire({
