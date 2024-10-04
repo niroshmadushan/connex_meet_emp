@@ -117,6 +117,7 @@ const ScheduledMeetings = () => {
           })),
           specialNote: meeting.bookingDetails.note,
           refreshment: meeting.bookingDetails.refreshment,
+          status: meeting.bookingDetails.status, // Track meeting status for Special Meetings
         }));
 
         setNormalMeetings(formattedMeetings);
@@ -144,7 +145,8 @@ const ScheduledMeetings = () => {
           })),
           specialNote: meeting.bookingDetails.note,
           refreshment: meeting.bookingDetails.refreshment,
-          approved: false,
+          approved: meeting.bookingDetails.status === 2, // Use status field for approval check
+          status: meeting.bookingDetails.status, // Track meeting status for Special Meetings
         }));
 
         setSpecialMeetings(formattedSpecialMeetings);
@@ -195,12 +197,36 @@ const ScheduledMeetings = () => {
     });
   };
 
-  const handleApprove = (id) => {
-    setSpecialMeetings(
-      specialMeetings.map((meeting) =>
-        meeting.id === id ? { ...meeting, approved: true } : meeting
-      )
-    );
+  const handleApprove = async (id) => {
+    // Show confirmation alert before approval
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to approve this meeting?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, approve it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        // Send PUT request to update meeting status
+        await axios.put(`http://192.168.13.150:3001/updatemeetingstatus/${id}`, null, {
+          withCredentials: true,
+        });
+
+        // Update meeting status locally after successful approval
+        setSpecialMeetings(
+          specialMeetings.map((meeting) =>
+            meeting.id === id ? { ...meeting, approved: true, status: 2 } : meeting
+          )
+        );
+
+        Swal.fire('Approved!', 'The meeting has been approved.', 'success');
+      } catch (error) {
+        console.error('Error approving meeting:', error);
+        Swal.fire('Error!', 'There was an issue approving the meeting.', 'error');
+      }
+    }
   };
 
   const countActiveMeetings = (meetings) => {
@@ -311,7 +337,7 @@ const ScheduledMeetings = () => {
                       )}
 
                   {/* Show Approve Button for Special Meetings if Not Approved and Not "Finished" */}
-                  {viewType === 'special' && meeting.approved === false && status !== 'finished' && (
+                  {viewType === 'special' && meeting.status !== 2 && status !== 'finished' ? (
                     <Button
                       variant="contained"
                       color="primary"
@@ -322,6 +348,10 @@ const ScheduledMeetings = () => {
                     >
                       Approve
                     </Button>
+                  ) : (
+                    meeting.status === 2 && (
+                      <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
+                    )
                   )}
                 </CardActions>
               </StyledCard>
