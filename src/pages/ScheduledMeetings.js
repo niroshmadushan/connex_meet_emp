@@ -287,22 +287,31 @@ const ScheduledMeetings = () => {
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-between' }}>
-                  {/* Show Delete Button for Special Meetings or Normal Meetings with "upcoming" Status */}
-                  {viewType === 'special' || status === 'upcoming' ? (
-                    <IconButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(meeting.id, viewType === 'special');
-                      }}
-                    >
-                      <DeleteIcon sx={{ color: 'red' }} />
-                    </IconButton>
-                  ) : (
-                    <span />
-                  )}
+                  {/* Show Delete Button for Special or Normal Meetings with "upcoming" or "ongoing" Status */}
+                  {viewType === 'special'
+                    ? ['upcoming', 'ongoing'].includes(status) && (
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(meeting.id, viewType === 'special');
+                          }}
+                        >
+                          <DeleteIcon sx={{ color: 'red' }} />
+                        </IconButton>
+                      )
+                    : status === 'upcoming' && (
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(meeting.id, viewType === 'special');
+                          }}
+                        >
+                          <DeleteIcon sx={{ color: 'red' }} />
+                        </IconButton>
+                      )}
 
-                  {/* Show Approve Button for Special Meetings if Not Approved */}
-                  {viewType === 'special' && meeting.approved === false && (
+                  {/* Show Approve Button for Special Meetings if Not Approved and Not "Finished" */}
+                  {viewType === 'special' && meeting.approved === false && status !== 'finished' && (
                     <Button
                       variant="contained"
                       color="primary"
