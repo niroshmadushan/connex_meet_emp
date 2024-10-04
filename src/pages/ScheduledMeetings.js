@@ -37,12 +37,6 @@ const statusColors = {
 // Function to calculate meeting status
 const getMeetingStatus = (meetingDate, meetingTime) => {
   const now = dayjs();
-
-  if (!meetingTime || typeof meetingTime !== 'string' || !meetingTime.includes(' - ')) {
-    console.warn(`Invalid meeting time: "${meetingTime}" for date: "${meetingDate}"`);
-    return 'unknown';
-  }
-
   const startTime = dayjs(`${meetingDate} ${meetingTime.split(' - ')[0]}`);
   const endTime = dayjs(`${meetingDate} ${meetingTime.split(' - ')[1]}`);
 
@@ -51,6 +45,7 @@ const getMeetingStatus = (meetingDate, meetingTime) => {
   return 'ongoing';
 };
 
+// Function to sort meetings based on status and time
 const sortMeetings = (meetings) => {
   return meetings.sort((a, b) => {
     const statusOrder = { upcoming: 1, ongoing: 2, finished: 3 };
@@ -59,10 +54,6 @@ const sortMeetings = (meetings) => {
 
     if (statusOrder[statusA] !== statusOrder[statusB]) {
       return statusOrder[statusA] - statusOrder[statusB];
-    }
-
-    if (!a.time || !a.time.includes(' - ') || !b.time || !b.time.includes(' - ')) {
-      return 0; // Treat meetings with invalid times as equal
     }
 
     const startTimeA = dayjs(`${a.date} ${a.time.split(' - ')[0]}`);
@@ -135,69 +126,46 @@ const ScheduledMeetings = () => {
     };
 
     const fetchSpecialMeetings = async () => {
-      const empID = localStorage.getItem('id'); // Retrieve empID from local storage
       try {
-        // Step 1: Fetch special meetings based on the employee ID
         const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
-          withCredentials: true, // Include credentials for authentication
+          withCredentials: true,
         });
-    
-        // Step 2: Iterate through each meeting and call the `checkapprove` API to get approval status
+
         const formattedSpecialMeetings = await Promise.all(
           specialResponse.data.map(async (meeting) => {
-            try {
-              // Check approval status for each special meeting using `checkapprove` API with a POST request
-              const statusResponse = await axios.post(
-                `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
-                { empid: empID }, // Send empID in the request body as { empid: empID }
-                { withCredentials: true } // Ensure credentials are sent along with the request
-              );
-    
-              // Step 3: Construct and return the formatted meeting object with the approval status
-              return {
-                id: meeting.bookingDetails.id,
-                title: meeting.bookingDetails.title,
-                Bookedby: meeting.bookingDetails.bookedBy,
-                date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
-                time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
-                room: `Room ${meeting.bookingDetails.place_id}`,
-                participants: meeting.participants.map((participant) => ({
-                  companyName: participant.company_name || 'Unknown Company',
-                  employeeName: participant.full_name || 'Unknown Employee',
-                })),
-                specialNote: meeting.bookingDetails.note,
-                refreshment: meeting.bookingDetails.refreshment,
-                status: statusResponse.data.status, // Use the status from the `checkapprove` API
-              };
-            } catch (error) {
-              console.error(`Error fetching status for meeting ID ${meeting.bookingDetails.id}:`, error);
-              return { ...meeting, status: 'error' }; // Return meeting with an error status if the check fails
-            }
+            // Check approval status for each special meeting using `checkapprove` API
+            const statusResponse = await axios.get(
+              `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
+              { withCredentials: true }
+            );
+
+            return {
+              id: meeting.bookingDetails.id,
+              title: meeting.bookingDetails.title,
+              Bookedby: meeting.bookingDetails.bookedBy,
+              date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+              time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
+              room: `Room ${meeting.bookingDetails.place_id}`,
+              participants: meeting.participants.map((participant) => ({
+                companyName: participant.company_name || 'Unknown Company',
+                employeeName: participant.full_name || 'Unknown Employee',
+              })),
+              specialNote: meeting.bookingDetails.note,
+              refreshment: meeting.bookingDetails.refreshment,
+              status: statusResponse.data.status, // Check and store approval status
+            };
           })
         );
-    
-        // Step 4: Update the state with the formatted special meetings data
+
         setSpecialMeetings(formattedSpecialMeetings);
       } catch (error) {
         console.error('Error fetching special meetings:', error);
       }
     };
-    
-    
 
     fetchMeetings();
     fetchSpecialMeetings();
   }, []);
-
-  const handleOpen = (meeting) => {
-    setSelectedMeeting(meeting);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedMeeting(null);
-  };
 
   const handleApprove = async (id) => {
     const empID = localStorage.getItem('id'); // Retrieve employee ID
