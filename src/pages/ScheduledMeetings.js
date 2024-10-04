@@ -103,6 +103,7 @@ const ScheduledMeetings = () => {
   const [open, setOpen] = useState(false);
   const [viewType, setViewType] = useState('normal'); // Toggle view state
 
+  // Fetch meetings data from the backend
   useEffect(() => {
     const empID = localStorage.getItem('id');
     if (!empID) return;
@@ -112,19 +113,28 @@ const ScheduledMeetings = () => {
         const response = await axios.get(`http://192.168.13.150:3001/get-schedule-meeting/${empID}`, {
           withCredentials: true,
         });
-        const formattedMeetings = response.data.map((meeting) => ({
-          id: meeting.bookingDetails.id,
-          title: meeting.bookingDetails.title,
-          date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
-          time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
-          room: `Room ${meeting.bookingDetails.place_id}`,
-          participants: meeting.participants.map((participant) => ({
-            companyName: participant.company_name || 'Unknown Company',
-            employeeName: participant.full_name || 'Unknown Employee',
-          })),
-          specialNote: meeting.bookingDetails.note,
-          refreshment: meeting.bookingDetails.refreshment,
-        }));
+        const formattedMeetings = await Promise.all(
+          response.data.map(async (meeting) => {
+            const statusResponse = await axios.get(
+              `http://192.168.13.150:3001/checkstatusnormametting/${meeting.bookingDetails.id}`,
+              { withCredentials: true }
+            );
+            return {
+              id: meeting.bookingDetails.id,
+              title: meeting.bookingDetails.title,
+              date: dayjs(meeting.bookingDetails.date, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+              time: `${meeting.bookingDetails.start_time} - ${meeting.bookingDetails.end_time}`,
+              room: `Room ${meeting.bookingDetails.place_id}`,
+              participants: meeting.participants.map((participant) => ({
+                companyName: participant.company_name || 'Unknown Company',
+                employeeName: participant.full_name || 'Unknown Employee',
+              })),
+              specialNote: meeting.bookingDetails.note,
+              refreshment: meeting.bookingDetails.refreshment,
+              status: statusResponse.data.status,
+            };
+          })
+        );
         setNormalMeetings(formattedMeetings);
       } catch (error) {
         console.error('Error fetching meetings:', error);
@@ -179,12 +189,11 @@ const ScheduledMeetings = () => {
     setOpen(false);
     setSelectedMeeting(null);
   };
-  const handleDelete = async (id, isSpecial = false) => {
-    const empID = localStorage.getItem('id'); // Retrieve employee ID from local storage
-  
-    // Display Swal prompt to get the cancellation reason
+
+  const handleDeleteNormal = async (id) => {
+    const empID = localStorage.getItem('id');
     const result = await Swal.fire({
-      title: 'Are you sure you want to cancel this meeting?',
+      title: 'Are you sure you want to cancel this normal meeting?',
       text: 'Please provide a reason for canceling this meeting:',
       input: 'text',
       inputPlaceholder: 'Enter the reason for cancelation',
@@ -198,66 +207,48 @@ const ScheduledMeetings = () => {
         }
       },
     });
-  
+
     if (result.isConfirmed) {
       try {
-        // API call to cancel the meeting
         await axios.put(
-          `http://192.168.13.150:3001/cancelstatus/${id}`, // Use booking ID in the URL
-          { empid: empID, reason: result.value }, // Send empid and reason in the request body
-          { withCredentials: true } // Ensure credentials are included
+          `http://192.168.13.150:3001/cancelstatus/${id}`,
+          { empid: empID, reason: result.value },
+          { withCredentials: true }
         );
-  
-        // Update the state to reflect the canceled meeting locally
-        if (isSpecial) {
-          setSpecialMeetings(specialMeetings.map((meeting) => 
-            meeting.id === id ? { ...meeting, status: 'canceled' } : meeting
-          ));
-        } else {
-          setNormalMeetings(normalMeetings.map((meeting) => 
-            meeting.id === id ? { ...meeting, status: 'canceled' } : meeting
-          ));
-        }
-  
-        // Show success message after cancellation
-        Swal.fire('Canceled!', 'The meeting has been canceled.', 'success');
+        setNormalMeetings(normalMeetings.map((meeting) => (meeting.id === id ? { ...meeting, status: 'canceled' } : meeting)));
+        Swal.fire('Canceled!', 'The normal meeting has been canceled.', 'success');
       } catch (error) {
         console.error('Error canceling meeting:', error);
         Swal.fire('Error!', 'There was an issue canceling the meeting.', 'error');
       }
     }
   };
-  
-  
 
-  const handleApprove = async (id) => {
+  const handleDeleteSpecial = async (id) => {
     const empID = localStorage.getItem('id');
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to approve this meeting?',
-      icon: 'warning',
+      title: 'Are you sure you want to cancel this special meeting?',
+      input: 'text',
+      inputPlaceholder: 'Enter the reason for cancellation',
       showCancelButton: true,
-      confirmButtonText: 'Yes, approve it!',
+      confirmButtonText: 'Cancel Meeting',
+      preConfirm: (reason) => {
+        if (!reason) {
+          Swal.showValidationMessage('You need to enter a reason!');
+        } else {
+          return reason;
+        }
+      },
     });
 
     if (result.isConfirmed) {
       try {
-        await axios.put(
-          `http://192.168.13.150:3001/updatemeetingstatus/${id}`,
-          { empid: empID },
-          { withCredentials: true }
-        );
-
-        setSpecialMeetings(
-          specialMeetings.map((meeting) =>
-            meeting.id === id ? { ...meeting, status: 'approved' } : meeting
-          )
-        );
-
-        Swal.fire('Approved!', 'The meeting has been approved.', 'success');
+        await axios.put(`http://192.168.13.150:3001/cancelstatus/${id}`, { empid: empID, reason: result.value }, { withCredentials: true });
+        setSpecialMeetings(specialMeetings.map((meeting) => (meeting.id === id ? { ...meeting, status: 'canceled' } : meeting)));
+        Swal.fire('Canceled!', 'The special meeting has been canceled.', 'success');
       } catch (error) {
-        console.error('Error approving meeting:', error);
-        Swal.fire('Error!', 'There was an issue approving the meeting.', 'error');
+        console.error('Error canceling meeting:', error);
+        Swal.fire('Error!', 'There was an issue canceling the meeting.', 'error');
       }
     }
   };
@@ -345,7 +336,7 @@ const ScheduledMeetings = () => {
                     <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
                   )}
                   {viewType === 'special' && meeting.status === 'canceled' && (
-                    <Typography sx={{ color: 'red', fontWeight: 'bold' }}>Canceled {meeting.reason}</Typography>
+                    <Typography sx={{ color: 'red', fontWeight: 'bold' }}>Canceled </Typography>
                   )}
                   {/* Show Delete and Approve Buttons based on Meeting Status */}
                   {viewType === 'normal' && status === 'upcoming' && (
