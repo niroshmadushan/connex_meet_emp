@@ -198,6 +198,9 @@ const ScheduledMeetings = () => {
   };
 
   const handleApprove = async (id) => {
+    // Retrieve employee ID from local storage
+    const empID = localStorage.getItem('id');
+  
     // Show confirmation alert before approval
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -206,21 +209,25 @@ const ScheduledMeetings = () => {
       showCancelButton: true,
       confirmButtonText: 'Yes, approve it!',
     });
-
+  
     if (result.isConfirmed) {
       try {
-        // Send PUT request to update meeting status
-        await axios.put(`http://192.168.13.150:3001/updatemeetingstatus/${id}`, null, {
-          withCredentials: true,
-        });
-
+        // Send PUT request to update meeting status with `empID` in the body
+        await axios.put(
+          `http://192.168.13.150:3001/updatemeetingstatus/${id}`,
+          { empiid:empID }, // Send `empID` in the request body
+          {
+            withCredentials: true,
+          }
+        );
+  
         // Update meeting status locally after successful approval
         setSpecialMeetings(
           specialMeetings.map((meeting) =>
             meeting.id === id ? { ...meeting, approved: true, status: 2 } : meeting
           )
         );
-
+  
         Swal.fire('Approved!', 'The meeting has been approved.', 'success');
       } catch (error) {
         console.error('Error approving meeting:', error);
@@ -228,6 +235,7 @@ const ScheduledMeetings = () => {
       }
     }
   };
+  
 
   const countActiveMeetings = (meetings) => {
     return meetings.filter(
