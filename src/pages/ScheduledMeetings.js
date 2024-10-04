@@ -131,15 +131,17 @@ const ScheduledMeetings = () => {
         const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
           withCredentials: true,
         });
-
+    
+        // Use `Promise.all` to wait for all status checks to complete
         const formattedSpecialMeetings = await Promise.all(
           specialResponse.data.map(async (meeting) => {
             // Check approval status for each special meeting using `checkapprove` API
-            const statusResponse = await axios.get(
-              `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,{ empid:empID },
+            const statusResponse = await axios.post(
+              `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
+              { empID }, // Send empID in the request body
               { withCredentials: true }
             );
-
+    
             return {
               id: meeting.bookingDetails.id,
               title: meeting.bookingDetails.title,
@@ -157,12 +159,14 @@ const ScheduledMeetings = () => {
             };
           })
         );
-
+    
+        // Set the state with the formatted special meetings data
         setSpecialMeetings(formattedSpecialMeetings);
       } catch (error) {
         console.error('Error fetching special meetings:', error);
       }
     };
+    
 
     fetchMeetings();
     fetchSpecialMeetings();
