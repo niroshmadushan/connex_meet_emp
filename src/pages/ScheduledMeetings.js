@@ -443,7 +443,6 @@ const ScheduledMeetings = () => {
         })}
       </Grid>
 
-
       {/* Meeting Details Modal */}
       <Modal
         open={open}
