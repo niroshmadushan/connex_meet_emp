@@ -484,7 +484,7 @@ const ScheduledMeetings = () => {
                 <ul>
                   {selectedMeeting.participants.map((participant, index) => (
                     <li key={index}>
-                      {participant.employeeName}-{participant.empstatus}
+                      {participant.companyName} - {participant.employeeName} - {participant.empstatus}
                     </li>
 
                   ))}
