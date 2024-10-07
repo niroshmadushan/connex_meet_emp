@@ -338,11 +338,21 @@ const ScheduledMeetings = () => {
 
                   {/* Meeting Status Indicator */}
                   <Chip
-                    icon={<BlinkingDot color={statusColors[status]} />}
-                    label={status.charAt(0).toUpperCase() + status.slice(1)}
+                    icon={<BlinkingDot color={statusColors[meeting.status] || statusColors[status]} />}
+                    label={
+                      meeting.status === 'canceled'
+                        ? 'Canceled'
+                        : status.charAt(0).toUpperCase() + status.slice(1)
+                    }
                     sx={{
-                      backgroundColor: statusColors[status] + '22',
-                      color: statusColors[status],
+                      backgroundColor:
+                        meeting.status === 'canceled'
+                          ? statusColors['canceled'] + '22'
+                          : statusColors[status] + '22',
+                      color:
+                        meeting.status === 'canceled'
+                          ? statusColors['canceled']
+                          : statusColors[status],
                       fontWeight: 'bold',
                       marginBottom: '10px',
                     }}
@@ -365,9 +375,16 @@ const ScheduledMeetings = () => {
                     {meeting.room}
                   </Typography>
                 </CardContent>
-                
+
                 {/* Action Buttons: Approve, Delete or Canceled Status */}
                 <CardActions sx={{ justifyContent: 'space-between' }}>
+                  {/* Show "Canceled" Text for Canceled Normal Meetings */}
+                  {viewType === 'normal' && meeting.status === 'canceled' && (
+                    <Typography variant="body1" sx={{ color: 'red', fontWeight: 'bold' }}>
+                      This meeting has been canceled
+                    </Typography>
+                  )}
+
                   {/* Show Approved/Canceled Text for Special Meetings */}
                   {viewType === 'special' && meeting.status === 'approved' && (
                     <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
@@ -376,7 +393,7 @@ const ScheduledMeetings = () => {
                     <Typography sx={{ color: 'red', fontWeight: 'bold' }}>Canceled</Typography>
                   )}
 
-                  {/* Show Delete and Approve Buttons based on Meeting Status */}
+                  {/* Show Delete Button for Upcoming Normal Meetings if Not Canceled */}
                   {viewType === 'normal' && status === 'upcoming' && meeting.status !== 'canceled' && (
                     <IconButton
                       onClick={(e) => {
@@ -388,6 +405,7 @@ const ScheduledMeetings = () => {
                     </IconButton>
                   )}
 
+                  {/* Show Delete Button for Special Meetings that are Upcoming or Ongoing */}
                   {viewType === 'special' &&
                     ['upcoming', 'ongoing'].includes(status) &&
                     meeting.status !== 'approved' &&
@@ -402,24 +420,29 @@ const ScheduledMeetings = () => {
                       </IconButton>
                     )}
 
-                  {viewType === 'special' && meeting.status !== 'approved' && status !== 'finished' && meeting.status !== 'canceled' && (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleApprove(meeting.id);
-                      }}
-                    >
-                      Approve
-                    </Button>
-                  )}
+                  {/* Show Approve Button for Special Meetings if not Approved or Canceled */}
+                  {viewType === 'special' &&
+                    meeting.status !== 'approved' &&
+                    status !== 'finished' &&
+                    meeting.status !== 'canceled' && (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApprove(meeting.id);
+                        }}
+                      >
+                        Approve
+                      </Button>
+                    )}
                 </CardActions>
               </StyledCard>
             </Grid>
           );
         })}
       </Grid>
+
 
       {/* Meeting Details Modal */}
       <Modal
