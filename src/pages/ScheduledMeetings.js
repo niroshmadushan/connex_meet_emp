@@ -127,6 +127,7 @@ const ScheduledMeetings = () => {
               participants: meeting.participants.map((participant) => ({
                 companyName: participant.company_name || 'Unknown Company',
                 employeeName: participant.full_name || 'Unknown Employee',
+                empstatus: participant.status,
               })),
               specialNote: meeting.bookingDetails.note,
               refreshment: meeting.bookingDetails.refreshment,
@@ -163,14 +164,14 @@ const ScheduledMeetings = () => {
                 companyName: participant.company_name || 'Unknown Company',
                 employeeName: participant.full_name || 'Unknown Employee',
                 empstatus: participant.status === '3' ? 'cancel' :
-                           participant.status === '4' ? 'approved' :
-                           participant.status === null ? 'notset' : 'Unknown',
+                  participant.status === '4' ? 'approved' :
+                    participant.status === null ? 'notset' : 'Unknown',
               })),
               specialNote: meeting.bookingDetails.note,
               refreshment: meeting.bookingDetails.refreshment,
               status: statusResponse.data.status,
             };
-            
+
           })
         );
         setSpecialMeetings(formattedSpecialMeetings);
@@ -456,7 +457,7 @@ const ScheduledMeetings = () => {
         BackdropProps={{ timeout: 500 }}
       >
         <Fade in={open}>
-          <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',bgcolor: 'background.paper', borderRadius: '12px', boxShadow: 24, p: 4 }}>
+          <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', borderRadius: '12px', boxShadow: 24, p: 4 }}>
             {selectedMeeting ? (
               <>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
@@ -481,9 +482,9 @@ const ScheduledMeetings = () => {
                 <ul>
                   {selectedMeeting.participants.map((participant, index) => (
                     <li key={index}>
-                      {participant.companyName} - {participant.employeeName}-{participant.empstatus}
+                      {participant.employeeName}-{participant.empstatus}
                     </li>
-                    
+
                   ))}
                 </ul>
                 {selectedMeeting.specialNote && (
