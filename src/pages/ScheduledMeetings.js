@@ -379,7 +379,7 @@ const ScheduledMeetings = () => {
                 {/* Action Buttons: Approve, Delete or Canceled Status */}
                 <CardActions sx={{ justifyContent: 'space-between' }}>
                   {/* Show "Canceled" Text for Canceled Normal Meetings */}
-                  {viewType === 'normal' && viewType === 'special' && meeting.status === 'canceled' && (
+                  {viewType === 'normal' && meeting.status === 'canceled' && (
                     <Typography variant="body1" sx={{ color: 'red', fontWeight: 'bold' }}>
                       This meeting has been canceled
                     </Typography>
