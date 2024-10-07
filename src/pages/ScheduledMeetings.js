@@ -338,7 +338,7 @@ const ScheduledMeetings = () => {
 
                   {/* Meeting Status Indicator */}
                   <Chip
-                    icon={<BlinkingDot color={statusColors[meeting.status] || statusColors[status]} />}
+                    icon={<BlinkingDot color={statusColors[status]} />}
                     label={
                       meeting.status === 'canceled'
                         ? 'Canceled'
@@ -378,70 +378,70 @@ const ScheduledMeetings = () => {
 
                 {/* Action Buttons: Approve, Delete or Canceled Status */}
                 <CardActions sx={{ justifyContent: 'space-between' }}>
-                  {/* Show "Canceled" Text for Canceled Meetings */}
-                  {meeting.status === 'canceled' ? (
+                  {/* Show "Canceled" Text for Canceled Normal Meetings */}
+                  {viewType === 'normal' && meeting.status === 'canceled' && (
                     <Typography variant="body1" sx={{ color: 'red', fontWeight: 'bold' }}>
                       This meeting has been canceled
                     </Typography>
-                  ) : (
-                    <>
-                      {/* Show Approved Text for Approved Special Meetings */}
-                      {viewType === 'special' && meeting.status === 'approved' && (
-                        <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
-                      )}
-
-                      {/* Show Delete Button for Upcoming Normal Meetings if Not Canceled */}
-                      {viewType === 'normal' && status === 'upcoming' && meeting.status !== 'canceled' && (
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteNormal(meeting.id);
-                          }}
-                        >
-                          <DeleteIcon sx={{ color: 'red' }} />
-                        </IconButton>
-                      )}
-
-                      {/* Show Delete Button for Special Meetings that are Upcoming or Ongoing */}
-                      {viewType === 'special' &&
-                        ['upcoming', 'ongoing'].includes(status) &&
-                        meeting.status !== 'approved' &&
-                        meeting.status !== 'canceled' && (
-                          <IconButton
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteSpecial(meeting.id);
-                            }}
-                          >
-                            <DeleteIcon sx={{ color: 'red' }} />
-                          </IconButton>
-                        )}
-
-                      {/* Show Approve Button for Special Meetings if not Approved or Canceled */}
-                      {viewType === 'special' &&
-                        meeting.status !== 'approved' &&
-                        status !== 'finished' &&
-                        meeting.status !== 'canceled' && (
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleApprove(meeting.id);
-                            }}
-                          >
-                            Approve
-                          </Button>
-                        )}
-                    </>
                   )}
+
+                  {/* Show Approved/Canceled Text for Special Meetings */}
+                  {viewType === 'special' && meeting.status === 'approved' && (
+                    <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
+                  )}
+                  {viewType === 'special' && meeting.status === 'canceled' && (
+                    <Typography sx={{ color: 'red', fontWeight: 'bold' }}>Canceled</Typography>
+                  )}
+
+                  {/* Show Delete Button for Upcoming Normal Meetings if Not Canceled */}
+                  {viewType === 'normal' && status === 'upcoming' && meeting.status !== 'canceled' && (
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNormal(meeting.id);
+                      }}
+                    >
+                      <DeleteIcon sx={{ color: 'red' }} />
+                    </IconButton>
+                  )}
+
+                  {/* Show Delete Button for Special Meetings that are Upcoming or Ongoing */}
+                  {viewType === 'special' &&
+                    ['upcoming', 'ongoing'].includes(status) &&
+                    meeting.status !== 'approved' &&
+                    meeting.status !== 'canceled' && (
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSpecial(meeting.id);
+                        }}
+                      >
+                        <DeleteIcon sx={{ color: 'red' }} />
+                      </IconButton>
+                    )}
+
+                  {/* Show Approve Button for Special Meetings if not Approved or Canceled */}
+                  {viewType === 'special' &&
+                    meeting.status !== 'approved' &&
+                    status !== 'finished' &&
+                    meeting.status !== 'canceled' && (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApprove(meeting.id);
+                        }}
+                      >
+                        Approve
+                      </Button>
+                    )}
                 </CardActions>
               </StyledCard>
             </Grid>
           );
         })}
       </Grid>
-
 
 
       {/* Meeting Details Modal */}
