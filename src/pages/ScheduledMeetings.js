@@ -456,7 +456,7 @@ const ScheduledMeetings = () => {
         BackdropProps={{ timeout: 500 }}
       >
         <Fade in={open}>
-          <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', borderRadius: '12px', boxShadow: 24, p: 4 }}>
+          <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',bgcolor: 'background.paper', borderRadius: '12px', boxShadow: 24, p: 4 }}>
             {selectedMeeting ? (
               <>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
