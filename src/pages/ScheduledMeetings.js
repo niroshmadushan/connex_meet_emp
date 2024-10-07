@@ -162,7 +162,9 @@ const ScheduledMeetings = () => {
               participants: meeting.participants.map((participant) => ({
                 companyName: participant.company_name || 'Unknown Company',
                 employeeName: participant.full_name || 'Unknown Employee',
-                empstatus: 'test'
+                empstatus: participant.status === 3 ? 'cancel' :
+                  participant.status === 4 ? 'approved' :
+                    participant.status === null ? 'notset' : 'Unknown',
               })),
               specialNote: meeting.bookingDetails.note,
               refreshment: meeting.bookingDetails.refreshment,
@@ -479,7 +481,7 @@ const ScheduledMeetings = () => {
                 <ul>
                   {selectedMeeting.participants.map((participant, index) => (
                     <li key={index}>
-                      {participant.employeeName} - {participant.empstatus}
+                      {participant.companyName}dkfjbajdfnaknd
                     </li>
                   ))}
 
