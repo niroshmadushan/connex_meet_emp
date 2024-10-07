@@ -338,7 +338,7 @@ const ScheduledMeetings = () => {
 
                   {/* Meeting Status Indicator */}
                   <Chip
-                    icon={<BlinkingDot color={statusColors[status]} />}
+                    icon={<BlinkingDot color={statusColors[meeting.status] || statusColors[status]} />}
                     label={
                       meeting.status === 'canceled'
                         ? 'Canceled'
