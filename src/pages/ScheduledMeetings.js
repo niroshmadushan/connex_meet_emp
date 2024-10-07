@@ -34,7 +34,7 @@ const statusColors = {
   finished: 'red',
   approved: 'green',
   canceled: 'gray',
-  empty: 'blue',
+  empty: 'orange',
 };
 
 // Function to calculate meeting status based on time and date
