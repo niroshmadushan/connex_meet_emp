@@ -162,9 +162,7 @@ const ScheduledMeetings = () => {
               participants: meeting.participants.map((participant) => ({
                 companyName: participant.company_name || 'Unknown Company',
                 employeeName: participant.full_name || 'Unknown Employee',
-                empstatus: participant.status === 3 ? 'cancel' :
-                  participant.status === 4 ? 'approved' :
-                    participant.status === null ? 'notset' : 'Unknown',
+                empstatus: 'test'
               })),
               specialNote: meeting.bookingDetails.note,
               refreshment: meeting.bookingDetails.refreshment,
