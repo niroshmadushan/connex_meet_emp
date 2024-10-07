@@ -162,15 +162,15 @@ const ScheduledMeetings = () => {
               participants: meeting.participants.map((participant) => ({
                 companyName: participant.company_name || 'Unknown Company',
                 employeeName: participant.full_name || 'Unknown Employee',
-                empstatus: participant.status === 3 ? 'cancel' :
-                  participant.status === 4 ? 'approved' :
-                    participant.status === null ? 'notset' : 'Unknown',
+                empstatus: participant.status === '3' ? 'cancel' :
+                           participant.status === '4' ? 'approved' :
+                           participant.status === null ? 'notset' : 'Unknown',
               })),
               specialNote: meeting.bookingDetails.note,
               refreshment: meeting.bookingDetails.refreshment,
               status: statusResponse.data.status,
             };
-
+            
           })
         );
         setSpecialMeetings(formattedSpecialMeetings);
@@ -481,10 +481,10 @@ const ScheduledMeetings = () => {
                 <ul>
                   {selectedMeeting.participants.map((participant, index) => (
                     <li key={index}>
-                      {participant.companyName}dkfjbajdfnaknd
+                      {participant.companyName} - {participant.employeeName}-{participant.empstatus}
                     </li>
+                    
                   ))}
-
                 </ul>
                 {selectedMeeting.specialNote && (
                   <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
