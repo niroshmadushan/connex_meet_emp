@@ -127,8 +127,8 @@ const ScheduledMeetings = () => {
               participants: meeting.participants.map((participant) => ({
                 companyName: participant.company_name || 'Unknown Company',
                 employeeName: participant.full_name || 'Unknown Employee',
-                empstatus: participant.status === '3' ? 'cancel' :
-                participant.status === '4' ? 'approved' :
+                empstatus: participant.status === '3' ? 'Reject' :
+                participant.status === '2' ? 'approved' :
                 participant.status === null ? 'notset' : 'Unknown',
               })),
               specialNote: meeting.bookingDetails.note,
@@ -165,8 +165,8 @@ const ScheduledMeetings = () => {
               participants: meeting.participants.map((participant) => ({
                 companyName: participant.company_name || 'Unknown Company',
                 employeeName: participant.full_name || 'Unknown Employee',
-                empstatus: participant.status === '3' ? 'cancel' :
-                participant.status === '4' ? 'approved' :
+                empstatus: participant.status === '3' ? 'Rejected' :
+                participant.status === '2' ? 'approved' :
                 participant.status === null ? 'notset' : 'Unknown',
               })),
               specialNote: meeting.bookingDetails.note,
