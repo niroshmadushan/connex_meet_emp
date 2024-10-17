@@ -51,8 +51,9 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      const profileId = localStorage.getItem('id');
-      const apiLink = 'http://192.168.13.150:3001/profile';
+      
+      const profileId = Cookies.get('userId'); 
+      const apiLink = 'http://192.168.13.6:3001/profile';
 
       try {
         const response = await axios.get(`${apiLink}/${profileId}`, { withCredentials: true });
@@ -79,7 +80,7 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      const apiLink = 'http://192.168.13.150:3001/profile';
+      const apiLink = 'http://192.168.13.6:3001/profile';
       await axios.put(apiLink, editData, { withCredentials: true });
       setUserData(editData);
       setOpenEdit(false);
@@ -96,7 +97,7 @@ const Profile = () => {
       return;
     }
     try {
-      const response = await axios.post('http://192.168.13.150:3001/password', {
+      const response = await axios.post('http://192.168.13.6:3001/password', {
         id: userData.id,
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
