@@ -160,7 +160,7 @@ const Register = () => {
     };
 
     try {
-      const response = await axios.post('http://192.168.13.150:3001/add-user', data);
+      const response = await axios.post('http://10.33.0.255:3001/add-user', data);
       if (response.status === 200) {
         Swal.fire({
           icon: 'success',

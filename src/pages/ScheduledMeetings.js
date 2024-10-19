@@ -109,13 +109,13 @@ const ScheduledMeetings = () => {
 
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get(`http://192.168.13.150:3001/get-schedule-meeting/${empID}`, {
+        const response = await axios.get(`http://10.33.0.255:3001/get-schedule-meeting/${empID}`, {
           withCredentials: true,
         });
         const formattedMeetings = await Promise.all(
           response.data.map(async (meeting) => {
             const statusResponse = await axios.get(
-              `http://192.168.13.150:3001/getdeletednormalmeet/${meeting.bookingDetails.id}`,
+              `http://10.33.0.255:3001/getdeletednormalmeet/${meeting.bookingDetails.id}`,
               { withCredentials: true }
             );
             return {
@@ -128,8 +128,8 @@ const ScheduledMeetings = () => {
                 companyName: participant.company_name || 'Unknown Company',
                 employeeName: participant.full_name || 'Unknown Employee',
                 empstatus: participant.status === 3 ? 'Reject' :
-                participant.status === 2 ? 'approved' :
-                participant.status === null ? 'notset' : 'Unknown',
+                  participant.status === 2 ? 'approved' :
+                    participant.status === null ? 'notset' : 'Unknown',
               })),
               specialNote: meeting.bookingDetails.note,
               refreshment: meeting.bookingDetails.refreshment,
@@ -145,13 +145,13 @@ const ScheduledMeetings = () => {
 
     const fetchSpecialMeetings = async () => {
       try {
-        const specialResponse = await axios.get(`http://192.168.13.150:3001/getspecialbookings/${empID}`, {
+        const specialResponse = await axios.get(`http://10.33.0.255:3001/getspecialbookings/${empID}`, {
           withCredentials: true,
         });
         const formattedSpecialMeetings = await Promise.all(
           specialResponse.data.map(async (meeting) => {
             const statusResponse = await axios.post(
-              `http://192.168.13.150:3001/checkapprove/${meeting.bookingDetails.id}`,
+              `http://10.33.0.255:3001/checkapprove/${meeting.bookingDetails.id}`,
               { empid: empID },
               { withCredentials: true }
             );
@@ -166,8 +166,8 @@ const ScheduledMeetings = () => {
                 companyName: participant.company_name || 'Unknown Company',
                 employeeName: participant.full_name || 'Unknown Employee',
                 empstatus: participant.status === 3 ? 'Rejected' :
-                participant.status === 2 ? 'approved' :
-                participant.status === null ? 'notset' : 'Unknown',
+                  participant.status === 2 ? 'approved' :
+                    participant.status === null ? 'notset' : 'Unknown',
               })),
               specialNote: meeting.bookingDetails.note,
               refreshment: meeting.bookingDetails.refreshment,
@@ -217,7 +217,7 @@ const ScheduledMeetings = () => {
     if (result.isConfirmed) {
       try {
         await axios.put(
-          `http://192.168.13.150:3001/updatemeetingstatusnormal/${id}`,
+          `http://10.33.0.255:3001/updatemeetingstatusnormal/${id}`,
           { reason: result.value },
           { withCredentials: true }
         );
@@ -249,7 +249,7 @@ const ScheduledMeetings = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.put(`http://192.168.13.150:3001/cancelstatus/${id}`, { empid: empID, reason: result.value }, { withCredentials: true });
+        await axios.put(`http://10.33.0.255:3001/cancelstatus/${id}`, { empid: empID, reason: result.value }, { withCredentials: true });
         setSpecialMeetings(specialMeetings.map((meeting) => (meeting.id === id ? { ...meeting, status: 'canceled' } : meeting)));
         Swal.fire('Canceled!', 'The special meeting has been canceled.', 'success');
       } catch (error) {
@@ -272,7 +272,7 @@ const ScheduledMeetings = () => {
     if (result.isConfirmed) {
       try {
         await axios.put(
-          `http://192.168.13.150:3001/updatemeetingstatus/${id}`,
+          `http://10.33.0.255:3001/updatemeetingstatus/${id}`,
           { empid: empID },
           { withCredentials: true }
         );
@@ -292,7 +292,7 @@ const ScheduledMeetings = () => {
   };
 
   return (
-    <Box sx={{ padding: '20px' }}>
+    <Box sx={{ padding: '20px', height: '60vh', mt: 4 }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
         Scheduled Meetings
       </Typography>
@@ -316,27 +316,57 @@ const ScheduledMeetings = () => {
       </Box>
 
       {/* Show Normal or Special Meetings Based on Toggle */}
-      <Grid container spacing={3}>
+      <Grid
+        container
+        spacing={2}  // Adjusted spacing for compact layout
+        sx={{
+          maxHeight: '66vh',
+          overflowY: 'auto',
+          padding: '10px',  // Reduced padding for the grid
+        }}
+      >
         {sortMeetings(viewType === 'normal' ? normalMeetings : specialMeetings).map((meeting) => {
           const status = getMeetingStatus(meeting.date, meeting.time);
 
           return (
-            <Grid item xs={12} md={6} key={meeting.id}>
-              <StyledCard onClick={() => handleOpen(meeting)}>
+            <Grid
+              item
+              xs={12} sm={6} md={4} lg={2} // Changed to a 4-column layout for large screens
+              key={meeting.id}
+              sx={{ display: 'flex', justifyContent: 'center' }}
+            >
+              {/* Styled Card */}
+              <StyledCard
+                onClick={() => handleOpen(meeting)}
+                sx={{
+                  width: '100%',  // Ensure cards take full width of the grid
+                  maxWidth: '280px',  // Set max width for cards for a consistent look
+                  height: 'auto',  // Let the card height adjust to content
+                  position: 'relative',
+                  cursor: 'pointer',
+                  padding: '10px',
+                  transition: 'transform 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'scale(1.02)',
+                    boxShadow: '0px 10px 20px rgba(0,0,0,0.15)'  // Hover effect with subtle shadow
+                  },
+                }}
+              >
                 <CardContent>
                   {/* Special Meeting Information */}
                   {viewType === 'special' && (
                     <Box
                       sx={{
                         position: 'absolute',
-                        top: '10px',
-                        right: '10px',
+                        top: '5px',
+                        right: '5px',
                         backgroundColor: '#f5f5f5',
-                        padding: '5px 10px',
+                        padding: '3px 8px',
                         borderRadius: '5px',
                         fontWeight: 'bold',
-                        fontSize: '0.85rem',
+                        fontSize: '0.75rem',
                         color: '#007aff',
+                        width: '130px',  // Reduced width for info box
                       }}
                     >
                       {meeting.Bookedby}
@@ -346,58 +376,51 @@ const ScheduledMeetings = () => {
                   {/* Meeting Status Indicator */}
                   <Chip
                     icon={<BlinkingDot color={statusColors[status]} />}
-                    label={
-                      meeting.status === 'canceled'
-                        ? 'Canceled'
-                        : status.charAt(0).toUpperCase() + status.slice(1)
-                    }
+                    label={meeting.status === 'canceled' ? 'Canceled' : status.charAt(0).toUpperCase() + status.slice(1)}
                     sx={{
-                      backgroundColor:
-                        meeting.status === 'canceled'
-                          ? statusColors['canceled'] + '22'
-                          : statusColors[status] + '22',
-                      color:
-                        meeting.status === 'canceled'
-                          ? statusColors['canceled']
-                          : statusColors[status],
+                      backgroundColor: meeting.status === 'canceled' ? statusColors['canceled'] + '22' : statusColors[status] + '22',
+                      color: meeting.status === 'canceled' ? statusColors['canceled'] : statusColors[status],
                       fontWeight: 'bold',
-                      marginBottom: '10px',
+                      marginBottom: '8px',
                     }}
                   />
 
                   {/* Meeting Details */}
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '1rem' }}>
                     {meeting.title}
                   </Typography>
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <EventIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
+
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <EventIcon sx={{ marginRight: '5px', color: statusColors[status], animation: 'bounce 1s infinite' }} />
                     {meeting.date}
                   </Typography>
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <AccessTimeIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
+
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <AccessTimeIcon sx={{ marginRight: '5px', color: statusColors[status], animation: 'spin 1s infinite linear' }} />
                     {meeting.time}
                   </Typography>
-                  <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                    <RoomIcon sx={{ marginRight: '8px', color: statusColors[status] }} />
+
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <RoomIcon sx={{ marginRight: '5px', color: statusColors[status] }} />
                     {meeting.room}
                   </Typography>
                 </CardContent>
 
                 {/* Action Buttons: Approve, Delete or Canceled Status */}
-                <CardActions sx={{ justifyContent: 'space-between' }}>
+                <CardActions sx={{ justifyContent: 'space-between', padding: '0' }}>
                   {/* Show "Canceled" Text for Canceled Normal Meetings */}
                   {viewType === 'normal' && meeting.status === 'canceled' && (
-                    <Typography variant="body1" sx={{ color: 'red', fontWeight: 'bold' }}>
-                      This meeting has been canceled
+                    <Typography variant="body2" sx={{ color: 'red', fontWeight: 'bold' }}>
+                      Canceled
                     </Typography>
                   )}
 
                   {/* Show Approved/Canceled Text for Special Meetings */}
                   {viewType === 'special' && meeting.status === 'approved' && (
-                    <Typography sx={{ color: 'green', fontWeight: 'bold' }}>Approved</Typography>
+                    <Typography sx={{ color: 'green', fontWeight: 'bold', fontSize: '0.85rem' }}>Approved</Typography>
                   )}
                   {viewType === 'special' && meeting.status === 'canceled' && (
-                    <Typography sx={{ color: 'red', fontWeight: 'bold' }}>Canceled</Typography>
+                    <Typography sx={{ color: 'red', fontWeight: 'bold', fontSize: '0.85rem' }}>Canceled</Typography>
                   )}
 
                   {/* Show Delete Button for Upcoming Normal Meetings if Not Canceled */}
@@ -407,8 +430,9 @@ const ScheduledMeetings = () => {
                         e.stopPropagation();
                         handleDeleteNormal(meeting.id);
                       }}
+                      sx={{ padding: '5px' }}
                     >
-                      <DeleteIcon sx={{ color: 'red' }} />
+                      <DeleteIcon sx={{ color: 'red', fontSize: '20px' }} />
                     </IconButton>
                   )}
 
@@ -422,8 +446,9 @@ const ScheduledMeetings = () => {
                           e.stopPropagation();
                           handleDeleteSpecial(meeting.id);
                         }}
+                        sx={{ padding: '5px' }}
                       >
-                        <DeleteIcon sx={{ color: 'red' }} />
+                        <DeleteIcon sx={{ color: 'red', fontSize: '20px' }} />
                       </IconButton>
                     )}
 
@@ -439,6 +464,7 @@ const ScheduledMeetings = () => {
                           e.stopPropagation();
                           handleApprove(meeting.id);
                         }}
+                        sx={{ fontSize: '12px', padding: '4px 10px' }}
                       >
                         Approve
                       </Button>
@@ -449,6 +475,7 @@ const ScheduledMeetings = () => {
           );
         })}
       </Grid>
+
 
       {/* Meeting Details Modal */}
       <Modal

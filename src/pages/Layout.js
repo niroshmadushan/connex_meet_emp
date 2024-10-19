@@ -104,21 +104,14 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', width: 'auto', bgcolor: themeColor.background, overflow: 'hidden' }}>
-      {/* Header Section */}
-      <AppBar position="fixed" sx={{ background: themeColor.headerBg, boxShadow: 'none', color: themeColor.headerTextColor, top: 0, zIndex: 3 }}>
-        <Toolbar>
-          <img src={logo} alt="Logo" style={{ height: '40px' }} />
-        </Toolbar>
-      </AppBar>
-
-      {/* Main content area */}
-      <Box sx={{ flex: 1, overflowY: 'auto', paddingTop: '64px', paddingBottom: '60px' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: 'auto', bgcolor: themeColor.background, overflow: 'hidden' }}>
+    
+      <Box>
         {children}
       </Box>
 
       {/* Footer Section */}
-      <FooterNavigation>
+      {/* <FooterNavigation>
         <FooterButton onClick={() => handleNavigationChange('home')} className={selectedView === 'home' ? 'Mui-selected' : ''}>
           <HomeIcon />
         </FooterButton>
@@ -137,7 +130,7 @@ const Layout = ({ children }) => {
         <FooterButton onClick={() => handleNavigationChange('profile')} className={selectedView === 'profile' ? 'Mui-selected' : ''}>
           <PersonOutlineIcon />
         </FooterButton>
-      </FooterNavigation>
+      </FooterNavigation> */}
     </Box>
   );
 };

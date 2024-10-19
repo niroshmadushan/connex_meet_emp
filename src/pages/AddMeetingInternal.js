@@ -77,7 +77,7 @@ const AddMeetingSession = () => {
 
     if (empId) {
       axios
-        .get(`http://192.168.13.150:3001/email/${empId}`, { withCredentials: true })
+        .get(`http://10.33.0.255:3001/email/${empId}`, { withCredentials: true })
         .then((response) => {
           // Extract the email values from the response and set the employeeEmails state
           const emails = response.data.map((item) => item.email);
@@ -92,10 +92,10 @@ const AddMeetingSession = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const roomsResponse = await axios.get('http://192.168.13.150:3001/place', { withCredentials: true });
+        const roomsResponse = await axios.get('http://10.33.0.255:3001/place', { withCredentials: true });
         setRooms(roomsResponse.data);
 
-        const bookingsResponse = await axios.get('http://192.168.13.150:3001/bookings', { withCredentials: true });
+        const bookingsResponse = await axios.get('http://10.33.0.255:3001/bookings', { withCredentials: true });
         setBookings(bookingsResponse.data);
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -242,7 +242,7 @@ const AddMeetingSession = () => {
     };
 
     try {
-      await axios.post('http://192.168.13.150:3001/add-booking-int', bookingData, { withCredentials: true });
+      await axios.post('http://10.33.0.255:3001/add-booking-int', bookingData, { withCredentials: true });
       Swal.fire('Success!', 'The meeting has been added successfully.', 'success').then(() => {
         setFormData({
           title: '',
@@ -362,15 +362,16 @@ const AddMeetingSession = () => {
   };
 
   return (
-    <Box sx={{ padding: '20px' }}>
+    <Box sx={{ padding: '20px',height:'60vh',mt:5 }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
-        Add a New Internal Meeting
+        Internal Meeting Form
       </Typography>
-      <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px' }}>
+      <Box elevation={2} sx={{ padding: '20px',width:'50%',m:'auto',height:'70vh',overflowY:'scroll', borderRadius: '12px' }}>
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
+          <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
+              
                 fullWidth
                 label="Title"
                 name="title"
@@ -378,7 +379,7 @@ const AddMeetingSession = () => {
                 onChange={handleChange}
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="start">
+                    <InputAdornment sx={{height:1}} position="start">
                       <TitleIcon color="primary" />
                     </InputAdornment>
                   ),
@@ -592,14 +593,14 @@ const AddMeetingSession = () => {
                 type="submit"
                 variant="contained"
                 sx={{ backgroundColor: themeColor.primary, color: '#fff', ':hover': { backgroundColor: themeColor.primaryDark } }}
-                fullWidth
+                
               >
                 Add Meeting
               </Button>
             </Grid>
           </Grid>
         </form>
-      </Paper>
+      </Box>
     </Box >
   );
 };

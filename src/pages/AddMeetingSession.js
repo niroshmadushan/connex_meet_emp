@@ -376,13 +376,13 @@ const AddMeetingSession = () => {
 
 
   return (
-    <Box sx={{ padding: '20px' }}>
+    <Box sx={{ padding: '20px,',height:'60vh',mt:7 }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
-        Add a New External Meeting
+        External Meeting Form
       </Typography>
-      <Paper elevation={3} sx={{ padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+      <Box elevation={2} sx={{ padding: '20px',width:'50%',m:'auto',height:'70vh',overflowY:'scroll', borderRadius: '12px' }}>
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
+          <Grid container spacing={2}>
             {/* Title, Date, Room, Time Slots, Start and End Time */}
             <Grid item xs={12}>
               <TextField
@@ -632,14 +632,14 @@ const AddMeetingSession = () => {
                   padding: '10px',
                   fontWeight: 'bold',
                 }}
-                fullWidth
+                
               >
                 Add Meeting
               </Button>
             </Grid>
           </Grid>
         </form>
-      </Paper>
+      </Box>
     </Box>
   );
 };

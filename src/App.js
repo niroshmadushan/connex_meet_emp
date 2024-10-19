@@ -32,7 +32,7 @@ const AppContent = () => {
       <Route path="/connex_meet_emp/reg" element={<Register />} />
 
       {/* Protected routes */}
-      <Route path="/connex_meet_emp/dash" element={<PrivateRoute><Layout><HomeDashboard /></Layout></PrivateRoute>} />
+      <Route path="/connex_meet_emp/dash" element={<PrivateRoute><HomeDashboard /></PrivateRoute>} />
       <Route path="/connex_meet_emp/eventspage" element={<PrivateRoute><Layout><Home /></Layout></PrivateRoute>} />
       <Route path="/connex_meet_emp/meeting-rooms" element={<PrivateRoute><Layout><MeetingRooms /></Layout></PrivateRoute>} />
       <Route path="/connex_meet_emp/addmeeting" element={<PrivateRoute><Layout><AddMeetingSession /></Layout></PrivateRoute>} />
