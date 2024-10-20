@@ -103,12 +103,12 @@ const MeetingRooms = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const roomsResponse = await axios.get('http://10.33.0.255:3001/place', {
+        const roomsResponse = await axios.get(`${APIConnection.mainapi}/place`, {
           withCredentials: true,
         });
         setRooms(roomsResponse.data);
 
-        const bookingsResponse = await axios.get('http://10.33.0.255:3001/bookings', {
+        const bookingsResponse = await axios.get(`${APIConnection.mainapi}/bookings`, {
           withCredentials: true,
         });
         setBookings(bookingsResponse.data);

@@ -76,10 +76,10 @@ const AddMeetingSession = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const roomsResponse = await axios.get('http://192.168.13.150:3001/place', { withCredentials: true });
+        const roomsResponse = await axios.get(`${APIConnection.mainapi}/place`, { withCredentials: true });
         setRooms(roomsResponse.data);
 
-        const bookingsResponse = await axios.get('http://192.168.13.150:3001/bookings', { withCredentials: true });
+        const bookingsResponse = await axios.get(`${APIConnection.mainapi}/bookings`, { withCredentials: true });
         setBookings(bookingsResponse.data);
       } catch (error) {
         console.error('Failed to fetch room and booking data:', error);
@@ -331,7 +331,7 @@ const AddMeetingSession = () => {
 
     try {
       // Send the booking data to the API endpoint
-      await axios.post('http://192.168.13.150:3001/add-booking', bookingData, {
+      await axios.post(`${APIConnection.mainapi}/add-booking`, bookingData, {
         withCredentials: true,
       });
 

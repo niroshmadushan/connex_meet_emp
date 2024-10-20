@@ -78,7 +78,7 @@ const AddMeetingSession = () => {
 
     if (empId) {
       axios
-        .get(`http://10.33.0.255:3001/email/${empId}`, { withCredentials: true })
+        .get(`${APIConnection.mainapi}/email/${empId}`, { withCredentials: true })
         .then((response) => {
           // Extract the email values from the response and set the employeeEmails state
           const emails = response.data.map((item) => item.email);
@@ -93,10 +93,10 @@ const AddMeetingSession = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const roomsResponse = await axios.get('http://10.33.0.255:3001/place', { withCredentials: true });
+        const roomsResponse = await axios.get(`${APIConnection.mainapi}/place`, { withCredentials: true });
         setRooms(roomsResponse.data);
 
-        const bookingsResponse = await axios.get('http://10.33.0.255:3001/bookings', { withCredentials: true });
+        const bookingsResponse = await axios.get(`${APIConnection.mainapi}/bookings`, { withCredentials: true });
         setBookings(bookingsResponse.data);
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -243,7 +243,7 @@ const AddMeetingSession = () => {
     };
 
     try {
-      await axios.post('http://10.33.0.255:3001/add-booking-int', bookingData, { withCredentials: true });
+      await axios.post(`${APIConnection.mainapi}/add-booking-int`, bookingData, { withCredentials: true });
       Swal.fire('Success!', 'The meeting has been added successfully.', 'success').then(() => {
         setFormData({
           title: '',

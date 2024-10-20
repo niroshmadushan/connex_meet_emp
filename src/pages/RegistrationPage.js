@@ -25,7 +25,7 @@ import { styled, keyframes } from '@mui/system';
 import axios from 'axios';
 import Swal from 'sweetalert2';  // Import SweetAlert2
 import { useNavigate } from 'react-router-dom';  // Import useNavigate from react-router-dom
-
+import APIConnection from '../config';
 // Theme colors
 const themeColor = {
   primary: '#0d6efd',
@@ -160,7 +160,7 @@ const Register = () => {
     };
 
     try {
-      const response = await axios.post('http://10.33.0.255:3001/add-user', data);
+      const response = await axios.post(`${APIConnection.mainapi}/add-user`, data);
       if (response.status === 200) {
         Swal.fire({
           icon: 'success',

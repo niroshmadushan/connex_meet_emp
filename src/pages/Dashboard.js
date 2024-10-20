@@ -472,7 +472,7 @@ export default function Dashboard() {
     const fetchProfileData = async () => {
 
       const profileId = Cookies.get('userId');
-      const apiLink = 'http://10.33.0.255:3001/profile';
+      const apiLink = `${APIConnection.mainapi}/profile`;
 
       try {
         const response = await axios.get(`${apiLink}/${profileId}`, { withCredentials: true });
@@ -499,7 +499,7 @@ export default function Dashboard() {
 
   const handleSave = async () => {
     try {
-      const apiLink = 'http://10.33.0.255:3001/profile';
+      const apiLink = `${APIConnection.mainapi}/profile`;
       await axios.put(apiLink, editData, { withCredentials: true });
       setUserData(editData);
       setOpenEdit(false);
@@ -519,7 +519,7 @@ export default function Dashboard() {
       return;
     }
     try {
-      const response = await axios.post('http://10.33.0.255:3001/password', {
+      const response = await axios.post(`${APIConnection.mainapi}/password`, {
         id: userData.id,
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
@@ -582,10 +582,10 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const roomsResponse = await axios.get('http://10.33.0.255:3001/place', { withCredentials: true });
+        const roomsResponse = await axios.get('${APIConnection.mainapi}/place', { withCredentials: true });
         setRooms(roomsResponse.data);
 
-        const bookingsResponse = await axios.get('http://10.33.0.255:3001/bookings', { withCredentials: true });
+        const bookingsResponse = await axios.get('${APIConnection.mainapi}/bookings', { withCredentials: true });
         setBookings(bookingsResponse.data);
       } catch (error) {
         console.error('Failed to fetch room and booking data:', error);
@@ -840,7 +840,7 @@ export default function Dashboard() {
   
     try {
       // Send the booking data to the API endpoint
-      await axios.post('http://10.33.0.255:3001/add-booking', bookingData, {
+      await axios.post('${APIConnection.mainapi}/add-booking', bookingData, {
         withCredentials: true,
       });
       setOpenEditPopup(false);
@@ -918,7 +918,7 @@ export default function Dashboard() {
 
     if (empId) {
       axios
-        .get(`http://10.33.0.255:3001/email/${empId}`, { withCredentials: true })
+        .get(`${APIConnection.mainapi}/email/${empId}`, { withCredentials: true })
         .then((response) => {
           // Extract the email values from the response and set the employeeEmails state
           const emails = response.data.map((item) => item.email);
@@ -933,10 +933,10 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData2 = async () => {
       try {
-        const roomsintResponse = await axios.get('http://10.33.0.255:3001/place', { withCredentials: true });
+        const roomsintResponse = await axios.get('${APIConnection.mainapi}/place', { withCredentials: true });
         setroomsint(roomsintResponse.data);
 
-        const bookingsintResponse = await axios.get('http://10.33.0.255:3001/bookings', { withCredentials: true });
+        const bookingsintResponse = await axios.get('${APIConnection.mainapi}/bookings', { withCredentials: true });
         setbookingsint(bookingsintResponse.data);
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -1086,7 +1086,7 @@ export default function Dashboard() {
     };
 
     try {
-      await axios.post('http://10.33.0.255:3001/add-booking-int', bookingData, { withCredentials: true });
+      await axios.post('${APIConnection.mainapi}/add-booking-int', bookingData, { withCredentials: true });
       setOpenPeoplePopup(false);
 
       // Show success message and wait for "OK" button to be clicked

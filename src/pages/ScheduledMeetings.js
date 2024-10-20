@@ -27,7 +27,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
-
+import APIConnection from '../config';
 const statusColors = {
   upcoming: 'orange',
   ongoing: 'green',
@@ -109,13 +109,13 @@ const ScheduledMeetings = () => {
 
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get(`http://10.33.0.255:3001/get-schedule-meeting/${empID}`, {
+        const response = await axios.get(`${APIConnection.mainapi}/get-schedule-meeting/${empID}`, {
           withCredentials: true,
         });
         const formattedMeetings = await Promise.all(
           response.data.map(async (meeting) => {
             const statusResponse = await axios.get(
-              `http://10.33.0.255:3001/getdeletednormalmeet/${meeting.bookingDetails.id}`,
+              `${APIConnection.mainapi}/getdeletednormalmeet/${meeting.bookingDetails.id}`,
               { withCredentials: true }
             );
             return {
@@ -145,13 +145,13 @@ const ScheduledMeetings = () => {
 
     const fetchSpecialMeetings = async () => {
       try {
-        const specialResponse = await axios.get(`http://10.33.0.255:3001/getspecialbookings/${empID}`, {
+        const specialResponse = await axios.get(`${APIConnection.mainapi}/getspecialbookings/${empID}`, {
           withCredentials: true,
         });
         const formattedSpecialMeetings = await Promise.all(
           specialResponse.data.map(async (meeting) => {
             const statusResponse = await axios.post(
-              `http://10.33.0.255:3001/checkapprove/${meeting.bookingDetails.id}`,
+              `${APIConnection.mainapi}/checkapprove/${meeting.bookingDetails.id}`,
               { empid: empID },
               { withCredentials: true }
             );
@@ -217,7 +217,7 @@ const ScheduledMeetings = () => {
     if (result.isConfirmed) {
       try {
         await axios.put(
-          `http://10.33.0.255:3001/updatemeetingstatusnormal/${id}`,
+          `${APIConnection.mainapi}/updatemeetingstatusnormal/${id}`,
           { reason: result.value },
           { withCredentials: true }
         );
@@ -249,7 +249,7 @@ const ScheduledMeetings = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.put(`http://10.33.0.255:3001/cancelstatus/${id}`, { empid: empID, reason: result.value }, { withCredentials: true });
+        await axios.put(`${APIConnection.mainapi}/cancelstatus/${id}`, { empid: empID, reason: result.value }, { withCredentials: true });
         setSpecialMeetings(specialMeetings.map((meeting) => (meeting.id === id ? { ...meeting, status: 'canceled' } : meeting)));
         Swal.fire('Canceled!', 'The special meeting has been canceled.', 'success');
       } catch (error) {
@@ -272,7 +272,7 @@ const ScheduledMeetings = () => {
     if (result.isConfirmed) {
       try {
         await axios.put(
-          `http://10.33.0.255:3001/updatemeetingstatus/${id}`,
+          `${APIConnection.mainapi}/updatemeetingstatus/${id}`,
           { empid: empID },
           { withCredentials: true }
         );
@@ -364,7 +364,7 @@ const ScheduledMeetings = () => {
                         padding: '3px 8px',
                         borderRadius: '5px',
                         fontWeight: 'bold',
-                        fontSize: '0.75rem',
+                        fontSize: '0.65rem',
                         color: '#007aff',
                         width: '130px',  // Reduced width for info box
                       }}
@@ -382,25 +382,28 @@ const ScheduledMeetings = () => {
                       color: meeting.status === 'canceled' ? statusColors['canceled'] : statusColors[status],
                       fontWeight: 'bold',
                       marginBottom: '8px',
+                      fontSize:'10px',
+                      mt:1,
+
                     }}
                   />
 
                   {/* Meeting Details */}
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '1rem' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '0.75rem' }}>
                     {meeting.title}
                   </Typography>
 
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px',fontSize: '0.75rem' }}>
                     <EventIcon sx={{ marginRight: '5px', color: statusColors[status], animation: 'bounce 1s infinite' }} />
                     {meeting.date}
                   </Typography>
 
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px',fontSize: '0.75rem' }}>
                     <AccessTimeIcon sx={{ marginRight: '5px', color: statusColors[status], animation: 'spin 1s infinite linear' }} />
                     {meeting.time}
                   </Typography>
 
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', marginBottom: '5px',fontSize: '0.75rem' }}>
                     <RoomIcon sx={{ marginRight: '5px', color: statusColors[status] }} />
                     {meeting.room}
                   </Typography>
