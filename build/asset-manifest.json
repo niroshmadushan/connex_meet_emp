@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/connex_meet_emp/static/css/main.ab1bc322.css",
-    "main.js": "/connex_meet_emp/static/js/main.53f49227.js",
+    "main.js": "/connex_meet_emp/static/js/main.9f287c58.js",
     "static/js/453.69834fcc.chunk.js": "/connex_meet_emp/static/js/453.69834fcc.chunk.js",
     "static/media/img4.png": "/connex_meet_emp/static/media/img4.cee04620da83e1270c1e.png",
     "static/media/prof.jpg": "/connex_meet_emp/static/media/prof.aecb59ab1c9a78cdae79.jpg",
@@ -15,11 +15,11 @@
     "static/media/slick.woff": "/connex_meet_emp/static/media/slick.295183786cd8a1389865.woff",
     "index.html": "/connex_meet_emp/index.html",
     "main.ab1bc322.css.map": "/connex_meet_emp/static/css/main.ab1bc322.css.map",
-    "main.53f49227.js.map": "/connex_meet_emp/static/js/main.53f49227.js.map",
+    "main.9f287c58.js.map": "/connex_meet_emp/static/js/main.9f287c58.js.map",
     "453.69834fcc.chunk.js.map": "/connex_meet_emp/static/js/453.69834fcc.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ab1bc322.css",
-    "static/js/main.53f49227.js"
+    "static/js/main.9f287c58.js"
   ]
 }
