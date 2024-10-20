@@ -17,6 +17,7 @@ import {
   RadialLinearScale,
 } from 'chart.js';
 import CountUp from 'react-countup';
+import APIConnection from '../config';
 
 // Registering the necessary chart.js modules
 ChartJS.register(

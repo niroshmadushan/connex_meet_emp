@@ -20,7 +20,7 @@ import { styled } from '@mui/system';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from './AuthContext'; // Import AuthContext
-
+import APIConnection from '../config';
 // Theme colors
 const themeColor = {
   primary: '#007aff', // iOS-like blue color
@@ -87,7 +87,7 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post('http://10.33.0.255:3001/login', { email, password,role:'user' }, {withCredentials: true});
+      const response = await axios.post(`${APIConnection.mainapi}/login`, { email, password,role:'user' }, {withCredentials: true});
       if (response.status === 200) {
         const token = response.data.token;
         const id= response.data.id;

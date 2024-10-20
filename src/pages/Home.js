@@ -33,6 +33,7 @@ import img3 from '../img/Mobile Bank.jpg';
 import img4 from '../img/Microsoft.jpg';
 import HomeDashboard from './HomeDashboard';
 import MeetingRooms from './MeetingRooms'; // Import the new MeetingRooms component
+import APIConnection from '../config';
 
 // Theme colors and styles for light theme
 const themeColor = {

@@ -4,7 +4,7 @@ import { Box, Typography, Grid } from '@mui/material';
 import { MeetingRoom, CheckCircle, Cancel, EventAvailable, Info, Book } from '@mui/icons-material';
 import Slider from 'react-slick';
 import CountUp from 'react-countup';
-
+import APIConnection from '../config';
 // Import images for the carousel
 import img1 from '../img/about-us-page-examples-1-61fd8f9784626-sej.webp';
 import img2 from '../img/find-company-information-image.jpg';
