@@ -13,6 +13,7 @@ import MeetingRooms from './MeetingRooms';
 import Addmeetingint from './AddMeetingInternal';
 import Addmeetingext from './AddMeetingSession';
 import ScheduledMetting from './ScheduledMeetings';
+import Homepage from './Dashboardv';
 import {
   Grid, Container, Paper, CircularProgress,
   Table, TableBody, TableCell, TableRow, FormControl, InputLabel,
@@ -311,7 +312,7 @@ const CustomBottomNav = styled(Box)({
   position: 'fixed',
   bottom: '10px',
   left: '50%',
-  transform: 'translateX(-50%)',
+  transform: 'translateX(-55%)',
   display: 'flex',
   justifyContent: 'space-between',
   background: 'transparent', // No background for taskbar itself
@@ -1466,6 +1467,7 @@ export default function Dashboard() {
        {navValue === 2 && <Addmeetingint />}
        {navValue === 1 && <Addmeetingext />}
        {navValue === 3 && <ScheduledMetting />}
+       {navValue === 0 && <Homepage />}
 
       </Content>
 

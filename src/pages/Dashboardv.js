@@ -6,10 +6,10 @@ import Slider from 'react-slick';
 import CountUp from 'react-countup';
 import APIConnection from '../config';
 // Import images for the carousel
-import img1 from '../img/about-us-page-examples-1-61fd8f9784626-sej.webp';
-import img2 from '../img/find-company-information-image.jpg';
-import img3 from '../img/Mobile Bank.jpg';
-import img4 from '../img/Microsoft.jpg';
+import img1 from '../img/img1.webp';
+import img2 from '../img/img2.jpg';
+import img3 from '../img/img3.jpg';
+import img4 from '../img/img4.png';
 
 // Slider settings for smooth transitions
 const sliderSettings = {
@@ -71,7 +71,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <Box sx={{ backgroundColor: '#f7f9fc', minHeight: '80vh', padding: '10px', fontFamily: 'Roboto, sans-serif' }}>
+    <Box sx={{ backgroundColor: '#f7f9fc', minHeight: '80vh',width:'60vh', padding: '10px',borderRadius:'10px', fontFamily: 'Roboto, sans-serif',m:'auto',mt:8 }}>
       {/* Page Title */}
       <Typography
         variant="h5"
