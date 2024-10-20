@@ -367,7 +367,7 @@ const AddMeetingSession = () => {
       <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
         Internal Meeting Form
       </Typography>
-      <Box elevation={2} sx={{ padding: '20px',width:'50%',m:'auto',height:'70vh',overflowY:'scroll', borderRadius: '12px' }}>
+      <Box elevation={2} sx={{ padding: '50px',width:'50%',m:'auto',height:'70vh',overflowY:'scroll',backgroundColor:'white', borderRadius: '12px' }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12}>

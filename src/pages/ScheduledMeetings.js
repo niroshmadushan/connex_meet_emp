@@ -297,9 +297,10 @@ const ScheduledMeetings = () => {
         Scheduled Meetings
       </Typography>
       {/* Toggle Button for Normal and Special Meetings */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3, }}>
         <ToggleButtonGroup
           value={viewType}
+          sx={{backgroundColor:'white'}}
           exclusive
           onChange={(e, newValue) => {
             if (newValue) setViewType(newValue);

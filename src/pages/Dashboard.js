@@ -40,7 +40,7 @@ import { isSameDay } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import APIConnection from '../config';
-
+import welcomeImage from '../img/welcome-image.jpg'
 const themeColor = {
   primary: '#007aff',
   primaryDark: '#005bb5',
@@ -304,6 +304,7 @@ const Root = styled(Box)({
 const Content = styled(Box)({
   flexGrow: 1,
   textAlign: 'center',
+  zIndex:'1000'
 });
 
 const CustomBottomNav = styled(Box)({
@@ -311,8 +312,9 @@ const CustomBottomNav = styled(Box)({
   height: '60px',
   position: 'fixed',
   bottom: '10px',
+  zIndex:'1000',
   left: '50%',
-  transform: 'translateX(-55%)',
+  transform: 'translateX(-57%)',
   display: 'flex',
   justifyContent: 'space-between',
   background: 'transparent', // No background for taskbar itself
@@ -1222,7 +1224,24 @@ export default function Dashboard() {
 
 
   return (
-    <Root sx={{backgroundColor:'white',height:'60vh'}}>
+    <Root  sx={{
+    backgroundImage: `url(${welcomeImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    height: '60vh',
+    position: 'relative',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(18, 18, 18, 0.3)',
+      backdropFilter: 'blur(8px)',
+      zIndex: 1,  // Ensure the blur effect is behind the content
+    },
+  }}>
       {/* Top App Bar */}
       <StyledAppBar position="fixed">
         <Toolbar style={{ justifyContent: 'space-between', minHeight: '50px' }}>

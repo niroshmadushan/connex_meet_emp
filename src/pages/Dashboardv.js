@@ -34,7 +34,7 @@ const Dashboard = () => {
     const empId = localStorage.getItem('id');
 
     // Fetch total meetings
-    axios.get(`http://192.168.13.150:3001/getbookingcount/${empId}`, { withCredentials: true })
+    axios.get(`${APIConnection.mainapi}/getbookingcount/${empId}`, { withCredentials: true })
       .then((response) => {
         const total = response.data[0]?.totalbookings || 0;
         setTotalMeetings(total);
@@ -45,7 +45,7 @@ const Dashboard = () => {
       });
 
     // Fetch canceled meetings
-    axios.get(`http://192.168.13.150:3001/getcancelbookingcount/${empId}`, { withCredentials: true })
+    axios.get(`${APIConnection.mainapi}/getcancelbookingcount/${empId}`, { withCredentials: true })
       .then((response) => {
         const canceled = response.data[0]?.totalcanceldbookings || 0;
         setCanceledMeetings(canceled);
@@ -57,7 +57,7 @@ const Dashboard = () => {
         console.error("Error fetching canceled meetings:", error);
       });
 
-      axios.get(`http://192.168.13.150:3001/getsuccessfulbookingcount/${empId}`, { withCredentials: true })
+      axios.get(`${APIConnection.mainapi}/getsuccessfulbookingcount/${empId}`, { withCredentials: true })
       .then((response) => {
         const total = response.data[0]?.totalsuccessfulbookings || 0;
         setSuccessfulMeetings(total);
